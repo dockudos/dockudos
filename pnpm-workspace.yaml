@@ -3,8 +3,9 @@ packages:
   - 'apps/*'
 autoInstallPeers: true
 allowBuilds:
-  '@swc/core': set this to true or false
+  '@parcel/watcher': true
+  '@swc/core': true
   esbuild: true
   nx: true
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
+  sharp: true
+  unrs-resolver: true
