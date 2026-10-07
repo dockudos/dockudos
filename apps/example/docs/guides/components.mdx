@@ -1,0 +1,80 @@
+---
+title: Components
+description: Every built-in component, in light and dark mode.
+---
+
+## Callouts
+
+<Callout type="note">A plain note.</Callout>
+<Callout type="info" title="Good to know">
+  Some information.
+</Callout>
+<Callout type="tip">A tip.</Callout>
+<Callout type="warning">Be careful.</Callout>
+<Callout type="danger">Do not do this.</Callout>
+
+## Tabs
+
+<Tabs items={['npm', 'pnpm']}>
+  <Tab value="npm">Run `npm install`.</Tab>
+  <Tab value="pnpm">Run `pnpm add`.</Tab>
+</Tabs>
+
+## Accordion
+
+<Accordions>
+  <Accordion title="What is dockudos?">A docs framework.</Accordion>
+  <Accordion title="Is it free?">Yes, Apache 2.0.</Accordion>
+</Accordions>
+
+## Steps
+
+<Steps>
+  <Step title="Install">Add the packages.</Step>
+  <Step title="Write">Create `docs/index.mdx`.</Step>
+  <Step title="Ship">Run the build.</Step>
+</Steps>
+
+## Cards
+
+<Cards>
+  <Card title="Hello guide" href="/guides/hello">
+    A small page.
+  </Card>
+  <Card title="GitHub" href="https://github.com">
+    External link.
+  </Card>
+</Cards>
+
+## Tooltip
+
+The <Tooltip tip="MDX is Markdown with components.">MDX</Tooltip> format.
+
+## Files
+
+<Files>
+  <Folder name="docs" defaultOpen>
+    <File name="index.mdx" />
+    <Folder name="guides">
+      <File name="hello.mdx" />
+    </Folder>
+  </Folder>
+  <File name="docs.json" />
+</Files>
+
+## Type table
+
+<TypeTable
+  type={{
+    name: { type: 'string', description: 'Site name.', required: true },
+    navigation: { type: 'Tab[]', default: '[]' },
+  }}
+/>
+
+## Inline contents
+
+<InlineToc />
+
+## Graph
+
+<GraphView />

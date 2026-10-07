@@ -335,6 +335,9 @@ importers:
       '@dockudos/next':
         specifier: workspace:*
         version: link:../../packages/next
+      '@dockudos/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: ~16.1.6
         version: 16.1.7(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.63.0)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.97.2)
@@ -389,6 +392,9 @@ importers:
       '@dockudos/core':
         specifier: workspace:*
         version: link:../core
+      '@dockudos/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@mdx-js/loader':
         specifier: ^3.1.1
         version: 3.1.1(supports-color@8.1.1)(webpack@5.111.1(@swc/core@1.15.47(@swc/helpers@0.5.23))(esbuild@0.27.7)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.34.5)(uglify-js@3.19.3))
@@ -410,6 +416,9 @@ importers:
       next:
         specifier: '>=15'
         version: 16.1.7(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.63.0)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.97.2)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
       rehype-autolink-headings:
         specifier: ^7.1.0
         version: 7.1.0

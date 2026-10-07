@@ -1,16 +1,31 @@
 {
   "name": "Example Docs",
-  "seo": { "siteUrl": "https://docs.example.com" },
-  "redirects": [{ "source": "/old-hello", "destination": "/guides/hello" }],
+  "seo": {
+    "siteUrl": "https://docs.example.com"
+  },
+  "redirects": [
+    {
+      "source": "/old-hello",
+      "destination": "/guides/hello"
+    }
+  ],
   "navigation": [
     {
       "tab": "Guides",
       "groups": [
         {
           "group": "Get started",
-          "pages": ["index", "guides/hello", "guides/features"]
+          "pages": [
+            "index",
+            "guides/hello",
+            "guides/features",
+            "guides/components"
+          ]
         }
       ]
     }
-  ]
+  ],
+  "theme": {
+    "primary": "#3b82f6"
+  }
 }

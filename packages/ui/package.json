@@ -68,6 +68,12 @@
           "{projectRoot}/dist/styles.css"
         ],
         "cache": true
+      },
+      "build": {
+        "dependsOn": [
+          "^build",
+          "build-css"
+        ]
       }
     }
   },

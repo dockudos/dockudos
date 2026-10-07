@@ -1,4 +1,5 @@
 import { getSite, pageMetadata } from '@dockudos/next/server';
+import { DocsLayout } from '@dockudos/ui';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -19,10 +20,22 @@ export default async function DocsPage({ params }: Props) {
   const [{ slug }, site] = await Promise.all([params, getSite()]);
   const page = site.find(slug);
   if (!page) notFound();
-  const { default: Content } = await import(`../../../docs/${page.file}`);
+  const [{ default: Content }, toc, lastModified, graph] = await Promise.all([
+    import(`../../../docs/${page.file}`),
+    site.toc(page),
+    site.lastModified(page),
+    site.graph(),
+  ]);
   return (
-    <main>
+    <DocsLayout
+      config={site.config}
+      nav={site.nav}
+      page={page}
+      toc={toc}
+      lastModified={lastModified}
+      graph={graph}
+    >
       <Content />
-    </main>
+    </DocsLayout>
   );
 }

@@ -7,8 +7,11 @@ import {
   buildRobots,
   buildSitemap,
   expandIncludes,
+  extractLinks,
+  resolveDocLink,
   extractToc,
   pageSeo,
+  themeCss,
   type TocEntry,
 } from '@dockudos/core';
 import { discoverPages, lastModified, loadConfig } from '@dockudos/core/node';
@@ -25,6 +28,8 @@ export interface SiteOptions {
 
 /** Everything the routes need to know about the site, read from `docs.json` and the docs folder. */
 export interface Site {
+  /** Absolute project root. */
+  root: string;
   config: DocsConfig;
   tree: PageTree;
   nav: Navigation;
@@ -34,6 +39,13 @@ export interface Site {
   lastModified(page: Page): Promise<Date>;
   /** Headings of the page (h2 to h4), with `<include>`s expanded, matching the ids in the rendered page. */
   toc(page: Page): Promise<TocEntry[]>;
+  /** Visible pages and the links between them, for `<GraphView />`. */
+  graph(): Promise<PageGraph>;
+}
+
+export interface PageGraph {
+  nodes: { id: string; title: string; path: string }[];
+  edges: { from: string; to: string }[];
 }
 
 const cache = new Map<string, Promise<Site>>();
@@ -62,6 +74,7 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
     discoverPages(dir),
   ]);
   return {
+    root,
     config,
     tree,
     nav: buildNavigation(config, tree),
@@ -77,7 +90,53 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       });
       return extractToc(source);
     },
+    graph: () => buildGraph(tree, dir),
   };
+}
+
+async function buildGraph(tree: PageTree, dir: string): Promise<PageGraph> {
+  const pages = tree.pages.filter((p) => !p.hidden);
+  const byPath = new Map(pages.map((p) => [p.path, p]));
+  const edges = new Map<string, { from: string; to: string }>();
+
+  await Promise.all(
+    pages.map(async (page) => {
+      const source = await readFile(join(dir, page.file), 'utf8');
+      for (const { href, kind } of extractLinks(source)) {
+        if (kind !== 'link') continue;
+        const link = resolveDocLink(page.file, href);
+        if (link.kind !== 'internal' || link.path === page.path) continue;
+        if (!byPath.has(link.path)) continue;
+        edges.set(`${page.path}>${link.path}`, {
+          from: page.path,
+          to: link.path,
+        });
+      }
+    }),
+  );
+  return {
+    nodes: pages.map((p) => ({ id: p.path, title: p.title, path: p.path })),
+    edges: [...edges.values()].sort((a, b) =>
+      a.from + a.to < b.from + b.to ? -1 : 1,
+    ),
+  };
+}
+
+/**
+ * CSS for the user's theme settings (`theme.primary`, fonts, radius) followed by
+ * their own stylesheet from `theme.css`. Inject it in `<head>` after the base styles.
+ */
+export async function siteCss(site: Site): Promise<string> {
+  const { css } = site.config.theme;
+  let custom = '';
+  if (css) {
+    try {
+      custom = await readFile(join(site.root, css), 'utf8');
+    } catch {
+      throw new Error(`theme.css: file not found: ${css}`);
+    }
+  }
+  return themeCss(site.config.theme) + custom;
 }
 
 /** Site-wide metadata for the root layout: base URL, default title and favicon. */

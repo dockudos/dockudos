@@ -6,6 +6,7 @@ import {
   getSite,
   pageMetadata,
   robotsResponse,
+  siteCss,
   siteMetadata,
   sitemapResponse,
 } from './server.ts';
@@ -156,6 +157,47 @@ describe('toc', () => {
       ['one', 2],
       ['from-include', 2],
       ['two', 3],
+    ]);
+  });
+});
+
+describe('siteCss', () => {
+  it('is empty for the default theme', async () => {
+    expect(await siteCss(await getSite({ root }))).toBe('');
+  });
+
+  it('puts the palette first and the custom stylesheet after it', async () => {
+    await writeFile(join(root, 'custom.css'), '.x{color:red}');
+    await config({ theme: { primary: '#3b82f6', css: 'custom.css' } });
+    const css = await siteCss(await getSite({ root }));
+    expect(css).toMatch(/^:root\{--primary:oklch.*\.x\{color:red\}$/);
+  });
+
+  it('names the missing stylesheet', async () => {
+    await config({ theme: { css: 'nope.css' } });
+    await expect(siteCss(await getSite({ root }))).rejects.toThrow(
+      /theme\.css: file not found: nope\.css/,
+    );
+  });
+});
+
+describe('graph', () => {
+  it('links visible pages by the internal links between them', async () => {
+    await writeFile(
+      join(root, 'docs', 'a.mdx'),
+      '[to b](./b.mdx) [self](./a.mdx) [out](https://x.dev) [hidden](/secret) [gone](/nope)',
+    );
+    await writeFile(join(root, 'docs', 'b.mdx'), '[back](/a#top) [again](/a)');
+    const graph = await (await getSite({ root })).graph();
+    expect(graph.nodes.map((n) => n.path).sort()).toEqual([
+      '/',
+      '/a',
+      '/b',
+      '/guides/auth',
+    ]);
+    expect(graph.edges).toEqual([
+      { from: '/a', to: '/b' },
+      { from: '/b', to: '/a' },
     ]);
   });
 });

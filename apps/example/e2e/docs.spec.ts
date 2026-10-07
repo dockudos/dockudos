@@ -65,5 +65,5 @@ test('compiles callouts, includes and page links', async ({ page }) => {
   );
   await expect(page.getByText('included from')).toBeVisible();
   await page.getByRole('link', { name: 'hello guide' }).click();
-  await expect(page).toHaveURL('/guides/hello#hello-guide');
+  await expect(page).toHaveURL('/guides/hello#first-steps');
 });

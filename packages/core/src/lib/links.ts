@@ -42,3 +42,49 @@ export function resolveDocLink(from: string, href: string): DocLink {
     '/' + parts.map((s) => toUrlSegment(decodeURIComponent(s))).join('/');
   return hash ? { kind: 'internal', path, hash } : { kind: 'internal', path };
 }
+
+export interface FoundLink {
+  href: string;
+  /** 1-based line in the file, counting any frontmatter. */
+  line: number;
+  kind: 'link' | 'image';
+}
+
+/**
+ * Links and images written in a markdown/MDX source: `[t](href)`,
+ * `![alt](src)`, reference definitions, and `href=` / `src=` on JSX or HTML.
+ * Code fences and inline code are skipped. Line numbers refer to the whole
+ * file, so they can be shown in error messages.
+ */
+export function extractLinks(source: string): FoundLink[] {
+  const found: FoundLink[] = [];
+  let fence: string | undefined;
+
+  for (const [i, raw] of source.split(/\r?\n/).entries()) {
+    const f = /^\s{0,3}(`{3,}|~{3,})/.exec(raw)?.[1];
+    if (f) {
+      if (!fence) fence = f;
+      else if (f[0] === fence[0] && f.length >= fence.length) fence = undefined;
+      continue;
+    }
+    if (fence) continue;
+
+    const line = raw.replace(/(`+)[^`]*?\1/g, (m) => ' '.repeat(m.length));
+    const add = (href: string | undefined, kind: FoundLink['kind']) => {
+      if (href) found.push({ href, line: i + 1, kind });
+    };
+
+    for (const m of line.matchAll(
+      /(!?)\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+(?:"[^"]*"|'[^']*'))?\s*\)/g,
+    )) {
+      add(m[2] ?? m[3], m[1] ? 'image' : 'link');
+    }
+    add(/^\s{0,3}\[[^\]]+\]:\s*(\S+)/.exec(line)?.[1], 'link');
+    for (const m of line.matchAll(
+      /<(\w+)[^>]*?\s(href|src)=(?:"([^"]*)"|'([^']*)')/g,
+    )) {
+      add(m[3] ?? m[4], m[2] === 'src' ? 'image' : 'link');
+    }
+  }
+  return found;
+}
