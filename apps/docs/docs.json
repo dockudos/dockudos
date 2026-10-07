@@ -41,6 +41,7 @@
           "group": "Reader experience",
           "pages": [
             "guides/search",
+            "guides/ai-outputs",
             "guides/keyboard-shortcuts",
             "guides/hooks",
             "guides/page-actions"

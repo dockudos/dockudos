@@ -1,0 +1,74 @@
+---
+icon: bot
+title: llms.txt and Markdown
+description: Let AI tools read your docs as plain text, from the same source as the site.
+---
+
+AI tools do better with Markdown than with HTML. dockudos serves your docs to them three ways, generated from the
+same files as the site, so they never drift.
+
+## llms.txt
+
+`/llms.txt` is an index of the docs, following the [llms.txt](https://llmstxt.org) format: the site name, a summary
+(`seo.description`), then a link per page, grouped by the groups of your navigation. Each link goes to the page's
+Markdown twin and carries its description.
+
+```text
+# Acme Docs
+
+> Everything about the Acme API.
+
+## Start
+
+- [Quickstart](https://docs.acme.com/quickstart.md): Make your first request
+- [Authentication](https://docs.acme.com/guides/auth.md)
+
+## Optional
+
+- [Changelog](https://docs.acme.com/changelog.md)
+```
+
+Pages your navigation does not list go under "Optional", which tools may skip when they are short of room.
+Links are absolute when `seo.siteUrl` is set.
+
+`/llms-full.txt` is the whole documentation in one file: every page's Markdown, each headed by its title and
+`Source:` address. Use it for tools that want everything in a single fetch.
+
+Both are built when the site is built. `dockudos init` creates their routes (`src/app/llms.txt/route.ts` and
+`src/app/llms-full.txt/route.ts`); for an existing site, add them:
+
+```ts title="src/app/llms.txt/route.ts"
+import { createLlmsHandler } from '@dockudos/next/llms';
+
+export const dynamic = 'force-static';
+export const GET = createLlmsHandler();
+```
+
+## Markdown twins
+
+Every page is available as Markdown at its own address with `.md` added, and from its own address when the request asks for
+Markdown:
+
+```bash
+curl https://docs.acme.com/guides/auth.md
+curl -H "Accept: text/markdown" https://docs.acme.com/guides/auth
+```
+
+The home page is `/index.md`. The Markdown has the page's title and description, then its content with
+`<include>`s expanded and frontmatter removed. [`<Visibility for="agents">`](../components/visibility.mdx) blocks are
+included and `for="humans"` blocks are left out, so you can write extra context just for AI tools.
+
+`withDocs()` sets up the rewrites; the content comes from the markdown route (`/api/markdown`, which `dockudos init` creates and the
+[catch-all API route](./search.mdx#the-routes) also provides). Files, `/api/*` and `/_next/*` are never rewritten.
+
+<Callout type="note" title="Caching">
+  The HTML and Markdown of a page share one address. A CDN that caches by
+  address alone can hand Markdown to a browser or the reverse. Make it vary on
+  the `Accept` header, or point tools at the `.md` address, which is distinct.
+</Callout>
+
+## What is left out
+
+Hidden pages (`hidden: true`) and pages behind an [access rule](./protecting-pages.mdx) are never in `llms.txt`,
+`llms-full.txt`, the search index or any other listing. A hidden page can still be fetched at its own address, as it can in
+a browser. A protected page's Markdown twin needs the same credentials as the page.

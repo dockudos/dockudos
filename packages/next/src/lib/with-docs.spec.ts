@@ -160,3 +160,63 @@ describe('withDocs: access rules', () => {
     expect(docs().env?.['DOCKUDOS_ACCESS']).toBe('[]');
   });
 });
+
+describe('withDocs: Markdown twins', () => {
+  type Rewrites = {
+    beforeFiles: { source: string; destination: string; has?: unknown[] }[];
+    afterFiles: unknown[];
+    fallback: unknown[];
+  };
+  const rewrites = async (config = {}) =>
+    (await docs(config).rewrites?.()) as Rewrites;
+
+  it('rewrites .md addresses and Accept: text/markdown to the markdown route', async () => {
+    const { beforeFiles } = await rewrites();
+    expect(beforeFiles.map((r) => r.destination)).toEqual([
+      '/api/markdown',
+      '/api/markdown',
+      '/api/markdown',
+    ]);
+    expect(beforeFiles[0]?.source).toBe('/:path(.+)\\.md');
+    for (const r of beforeFiles.slice(1))
+      expect(r.has).toEqual([
+        { type: 'header', key: 'accept', value: '.*text/markdown.*' },
+      ]);
+  });
+
+  it('keeps the user rewrites, array or object, after its own', async () => {
+    const mine = { source: '/a', destination: '/b' };
+    const asArray = await rewrites({ rewrites: async () => [mine] });
+    expect(asArray.afterFiles).toEqual([mine]);
+    const asObject = await rewrites({
+      rewrites: async () => ({
+        beforeFiles: [mine],
+        afterFiles: [],
+        fallback: [mine],
+      }),
+    });
+    expect(asObject.beforeFiles.at(-1)).toEqual(mine);
+    expect(asObject.beforeFiles).toHaveLength(4);
+    expect(asObject.fallback).toEqual([mine]);
+  });
+
+  it('matches the paths it should: .md, never /api, /_next or files', async () => {
+    const { beforeFiles } = await rewrites();
+    const [twin, , negotiated] = beforeFiles;
+    const match = (source: string | undefined, path: string) =>
+      new RegExp(
+        `^${(source ?? '')
+          .replace('/:path(.+)', '/(.+)')
+          .replace(
+            '/:path((?!api/|_next/)[^.]*)',
+            '/((?!api/|_next/)[^.]*)',
+          )}$`,
+      ).test(path);
+    expect(match(twin?.source, '/guides/auth.md')).toBe(true);
+    expect(match(twin?.source, '/guides/auth')).toBe(false);
+    expect(match(negotiated?.source, '/guides/auth')).toBe(true);
+    expect(match(negotiated?.source, '/api/search')).toBe(false);
+    expect(match(negotiated?.source, '/_next/data/x')).toBe(false);
+    expect(match(negotiated?.source, '/logo.svg')).toBe(false);
+  });
+});

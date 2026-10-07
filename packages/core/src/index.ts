@@ -19,3 +19,4 @@ export * from './lib/chunk.ts';
 export * from './lib/content-index.ts';
 export * from './lib/keyword-search.ts';
 export * from './lib/search-backend.ts';
+export * from './lib/llms.ts';

@@ -24,9 +24,9 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [ ] P2.10b Hosted adapters: Algolia, Meilisearch, Typesense, Orama Cloud, FlexSearch. Deliberately deferred: add in order of demand; the `SearchBackend` interface is the extension point.
 
 ### 2C. Machine-readable outputs
-- [ ] P2.11 `llms.txt` and `llms-full.txt` generated at build.
-- [ ] P2.12 Markdown twins: `.md` suffix and `Accept: text/markdown` content negotiation.
-- [ ] P2.13 Respect `hidden` pages and (later) access rules in all outputs.
+- [x] P2.11 `llms.txt` and `llms-full.txt` generated at build.
+- [x] P2.12 Markdown twins: `.md` suffix and `Accept: text/markdown` content negotiation.
+- [x] P2.13 Respect `hidden` pages and (later) access rules in all outputs.
 
 ### 2D. Provider layer
 - [ ] P2.14 `LLMProvider` and `EmbeddingProvider` interfaces plus a mock provider for tests.
@@ -79,7 +79,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [ ] Embedding cache: hit, miss, invalidation by content hash.
 - [ ] Citation validator: valid, invalid, missing ids.
 - [ ] Rate limiter and token-budget packer.
-- [ ] `llms.txt` / `llms-full.txt` output format and hidden-page exclusion.
+- [x] `llms.txt` / `llms-full.txt` output format and hidden-page exclusion.
 
 ### Retrieval and AI (fixed corpus, mock provider)
 - [ ] Retrieval hit rate over the eval question set (top-5 contains expected page).
@@ -91,7 +91,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] Cmd+K opens the palette; typing returns results; Enter navigates.
 - [ ] Ask flow with mocked LLM: streamed text, clickable numbered sources.
 - [ ] AI navigation lands on the heading and shows the reason.
-- [ ] `curl -H "Accept: text/markdown"` returns the Markdown twin.
+- [x] `curl -H "Accept: text/markdown"` returns the Markdown twin.
 - [ ] MCP client smoke test: list tools, call `search_docs` and `get_page`.
 - [ ] Widget embedded in a plain HTML page can ask a question.
 

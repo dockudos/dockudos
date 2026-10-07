@@ -75,6 +75,12 @@
       "types": "./dist/api.d.ts",
       "import": "./dist/api.js",
       "default": "./dist/api.js"
+    },
+    "./llms": {
+      "@dockudos/source": "./src/llms.ts",
+      "types": "./dist/llms.d.ts",
+      "import": "./dist/llms.js",
+      "default": "./dist/llms.js"
     }
   },
   "files": [

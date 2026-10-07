@@ -1,5 +1,6 @@
 import { type ContentIndex, KeywordSearch, hashText } from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
+import { createMarkdownHandler } from './markdown.ts';
 import { getSite } from './server.ts';
 
 export const MAX_QUERY_LENGTH = 300;
@@ -153,7 +154,7 @@ export type RouteContext = { params: Promise<{ dockudos?: string[] }> };
  *     import { createDocsApi } from '@dockudos/next/api';
  *     export const { GET, POST } = createDocsApi();
  *
- * It answers `/api/search`, `/api/search/index` and `/api/page`; routes you add yourself (such as
+ * It answers `/api/search`, `/api/search/index`, `/api/page` and `/api/markdown`; routes you add yourself (such as
  * `/api/kudos`) win over it.
  */
 export function createDocsApi(options: DocsApiOptions = {}) {
@@ -161,6 +162,7 @@ export function createDocsApi(options: DocsApiOptions = {}) {
     search: createSearchHandler(),
     'search/index': createIndexHandler(),
     page: createPageHandler(options),
+    markdown: createMarkdownHandler(options),
   };
   const post: Record<string, Route> = {};
 

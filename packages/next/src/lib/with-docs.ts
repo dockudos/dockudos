@@ -7,6 +7,32 @@ import { mdxPipeline } from '../mdx/options.ts';
 
 const DOC_EXTENSIONS = ['md', 'mdx'];
 
+/**
+ * Where Markdown twins come from. `/guides/auth.md` and any request that asks for `text/markdown`
+ * (`Accept: text/markdown`) are answered by the markdown route, which checks `access` rules for the page.
+ * Requests for `/api/*`, `/_next/*` and files with an extension are never rewritten.
+ */
+const MARKDOWN_ROUTE = '/api/markdown';
+const WANTS_MARKDOWN = [
+  { type: 'header' as const, key: 'accept', value: '.*text/markdown.*' },
+];
+export const markdownRewrites = () => [
+  {
+    source: '/:path(.+)\\.md',
+    destination: MARKDOWN_ROUTE,
+  },
+  {
+    source: '/',
+    has: WANTS_MARKDOWN,
+    destination: MARKDOWN_ROUTE,
+  },
+  {
+    source: '/:path((?!api/|_next/)[^.]*)',
+    has: WANTS_MARKDOWN,
+    destination: MARKDOWN_ROUTE,
+  },
+];
+
 export interface WithDocsOptions {
   /** Project root, where `docs.json` lives. Default `process.cwd()`. */
   root?: string;
@@ -55,6 +81,14 @@ export function withDocs(
       ...pageExtensions,
       ...DOC_EXTENSIONS.filter((ext) => !pageExtensions.includes(ext)),
     ],
+    async rewrites() {
+      const own = await nextConfig.rewrites?.();
+      const mine = markdownRewrites();
+      if (!own) return { beforeFiles: mine, afterFiles: [], fallback: [] };
+      if (Array.isArray(own))
+        return { beforeFiles: mine, afterFiles: own, fallback: [] };
+      return { ...own, beforeFiles: [...mine, ...(own.beforeFiles ?? [])] };
+    },
     async redirects() {
       const own = (await nextConfig.redirects?.()) ?? [];
       if (config.redirects.length === 0) return own;
