@@ -5,9 +5,9 @@
   </picture>
 </p>
 
-An AI-native documentation platform you can fully self-host. dockudos turns a folder of MDX files into a documentation site built on Next.js, with search, cited AI answers, AI navigation, `llms.txt` and an MCP server planned as core features.
+An AI-native documentation platform you can fully self-host. dockudos turns a folder of MDX files into a documentation site built on Next.js, with search, cited AI answers, AI navigation, `llms.txt` and an MCP server as core features.
 
-> **Status: Phase 1 (core library) is implemented; the first npm release is pending.** `npx dockudos init` creates a styled docs site. Search, the AI assistant and API reference pages are planned for later phases. The design lives in [`notes/`](./notes) and the build plan in [`notes/plan/`](./notes/plan).
+> **Status: Phases 1 (core library) and 2 (search and AI) are implemented; the first npm release is pending.** `npx dockudos init` creates a styled docs site with full-text search, an optional cited-answer assistant, AI navigation, `llms.txt`, Markdown twins, an MCP server and an embeddable widget. API reference pages are planned for a later phase. The design lives in [`notes/`](./notes) and the build plan in [`notes/plan/`](./notes/plan).
 
 ## Repository layout
 
