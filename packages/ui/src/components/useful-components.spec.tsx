@@ -9,11 +9,19 @@ import { Update } from './update.tsx';
 describe('ParamField and ResponseField', () => {
   it('shows name, type, location, required, default and description', () => {
     const { container } = render(
-      <ParamField name="limit" type="number" location="query" required default="10">
+      <ParamField
+        name="limit"
+        type="number"
+        location="query"
+        required
+        default="10"
+      >
         How many to return.
       </ParamField>,
     );
-    expect(container.querySelector('.dk-param-name')).toHaveTextContent('limit');
+    expect(container.querySelector('.dk-param-name')).toHaveTextContent(
+      'limit',
+    );
     expect(container).toHaveTextContent('number');
     expect(container).toHaveTextContent('query');
     expect(container).toHaveTextContent('required');
@@ -29,7 +37,11 @@ describe('ParamField and ResponseField', () => {
   });
 
   it('ResponseField has no required or location', () => {
-    const { container } = render(<ResponseField name="id" type="string">The id.</ResponseField>);
+    const { container } = render(
+      <ResponseField name="id" type="string">
+        The id.
+      </ResponseField>,
+    );
     expect(container).not.toHaveTextContent('required');
     expect(container).toHaveTextContent('The id.');
   });
@@ -37,9 +49,17 @@ describe('ParamField and ResponseField', () => {
 
 describe('Endpoint', () => {
   it('shows the method and path', () => {
-    render(<Endpoint method="POST" path="/v1/users/{id}" baseUrl="https://api.acme.dev" />);
+    render(
+      <Endpoint
+        method="POST"
+        path="/v1/users/{id}"
+        baseUrl="https://api.acme.dev"
+      />,
+    );
     expect(screen.getByText('POST')).toHaveAttribute('data-method', 'POST');
-    expect(screen.getByText('/v1/users/{id}', { exact: false })).toBeInTheDocument();
+    expect(
+      screen.getByText('/v1/users/{id}', { exact: false }),
+    ).toBeInTheDocument();
     expect(screen.getByText('https://api.acme.dev')).toBeInTheDocument();
   });
 
@@ -75,7 +95,10 @@ describe('CopyText', () => {
   it('copies the text, or an explicit value, and announces it', async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
     render(
       <>
         <CopyText>npm install dockudos</CopyText>
@@ -87,12 +110,17 @@ describe('CopyText', () => {
     expect(writeText).toHaveBeenLastCalledWith('npm install dockudos');
     await user.click(b!);
     expect(writeText).toHaveBeenLastCalledWith('sk_test_123');
-    expect((await screen.findAllByRole('status'))[1]).toHaveTextContent('Copied to clipboard');
+    expect((await screen.findAllByRole('status'))[1]).toHaveTextContent(
+      'Copied to clipboard',
+    );
   });
 
   it('reports a failed copy', async () => {
     const user = userEvent.setup();
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockRejectedValue(new Error('no')) }, configurable: true });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('no')) },
+      configurable: true,
+    });
     render(<CopyText>x</CopyText>);
     await user.click(screen.getByRole('button', { name: 'Copy' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Copy failed');
@@ -104,12 +132,19 @@ describe('Hero and LinkButton', () => {
     render(
       <Hero eyebrow="v0.1" title="Docs that ship" description="From MDX.">
         <LinkButton href="/quickstart">Get started</LinkButton>
-        <LinkButton href="https://github.com/x/y" variant="secondary">GitHub</LinkButton>
+        <LinkButton href="https://github.com/x/y" variant="secondary">
+          GitHub
+        </LinkButton>
       </Hero>,
     );
-    expect(screen.getByRole('heading', { level: 2, name: 'Docs that ship' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Docs that ship' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('v0.1')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Get started' })).toHaveAttribute('href', '/quickstart');
+    expect(screen.getByRole('link', { name: 'Get started' })).toHaveAttribute(
+      'href',
+      '/quickstart',
+    );
     const ext = screen.getByRole('link', { name: /GitHub/ });
     expect(ext).toHaveAttribute('target', '_blank');
     expect(ext).toHaveClass('dk-button-secondary');

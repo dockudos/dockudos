@@ -1019,6 +1019,96 @@
     color: var(--foreground) !important;
   }
 
+  /* ------------------------------------------------------------------ book */
+  .dk-book {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+  .dk-book-cover {
+    display: flex;
+    min-height: 70vh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .dk-book-title {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+  }
+  .dk-book-subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 1.25rem;
+    color: var(--muted-foreground);
+  }
+  .dk-book-date {
+    margin-top: 2.5rem;
+    font-size: 0.9375rem;
+    color: var(--muted-foreground);
+  }
+  .dk-book-toc {
+    margin: 2rem 0;
+    break-before: page;
+  }
+  .dk-book-toc h2 {
+    margin: 0 0 1rem;
+    font-size: 1.75rem;
+  }
+  .dk-book-toc h3 {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.125rem;
+  }
+  .dk-book-toc ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style: none;
+  }
+  .dk-book-toc > section > ul {
+    padding-left: 0;
+  }
+  .dk-book-toc li {
+    margin: 0.2rem 0;
+  }
+  .dk-book-group {
+    display: block;
+    margin-top: 0.6rem;
+    font-weight: 600;
+  }
+  .dk-book-toc a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .dk-book-toc a:hover {
+    text-decoration: underline;
+  }
+  .dk-book-page {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    break-before: page;
+  }
+  @media print {
+    .dk-book {
+      max-width: none;
+      padding: 0;
+    }
+    .dk-book-cover {
+      min-height: 85vh;
+      break-after: page;
+    }
+    .dk-book-page {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+    .dk-book-toc a[href^='#']::after {
+      content: none !important;
+    }
+  }
+
   /* ---------------------------------------------------------------- layouts */
   /* Notebook: compact, card-like surfaces. */
   [data-layout='notebook'] {

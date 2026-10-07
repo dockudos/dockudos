@@ -80,7 +80,14 @@ describe('the dockudos documentation', () => {
 
   it('documents every CLI command', async () => {
     const page = await read('reference/cli.mdx');
-    for (const command of ['init', 'dev', 'build', 'broken-links'])
+    for (const command of [
+      'init',
+      'dev',
+      'build',
+      'broken-links',
+      'pdf',
+      'kudos',
+    ])
       expect(page).toContain(`## ${command}`);
   });
 });

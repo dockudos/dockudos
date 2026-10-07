@@ -238,3 +238,32 @@ describe('urlPrefix', () => {
     ]);
   });
 });
+
+describe('book', () => {
+  it('lists pages in navigation order, then unlisted ones, never hidden ones', async () => {
+    await config({
+      navigation: [
+        {
+          tab: 'Docs',
+          groups: [{ group: 'G', pages: ['guides/auth', 'index'] }],
+        },
+        { tab: 'Blog', href: 'https://blog.dev' },
+      ],
+    });
+    await writeFile(join(root, 'docs', 'extra.mdx'), '# Extra');
+    const book = await (await getSite({ root })).book();
+    expect(book.map((b) => b.page.path)).toEqual([
+      '/guides/auth',
+      '/',
+      '/extra',
+    ]);
+  });
+
+  it("carries each page's table of contents", async () => {
+    await writeFile(join(root, 'docs', 'toc.mdx'), '# T\n## One\n### Two');
+    const book = await (await getSite({ root })).book();
+    expect(
+      book.find((b) => b.page.path === '/toc')!.toc.map((t) => t.id),
+    ).toEqual(['one', 'two']);
+  });
+});

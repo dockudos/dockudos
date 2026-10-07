@@ -18,6 +18,22 @@ export interface Env {
     options: SpawnOptions,
   ) => ChildProcess;
   watch: (path: string, onChange: () => void) => FSWatcher | { close(): void };
+  /** A TCP port nothing is listening on. */
+  freePort: () => Promise<number>;
+  fetch: (url: string) => Promise<{ status: number }>;
+  /** Print a page to PDF with headless Chrome. */
+  renderPdf: (options: PdfOptions) => Promise<Uint8Array>;
+}
+
+export interface PdfOptions {
+  url: string;
+  /** Path of a Chrome or Chromium executable. Found automatically when not given. */
+  chrome?: string;
+  pageSize: 'A4' | 'Letter';
+  /** Shown in the footer of every page. */
+  title: string;
+  /** How long to wait for the page to be ready, in ms. */
+  timeout: number;
 }
 
 export class CliError extends Error {

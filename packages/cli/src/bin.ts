@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process';
 import { readFileSync, watch } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:net';
+import { renderPdf } from './lib/chrome.ts';
 import { type Env } from './lib/io.ts';
 import { run } from './lib/run.ts';
 
@@ -35,6 +37,17 @@ const env: Env = {
   },
   spawn,
   watch: (path, onChange) => watch(path, onChange),
+  freePort: () =>
+    new Promise((resolve, reject) => {
+      const server = createServer();
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', () => {
+        const { port } = server.address() as { port: number };
+        server.close(() => resolve(port));
+      });
+    }),
+  fetch: async (url) => ({ status: (await fetch(url)).status }),
+  renderPdf: (options) => renderPdf(options, process.env),
 };
 
 process.exitCode = await run(process.argv.slice(2), env, version);

@@ -6,7 +6,8 @@
     "dev": "dockudos dev",
     "build": "dockudos build",
     "start": "next start",
-    "broken-links": "dockudos broken-links"
+    "broken-links": "dockudos broken-links",
+    "pdf": "dockudos pdf"
   },
   "dependencies": {
     "@dockudos/core": "{{version}}",

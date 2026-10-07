@@ -42,3 +42,5 @@ export * from './components/endpoint.tsx';
 export * from './components/update.tsx';
 export * from './components/copy-text.tsx';
 export * from './components/hero.tsx';
+export * from './layout/docs-book.tsx';
+export * from './layout/book-key.ts';

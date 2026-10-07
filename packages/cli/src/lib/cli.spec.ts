@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { checkLinks, discoverPages, loadConfig } from '@dockudos/core/node';
 import type { ChildProcess } from 'node:child_process';
+import { findChrome } from './chrome.ts';
 import { type Env } from './io.ts';
 import { run } from './run.ts';
 
@@ -53,6 +54,9 @@ function makeEnv(overrides: Partial<Env> = {}) {
       watchers.push(onChange);
       return { close: () => undefined };
     },
+    freePort: async () => 4555,
+    fetch: async () => ({ status: 200 }),
+    renderPdf: async () => new TextEncoder().encode('%PDF-fake'),
     ...overrides,
   };
   return {
@@ -448,5 +452,170 @@ describe('kudos', () => {
     const u = makeEnv();
     expect(await run(['kudos'], u.env)).toBe(0);
     expect(u.text()).toBe('No feedback yet.\n');
+  });
+});
+
+describe('pdf', () => {
+  /** Lets the fake `next build` finish, then waits for the server to be started. */
+  async function finishBuild(t: ReturnType<typeof makeEnv>) {
+    await vi.waitFor(() => expect(t.children.length).toBeGreaterThanOrEqual(1));
+    t.children[0]!.child.emit('exit', 0);
+    await vi.waitFor(() => expect(t.children).toHaveLength(2));
+  }
+
+  it('builds, starts the site on a free port, prints /print to one file, and stops the server', async () => {
+    await project({ ...GOOD, 'docs.json': '{"name":"Acme Docs"}' });
+    const renderPdf = vi.fn(async () =>
+      new TextEncoder().encode('%PDF-1.7 content'),
+    );
+    const t = makeEnv({ renderPdf });
+    const done = run(['pdf'], t.env);
+    await finishBuild(t);
+
+    expect(t.children[0]!.args.slice(1)).toEqual(['build']);
+    expect(t.children[1]!.args.slice(1)).toEqual([
+      'start',
+      '-p',
+      '4555',
+      '-H',
+      '127.0.0.1',
+    ]);
+    expect(await done).toBe(0);
+    expect(renderPdf).toHaveBeenCalledWith({
+      url: 'http://127.0.0.1:4555/print',
+      chrome: undefined,
+      pageSize: 'A4',
+      title: 'Acme Docs',
+      timeout: 120_000,
+    });
+    expect(await readFile(join(dir, 'acme-docs.pdf'), 'utf8')).toBe(
+      '%PDF-1.7 content',
+    );
+    expect(t.text()).toContain('acme-docs.pdf');
+    expect(t.children[1]!.child.killed).toBe('SIGTERM');
+  });
+
+  it('honours --out, --page-size, --chrome and --port', async () => {
+    await project({ ...GOOD, '.next/BUILD_ID': 'x' });
+    const renderPdf = vi.fn(async () => new Uint8Array([37, 80, 68, 70]));
+    const t = makeEnv({ renderPdf });
+    const code = await run(
+      [
+        'pdf',
+        '--no-build',
+        '-o',
+        'out/book.pdf',
+        '--page-size',
+        'letter',
+        '--chrome',
+        '/x/chrome',
+        '--port',
+        '4777',
+      ],
+      t.env,
+    );
+    expect(code).toBe(0);
+    expect(renderPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'http://127.0.0.1:4777/print',
+        chrome: '/x/chrome',
+        pageSize: 'Letter',
+      }),
+    );
+    expect((await stat(join(dir, 'out', 'book.pdf'))).isFile()).toBe(true);
+    expect(t.children).toHaveLength(1);
+  });
+
+  it('with --no-build, asks for a build when there is none', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    expect(await run(['pdf', '--no-build'], t.env)).toBe(1);
+    expect(t.errText()).toContain('no build to print');
+    expect(t.children).toHaveLength(0);
+  });
+
+  it('stops without printing when the build fails', async () => {
+    await project(GOOD);
+    const renderPdf = vi.fn();
+    const t = makeEnv({ renderPdf });
+    const done = run(['pdf'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    t.children[0]!.child.emit('exit', 2);
+    expect(await done).toBe(2);
+    expect(renderPdf).not.toHaveBeenCalled();
+  });
+
+  it('says how to add the /print page when the site does not have it', async () => {
+    await project(GOOD);
+    const t = makeEnv({ fetch: async () => ({ status: 404 }) });
+    const done = run(['pdf'], t.env);
+    await finishBuild(t);
+    expect(await done).toBe(1);
+    expect(t.errText()).toContain('no /print page');
+    expect(t.children[1]!.child.killed).toBe('SIGTERM');
+  });
+
+  it('reports why the server stopped, with its output', async () => {
+    await project(GOOD);
+    const t = makeEnv({
+      fetch: async () => {
+        throw new Error('ECONNREFUSED');
+      },
+    });
+    const done = run(['pdf'], t.env);
+    await finishBuild(t);
+    (t.children[1]!.child as unknown as { stderr: EventEmitter }).stderr =
+      new EventEmitter();
+    t.children[1]!.child.emit('exit', 1);
+    expect(await done).toBe(1);
+    expect(t.errText()).toContain('server stopped before it was ready');
+  });
+
+  it('keeps the server from outliving a failed print', async () => {
+    await project(GOOD);
+    const t = makeEnv({
+      renderPdf: async () => {
+        throw new Error('browser crashed');
+      },
+    });
+    const outcome = run(['pdf'], t.env).then(
+      () => undefined,
+      (e: Error) => e,
+    );
+    await finishBuild(t);
+    expect((await outcome)?.message).toBe('browser crashed');
+    expect(t.children[1]!.child.killed).toBe('SIGTERM');
+  });
+
+  it('rejects an unknown page size and a bad timeout before doing any work', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    expect(await run(['pdf', '--page-size', 'A0'], t.env)).toBe(1);
+    expect(t.errText()).toContain('Use A4 or Letter');
+    expect(await run(['pdf', '--timeout', 'soon'], t.env)).toBe(1);
+    expect(t.children).toHaveLength(0);
+  });
+});
+
+describe('findChrome', () => {
+  it('prefers the flag, then CHROME_PATH, and refuses a path that does not exist', async () => {
+    const real = join(dir, 'chrome');
+    await writeFile(real, '');
+    expect(await findChrome(real, {})).toBe(real);
+    expect(await findChrome(undefined, { CHROME_PATH: real })).toBe(real);
+    await expect(findChrome(join(dir, 'nope'), {})).rejects.toThrow(
+      'not found at',
+    );
+  });
+
+  it('uses the browser Playwright installed, and explains what to do when there is none', async () => {
+    const own = join(dir, 'pw-chromium');
+    await writeFile(own, '');
+    expect(await findChrome(undefined, {}, () => own)).toBe(own);
+    await expect(
+      findChrome(undefined, {}, () => {
+        throw new Error('no browser');
+      }).catch((e) => e.message),
+    ).resolves.toMatch(/No Chrome|^\//);
   });
 });

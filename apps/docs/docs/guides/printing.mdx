@@ -15,6 +15,72 @@ Use the browser's Print command (Ctrl+P or Cmd+P), and choose "Save as PDF" to m
   blocks, tables rows, images and steps are not split across pages where it can be avoided.
 - Links to other sites show their address after the text.
 
+## The whole site as one PDF
+
+```package-install
+npx dockudos pdf
+```
+
+This builds the site, starts it, and prints every page into a single file, `<site-name>.pdf`: a cover,
+a table of contents, then each page starting on a new sheet, in the order of your navigation (pages the
+navigation does not list come last under "More"; hidden pages are left out). Pages carry the footer
+"site name, page n / total", the PDF has bookmarks, and links between pages jump inside the file.
+
+| Option                | Meaning                                                |
+| --------------------- | ------------------------------------------------------ |
+| `-o, --out <file>`    | Where to write it. Default `<site-name>.pdf`.          |
+| `--no-build`          | Reuse the existing build instead of building again.    |
+| `--page-size <size>`  | `A4` (default) or `Letter`.                            |
+| `--chrome <path>`     | Chrome or Chromium to print with.                      |
+| `--port <number>`     | Port for the temporary server. Default: any free port. |
+| `--timeout <seconds>` | How long to wait for the page to load. Default 120.    |
+
+It needs a Chrome or Chromium. It uses, in order: `--chrome`, the `CHROME_PATH` environment
+variable, the browser Playwright installed (`npx playwright install chromium`), then a Chrome, Chromium
+or Edge found in the usual places.
+
+### How it works
+
+The site has a page at `/print` that contains every page in one document. `dockudos pdf` just prints that
+page. You can open it yourself, and use the browser's Print command, to get the same result without the CLI.
+Sites made with `dockudos init` have it; for an existing site, add this file:
+
+```tsx title="src/app/print/page.tsx"
+import { getSite } from '@dockudos/next/server';
+import { DocsBook } from '@dockudos/ui';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { config } = await getSite();
+  return {
+    title: { absolute: `${config.name} documentation` },
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function PrintPage() {
+  const site = await getSite();
+  const sections = await Promise.all(
+    (await site.book()).map(async ({ page, toc }) => {
+      const { default: Content } = await import(`../../../docs/${page.file}`);
+      return { page, toc, node: <Content /> };
+    }),
+  );
+  return (
+    <DocsBook
+      config={site.config}
+      nav={site.nav}
+      sections={sections}
+      generatedAt={new Date()}
+    />
+  );
+}
+```
+
+`/print` is not in the sitemap and is marked `noindex`. A docs page whose URL is `/print` would be hidden by
+it, so rename that page. Heading ids are made unique per page inside the book, so two pages can both have
+a "Setup" heading, and links such as `/guides/auth#keys` still land in the right place.
+
 ## Component by component
 
 | Component                                   | On paper                                                                           |

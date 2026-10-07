@@ -41,6 +41,7 @@
   ],
   "dependencies": {
     "@dockudos/core": "workspace:*",
+    "playwright-core": "^1.63.0",
     "tslib": "^2.3.0"
   },
   "nx": {

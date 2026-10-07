@@ -1,7 +1,13 @@
 'use client';
 
 import { Tabs as Primitive } from 'radix-ui';
-import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { cn } from '../lib/utils.ts';
 
 const EVENT = 'dockudos:tabs';

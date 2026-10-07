@@ -7,6 +7,7 @@ import {
   buildRobots,
   buildSitemap,
   expandIncludes,
+  flattenSidebar,
   extractLinks,
   resolveDocLink,
   extractToc,
@@ -41,6 +42,11 @@ export interface Site {
   toc(page: Page): Promise<TocEntry[]>;
   /** Visible pages and the links between them, for `<GraphView />`. */
   graph(): Promise<PageGraph>;
+  /**
+   * Every page in reading order, for one long document (print or PDF): the pages of each tab in
+   * navigation order, then visible pages the navigation does not list.
+   */
+  book(): Promise<{ page: Page; toc: TocEntry[] }[]>;
 }
 
 export interface PageGraph {
@@ -73,11 +79,12 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
   const tree = await discoverPages(dir, { prefix: config.urlPrefix });
   // Every page renders the graph, so build it once per site, not once per page.
   let graph: Promise<PageGraph> | undefined;
-  return {
+  const nav = buildNavigation(config, tree);
+  const site: Site = {
     root,
     config,
     tree,
-    nav: buildNavigation(config, tree),
+    nav,
     find: (slug = []) =>
       tree.pages.find((p) => p.slug.join('/') === slug.join('/')),
     lastModified: async (page) =>
@@ -91,7 +98,17 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       return extractToc(source);
     },
     graph: () => (graph ??= buildGraph(tree, dir, config.urlPrefix)),
+    book: async () => {
+      const ordered = [
+        ...nav.tabs.flatMap((t) => flattenSidebar(t.sidebar)),
+        ...nav.unlisted,
+      ].filter((p, i, all) => all.indexOf(p) === i);
+      return Promise.all(
+        ordered.map(async (page) => ({ page, toc: await site.toc(page) })),
+      );
+    },
   };
+  return site;
 }
 
 async function buildGraph(

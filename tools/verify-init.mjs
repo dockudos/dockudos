@@ -57,6 +57,11 @@ try {
   if (!home.includes('Welcome to My Docs'))
     throw new Error('home page is missing its title');
 
+  // Every page in one PDF, from the same build.
+  sh('npm', ['run', 'pdf', '--', '--no-build', '-o', 'book.pdf'], site);
+  if (readFileSync(join(site, 'book.pdf')).subarray(0, 4).toString() !== '%PDF')
+    throw new Error('book.pdf is not a PDF');
+
   const seconds = Math.round((Date.now() - started) / 1000);
   console.log(`OK: init, install and build took ${seconds}s`);
 } finally {
