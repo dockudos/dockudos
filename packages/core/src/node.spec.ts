@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DocsConfigError } from './lib/config.ts';
-import { discoverPages, loadConfig } from './node.ts';
+import { discoverPages, loadConfig, loadConfigSync } from './node.ts';
 
 let dir: string;
 beforeEach(async () => {
@@ -69,11 +69,14 @@ describe('discoverPages: frontmatter', () => {
     await expect(discoverPages(dir)).rejects.toThrow(/a\.mdx[\s\S]*b\.mdx/);
   });
 
-  it('skips dot folders and node_modules', async () => {
+  it('skips dot folders, _partials and node_modules', async () => {
     await mkdir(join(dir, '.git'));
     await mkdir(join(dir, 'node_modules'));
     await writeFile(join(dir, '.git', 'x.mdx'), '');
     await writeFile(join(dir, 'node_modules', 'y.mdx'), '');
+    await mkdir(join(dir, '_snippets'));
+    await writeFile(join(dir, '_snippets', 's.mdx'), '');
+    await writeFile(join(dir, '_part.mdx'), '');
     await writeFile(join(dir, 'z.mdx'), '');
     expect((await discoverPages(dir)).pages.map((p) => p.file)).toEqual([
       'z.mdx',
@@ -84,5 +87,20 @@ describe('discoverPages: frontmatter', () => {
     await expect(discoverPages(join(dir, 'nope'))).rejects.toThrow(
       /Docs folder not found/,
     );
+  });
+});
+
+describe('loadConfigSync', () => {
+  it('loads a valid docs.json', async () => {
+    await writeFile(join(dir, 'docs.json'), JSON.stringify({ name: 'X' }));
+    expect(loadConfigSync(dir)).toMatchObject({ name: 'X' });
+  });
+
+  it('fails with the same messages as loadConfig', async () => {
+    expect(() => loadConfigSync(dir)).toThrow(/file not found/);
+    await writeFile(join(dir, 'docs.json'), '{ nope');
+    expect(() => loadConfigSync(dir)).toThrow(/not valid JSON/);
+    await writeFile(join(dir, 'docs.json'), '{}');
+    expect(() => loadConfigSync(dir)).toThrow(/name:/);
   });
 });

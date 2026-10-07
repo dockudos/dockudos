@@ -1,3 +1,3 @@
 import { withDocs } from '@dockudos/next';
 
-export default withDocs({});
+export default withDocs({}, { root: import.meta.dirname });

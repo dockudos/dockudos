@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { type DocsConfig, DocsConfigError, parseConfig } from './lib/config.ts';
@@ -15,15 +16,7 @@ import {
 
 const DOC_EXT = /\.mdx?$/;
 
-/** Read and validate `<root>/docs.json`. */
-export async function loadConfig(root: string): Promise<DocsConfig> {
-  const file = join(root, 'docs.json');
-  let text: string;
-  try {
-    text = await readFile(file, 'utf8');
-  } catch {
-    throw new DocsConfigError(['file not found'], file);
-  }
+function parseConfigText(text: string, file: string): DocsConfig {
   let json: unknown;
   try {
     json = JSON.parse(text);
@@ -34,6 +27,30 @@ export async function loadConfig(root: string): Promise<DocsConfig> {
     );
   }
   return parseConfig(json, file);
+}
+
+/** Read and validate `<root>/docs.json`. */
+export async function loadConfig(root: string): Promise<DocsConfig> {
+  const file = join(root, 'docs.json');
+  let text: string;
+  try {
+    text = await readFile(file, 'utf8');
+  } catch {
+    throw new DocsConfigError(['file not found'], file);
+  }
+  return parseConfigText(text, file);
+}
+
+/** Synchronous `loadConfig`, for places that cannot await, such as `next.config`. */
+export function loadConfigSync(root: string): DocsConfig {
+  const file = join(root, 'docs.json');
+  let text: string;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    throw new DocsConfigError(['file not found'], file);
+  }
+  return parseConfigText(text, file);
 }
 
 /** Walk `<docsDir>`, read each page's frontmatter and build the page tree. */
@@ -53,7 +70,12 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
       (f) =>
         !f
           .split('/')
-          .some((part) => part.startsWith('.') || part === 'node_modules'),
+          .some(
+            (part) =>
+              part.startsWith('.') ||
+              part.startsWith('_') ||
+              part === 'node_modules',
+          ),
     );
 
   const errors: Error[] = [];

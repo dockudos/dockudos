@@ -1,10 +1,9 @@
 import './global.css';
-import { loadConfig } from '@dockudos/core/node';
+import { getSite, siteMetadata } from '@dockudos/next/server';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await loadConfig(process.cwd());
-  return { title: config.name };
+  return siteMetadata(await getSite());
 }
 
 export default function RootLayout({

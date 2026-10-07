@@ -1,8 +1,25 @@
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { withDocs } from './with-docs.ts';
+
+let root: string;
+const writeConfig = (config: unknown) =>
+  writeFile(join(root, 'docs.json'), JSON.stringify(config));
+
+beforeEach(async () => {
+  root = await mkdtemp(join(tmpdir(), 'dockudos-next-'));
+  await mkdir(join(root, 'docs'));
+  await writeFile(join(root, 'docs', 'index.mdx'), '# Home');
+  await writeConfig({ name: 'Test' });
+});
+afterEach(() => rm(root, { recursive: true, force: true }));
+
+const docs = (config = {}) => withDocs(config, { root });
 
 describe('withDocs', () => {
   it('adds md and mdx page extensions to the defaults', () => {
-    expect(withDocs().pageExtensions).toEqual([
+    expect(docs().pageExtensions).toEqual([
       'js',
       'jsx',
       'ts',
@@ -13,13 +30,15 @@ describe('withDocs', () => {
   });
 
   it('extends, not replaces, user page extensions without duplicating', () => {
-    expect(withDocs({ pageExtensions: ['tsx', 'mdx'] }).pageExtensions).toEqual(
-      ['tsx', 'mdx', 'md'],
-    );
+    expect(docs({ pageExtensions: ['tsx', 'mdx'] }).pageExtensions).toEqual([
+      'tsx',
+      'mdx',
+      'md',
+    ]);
   });
 
   it('preserves the user config fields', () => {
-    const config = withDocs({
+    const config = docs({
       reactStrictMode: true,
       images: { unoptimized: true },
       env: { A: '1' },
@@ -31,20 +50,71 @@ describe('withDocs', () => {
 
   it('does not mutate the input', () => {
     const input = { pageExtensions: ['tsx'] };
-    withDocs(input);
+    docs(input);
     expect(input.pageExtensions).toEqual(['tsx']);
   });
 
   it('wires an MDX loader into webpack', () => {
-    expect(typeof withDocs().webpack).toBe('function');
+    expect(typeof docs().webpack).toBe('function');
   });
 
-  it('wires an MDX loader into Turbopack when it is active', () => {
+  it('wires the dockudos pipeline into Turbopack when it is active', () => {
     vi.stubEnv('TURBOPACK', '1');
     try {
-      expect(JSON.stringify(withDocs().turbopack?.rules)).toContain('mdx');
+      const rules = JSON.stringify(docs().turbopack?.rules);
+      expect(rules).toContain('remark-include');
+      expect(rules).toContain('remark-admonitions');
+      expect(rules).toContain('rehype-slug');
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+});
+
+describe('withDocs: docs.json', () => {
+  it('fails at call time with the key name when docs.json is invalid', async () => {
+    await writeConfig({ theme: { layout: 'wide' } });
+    expect(() => docs()).toThrow(/name:[\s\S]*theme\.layout/);
+  });
+
+  it('fails clearly when docs.json is missing', async () => {
+    await rm(join(root, 'docs.json'));
+    expect(() => docs()).toThrow(/file not found/);
+  });
+});
+
+describe('withDocs: redirects', () => {
+  it('serves redirects from docs.json after the user ones', async () => {
+    await writeConfig({
+      name: 'T',
+      redirects: [{ source: '/old', destination: '/new' }],
+    });
+    const config = docs({
+      redirects: async () => [
+        { source: '/mine', destination: '/x', permanent: false },
+      ],
+    });
+    expect(await config.redirects?.()).toEqual([
+      { source: '/mine', destination: '/x', permanent: false },
+      { source: '/old', destination: '/new', permanent: true },
+    ]);
+  });
+
+  it('returns no redirects when there are none', async () => {
+    expect(await docs().redirects?.()).toEqual([]);
+  });
+
+  it('rejects loops and redirects that shadow a page', async () => {
+    await writeConfig({
+      name: 'T',
+      redirects: [
+        { source: '/a', destination: '/b' },
+        { source: '/b', destination: '/a' },
+        { source: '/', destination: '/elsewhere' },
+      ],
+    });
+    await expect(docs().redirects?.()).rejects.toThrow(
+      /existing page[\s\S]*loop/,
+    );
   });
 });
