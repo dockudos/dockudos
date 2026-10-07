@@ -533,6 +533,6 @@ describe('DocsLayout assistant', () => {
     expect(
       await screen.findByRole('dialog', { name: /Ask the docs/ }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Ask a question')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Ask a question')).toBeInTheDocument();
   });
 });

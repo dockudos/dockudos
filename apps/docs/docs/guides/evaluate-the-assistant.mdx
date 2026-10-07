@@ -1,0 +1,85 @@
+---
+icon: check-circle
+title: Evaluate the assistant
+description: Measure whether answers cite real sections, unanswerable questions are declined, and requests land in the right place.
+---
+
+A wrong answer with a confident citation does more harm than no answer. So dockudos measures its assistant on every change, and you
+can measure yours the same way: write down questions with known answers, and check them in CI.
+
+## The four numbers
+
+| Metric              | Means                                                                                                 | Target            |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | ----------------- |
+| Retrieval hit rate  | The section that answers a question is among the top five found.                                      | Track and improve |
+| Citation validity   | Every citation names a section the model was given, at a page and heading that exist.                 | Always 100%       |
+| Refusal accuracy    | Questions your docs answer are answered, and those they do not are declined.                          | Track and improve |
+| Navigation accuracy | A request ("change my billing email") lands on the right section, by search alone and with the model. | Track and improve |
+
+## Write the set
+
+```json title="eval/questions.json"
+{
+  "questions": [
+    {
+      "id": "rotate",
+      "question": "How often should I rotate an API key?",
+      "expect": ["/guides/auth#api-keys"]
+    }
+  ],
+  "unanswerable": [
+    { "id": "sso", "question": "How do I set up SAML single sign-on?" }
+  ],
+  "navigation": [
+    {
+      "id": "email",
+      "query": "change my billing email",
+      "expect": "/guides/billing#change-the-billing-email"
+    }
+  ]
+}
+```
+
+A place is a page (`/guides/auth`, any section of it will do) or a section (`/guides/auth#api-keys`). Include questions the docs cannot answer, and ones that are
+nearly in scope: they are where an assistant makes things up.
+
+## Run it
+
+```ts title="eval.spec.ts"
+import {
+  KeywordSearch,
+  evalMetrics,
+  evalRegressions,
+  extractiveLLM,
+  runEval,
+} from '@dockudos/core';
+import { buildSiteIndex, discoverPages, loadConfig } from '@dockudos/core/node';
+
+const config = await loadConfig('.');
+const tree = await discoverPages('docs');
+const { index } = await buildSiteIndex({ root: '.', config, tree });
+
+const report = await runEval(
+  {
+    siteName: config.name,
+    index,
+    keyword: new KeywordSearch(index),
+    limits: config.ai.limits,
+    llm: extractiveLLM(), // a stand-in that needs no key; pass a real provider to measure a model
+  },
+  questions,
+);
+
+const metrics = evalMetrics(report);
+expect(evalRegressions(metrics, baseline)).toEqual([]); // fails if a number got worse
+```
+
+`extractiveLLM()` quotes the sentence that shares most words with the question. It makes the run free and repeatable, and it tests everything around
+the model: retrieval, the prompt, citation checks, refusals, navigation. It does not tell you how good a particular model is. To measure that, pass a provider
+from [`resolveAiProviders`](./ai-providers.mdx) with your key, in a job that does not block pull requests.
+
+## How dockudos does it
+
+The example site has a set of 19 questions, 8 that cannot be answered and 12 navigation requests
+(`apps/example/eval`). Every pull request runs it with the stand-in model, in two setups (keywords only, and keywords plus vectors), and fails if any number is worse than
+`baseline.json`, or if a single citation is invalid. The numbers appear in the summary of the run. A separate workflow runs the same set against a real model, nightly or by hand.

@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { AskView } from '../components/ask-view.tsx';
+import { LazyAskView as AskView } from '../components/ask-view-lazy.tsx';
 import { announceNavigation } from '../components/navigation-notice.tsx';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';

@@ -103,7 +103,8 @@ const keep = (t: string) => t.length > 1 || /\d/.test(t);
 export function stem(word: string): string {
   if (!/^[a-z]+$/.test(word) || word.length < 4) return word;
   let w = word;
-  if (w.endsWith('ies') && w.length > 4) w = `${w.slice(0, -3)}y`;
+  if ((w.endsWith('ies') || w.endsWith('ied')) && w.length > 4)
+    w = `${w.slice(0, -3)}y`;
   else if (w.endsWith('sses')) w = w.slice(0, -2);
   else if (/[^su]s$/.test(w) && !w.endsWith('ss')) w = w.slice(0, -1);
   else if (w.endsWith('ing') && w.length > 5) w = w.slice(0, -3);

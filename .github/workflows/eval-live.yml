@@ -1,0 +1,57 @@
+name: Evaluation with a real model
+
+# Costs money and needs a key, so it never runs for a pull request: by hand, or once a night on the default branch.
+# The pull request checks run the same evaluation with a stand-in model (apps/example/specs/eval.spec.ts).
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: openai or anthropic
+        default: anthropic
+      model:
+        description: Model name, as the provider calls it
+        required: true
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    name: Live evaluation
+    runs-on: ubuntu-latest
+    # Without a key (forks, unconfigured repositories) there is nothing to run.
+    if: ${{ vars.EVAL_MODEL != '' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Evaluate
+        env:
+          DOCKUDOS_EVAL_LIVE: '1'
+          EVAL_PROVIDER: ${{ inputs.provider || vars.EVAL_PROVIDER || 'anthropic' }}
+          EVAL_MODEL: ${{ inputs.model || vars.EVAL_MODEL }}
+          DOCKUDOS_LLM_API_KEY: ${{ secrets.DOCKUDOS_LLM_API_KEY }}
+        run: pnpm nx test @dockudos/example --skip-nx-cache
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f apps/example/eval/results/live.json ]; then
+            node -e "
+              const r = JSON.parse(require('fs').readFileSync('apps/example/eval/results/live.json', 'utf8'));
+              const rows = Object.entries(r.metrics).map(([k, v]) => '| ' + k + ' | ' + v.toFixed(3) + ' |').join('\n');
+              const t = r.firstToken ? '\n\nFirst token: p50 ' + r.firstToken.p50.toFixed(0) + ' ms, p95 ' + r.firstToken.p95.toFixed(0) + ' ms (target: under 2000 ms)' : '';
+              console.log('### ' + r.provider + ' / ' + r.model + '\n\n| Metric | Value |\n| --- | --- |\n' + rows + t);
+            " >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-live
+          path: apps/example/eval/results
+          if-no-files-found: ignore

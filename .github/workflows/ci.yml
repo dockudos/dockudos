@@ -54,6 +54,30 @@ jobs:
       - name: Lint, typecheck, test, build, e2e (affected)
         run: pnpm nx affected -t lint typecheck test build e2e
 
+      # The assistant is measured on every change (apps/example/specs/eval.spec.ts). The numbers go in the run
+      # summary, so one commit can be compared with the next.
+      - name: Evaluation summary
+        if: always() && matrix.node == '22'
+        run: |
+          if [ -f apps/example/eval/results/latest.json ]; then
+            node -e "
+              const r = JSON.parse(require('fs').readFileSync('apps/example/eval/results/latest.json', 'utf8'));
+              const names = [...new Set(Object.values(r).flatMap((m) => Object.keys(m.metrics)))];
+              const modes = Object.keys(r);
+              const head = '| Metric | ' + modes.join(' | ') + ' |\n| --- |' + modes.map(() => ' --- |').join('');
+              const rows = names.map((n) => '| ' + n + ' | ' + modes.map((m) => (r[m].metrics[n] ?? NaN).toFixed(3)).join(' | ') + ' |').join('\n');
+              console.log('### Assistant evaluation (stand-in model)\n\n' + head + '\n' + rows);
+            " >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evaluation results
+        if: always() && matrix.node == '22'
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: apps/example/eval/results
+          if-no-files-found: ignore
+
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

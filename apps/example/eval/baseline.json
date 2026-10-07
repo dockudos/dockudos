@@ -1,0 +1,16 @@
+{
+  "keyword": {
+    "retrievalHitRate": 1,
+    "citationValidity": 1,
+    "refusalAccuracy": 0.9629629629629629,
+    "navigationAccuracySearch": 1,
+    "navigationAccuracyModel": 1
+  },
+  "hybrid": {
+    "retrievalHitRate": 1,
+    "citationValidity": 1,
+    "refusalAccuracy": 0.9629629629629629,
+    "navigationAccuracySearch": 0.9166666666666666,
+    "navigationAccuracyModel": 1
+  }
+}

@@ -1,0 +1,48 @@
+---
+icon: shield
+title: Cost and privacy
+description: What the assistant sends where, what it costs to run, and the settings that keep both in check.
+---
+
+## What is sent where
+
+| What                                                               | Goes to                                 | When                                                                | Stored by dockudos?                                   |
+| ------------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------- |
+| The question, recent turns, and the matching sections of your docs | Your language model provider            | Each question (and each "Take me there" with a model)               | No                                                    |
+| The text of every section (plus page title and headings)           | Your embeddings provider                | At build, only for sections that changed, if `ai.embeddings` is set | The vectors, in `.dockudos/index.json` on your server |
+| The conversation                                                   | The reader's browser (`sessionStorage`) | While the tab is open                                               | In the tab only                                       |
+| The reader's address                                               | Memory of your server                   | To count requests per minute                                        | Not written down; gone when the server restarts       |
+
+dockudos has no analytics and keeps no log of questions. Your server logs what your platform logs, and dockudos adds a line for an unexpected failure (never the question or a key).
+What the provider keeps and for how long is set by your agreement with them; read it before you turn this on for a site whose readers type sensitive things.
+
+Hidden pages and pages behind an [access rule](./protecting-pages.mdx) are not in the index, so their text is never sent to a model.
+Embeddings are computed from the same public text.
+
+Tell readers not to put personal data in a question; the assistant cannot tell it from anything else. The widget keeps cookies off:
+it sets none.
+
+## What it costs
+
+You pay your provider for tokens (about four characters of English each). Per question, the most that can be sent is bounded by your settings:
+
+- **In:** about 250 tokens of instructions, plus up to `ai.limits.contextTokens` of your docs (default 3,000), plus up to six earlier turns (`maxHistoryTurns`, each cut to 2,000 characters), plus the question.
+- **Out:** at most `ai.limits.maxOutputTokens` (default 800).
+
+A typical question sends 1,500 to 3,500 tokens and gets back 100 to 300. A "Take me there" with a model sends about 600 to 1,000 and gets back under 100. Multiply by your provider's price per token for the model you chose.
+Embeddings cost once per changed section, not per reader: a site of 1,000 pages is roughly a million and a half tokens the first time and almost nothing after.
+
+What keeps it in check:
+
+| Setting or behaviour                | Effect                                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `ai.limits.ratePerMinute` (10)      | Questions per visitor per minute. The whole site is capped at 30 times that.                           |
+| `ai.limits.maxQuestionLength` (500) | Longest question.                                                                                      |
+| `ai.limits.maxOutputTokens` (800)   | Longest answer.                                                                                        |
+| `ai.limits.contextTokens` (3,000)   | How much of your docs goes with each question. The biggest lever on cost per question.                 |
+| Asking nothing relevant             | If nothing in the docs matches, the model is not called at all.                                        |
+| Repeated questions                  | The same question (same words, no conversation) is answered from memory for ten minutes.               |
+| `ai.navigation: false`              | Turns off "Take me there", the other place the model is called.                                        |
+| A smaller model                     | Often enough for documentation questions; measure with [the evaluation](./evaluate-the-assistant.mdx). |
+
+Rate limits are kept in memory, so on a platform that runs many instances each one counts for itself. For a hard ceiling, set a spending limit with your provider as well.

@@ -45,8 +45,10 @@
             "guides/ai-navigation",
             "guides/embed-assistant",
             "guides/mcp",
+            "guides/ai-outputs",
             "guides/ai-providers",
-            "guides/ai-outputs"
+            "guides/ai-cost-and-privacy",
+            "guides/evaluate-the-assistant"
           ]
         },
         {

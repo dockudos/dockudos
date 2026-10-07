@@ -3,7 +3,7 @@
 import { Sparkles, X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useEffect, useState } from 'react';
-import { AskView } from '../components/ask-view.tsx';
+import { LazyAskView as AskView } from '../components/ask-view-lazy.tsx';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';
 

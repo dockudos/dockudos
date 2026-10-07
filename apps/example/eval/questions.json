@@ -1,0 +1,195 @@
+{
+  "questions": [
+    {
+      "id": "rotate-key",
+      "question": "How often should I rotate an API key?",
+      "expect": ["/guides/authentication#api-keys"]
+    },
+    {
+      "id": "expired-key",
+      "question": "What error do I get if my key has expired?",
+      "expect": ["/guides/authentication#errors"]
+    },
+    {
+      "id": "oauth",
+      "question": "How do OAuth access tokens work?",
+      "expect": ["/guides/authentication#oauth-tokens"]
+    },
+    {
+      "id": "billing-email",
+      "question": "How do I change the billing email?",
+      "expect": ["/guides/billing#change-the-billing-email"]
+    },
+    {
+      "id": "cancel",
+      "question": "How do I cancel my subscription?",
+      "expect": ["/guides/billing#cancel-your-subscription"]
+    },
+    {
+      "id": "invoices",
+      "question": "When are invoices generated?",
+      "expect": ["/guides/billing#invoices"]
+    },
+    {
+      "id": "plans",
+      "question": "Which plans are available and what do they include?",
+      "expect": ["/guides/billing#plans"]
+    },
+    {
+      "id": "webhook-retries",
+      "question": "How many times are webhooks retried?",
+      "expect": ["/guides/webhooks#retries"]
+    },
+    {
+      "id": "webhook-signature",
+      "question": "How do I verify the signature of a webhook?",
+      "expect": ["/guides/webhooks#verify-the-signature"]
+    },
+    {
+      "id": "webhook-events",
+      "question": "Which events can webhooks send?",
+      "expect": ["/guides/webhooks#event-types"]
+    },
+    {
+      "id": "rate-limit",
+      "question": "How many requests can a key send per minute?",
+      "expect": ["/guides/rate-limits"]
+    },
+    {
+      "id": "http-429",
+      "question": "What should I do when I get a 429 response?",
+      "expect": ["/guides/rate-limits#handling-429"]
+    },
+    {
+      "id": "limit-headers",
+      "question": "Which headers tell me my rate limit?",
+      "expect": ["/guides/rate-limits#limit-headers"]
+    },
+    {
+      "id": "page-size",
+      "question": "How many items can a list endpoint return per request?",
+      "expect": ["/guides/pagination"]
+    },
+    {
+      "id": "cursor-expiry",
+      "question": "How long does a pagination cursor last?",
+      "expect": ["/guides/pagination"]
+    },
+    {
+      "id": "support",
+      "question": "How do I contact support?",
+      "expect": ["/guides/troubleshooting#contact-support"]
+    },
+    {
+      "id": "status-403",
+      "question": "What does a 403 status mean?",
+      "expect": ["/guides/troubleshooting#status-codes"]
+    },
+    {
+      "id": "install",
+      "question": "How do I install the packages?",
+      "expect": ["/guides/hello#first-steps"]
+    },
+    {
+      "id": "add-page",
+      "question": "How do I add a page to my docs?",
+      "expect": ["/guides/hello#next-steps"]
+    }
+  ],
+  "unanswerable": [
+    {
+      "id": "capital",
+      "question": "What is the capital of Australia?"
+    },
+    {
+      "id": "poem",
+      "question": "Write me a poem about the moon"
+    },
+    {
+      "id": "world-cup",
+      "question": "Who won the football World Cup in 2018?"
+    },
+    {
+      "id": "bread",
+      "question": "How do I bake sourdough bread?"
+    },
+    {
+      "id": "graphql-subscriptions",
+      "question": "Does the API support GraphQL subscriptions?"
+    },
+    {
+      "id": "saml",
+      "question": "How do I enable SAML single sign-on?"
+    },
+    {
+      "id": "crypto",
+      "question": "Can I pay with cryptocurrency?"
+    },
+    {
+      "id": "sla",
+      "question": "What is the uptime SLA for the Enterprise plan?"
+    }
+  ],
+  "navigation": [
+    {
+      "id": "nav-billing-email",
+      "query": "change my billing email",
+      "expect": "/guides/billing#change-the-billing-email"
+    },
+    {
+      "id": "nav-cancel",
+      "query": "cancel my subscription",
+      "expect": "/guides/billing#cancel-your-subscription"
+    },
+    {
+      "id": "nav-invoices",
+      "query": "download past invoices",
+      "expect": "/guides/billing#invoices"
+    },
+    {
+      "id": "nav-signature",
+      "query": "verify a webhook signature",
+      "expect": "/guides/webhooks#verify-the-signature"
+    },
+    {
+      "id": "nav-webhook-endpoint",
+      "query": "add a webhook endpoint",
+      "expect": "/guides/webhooks#set-up-an-endpoint"
+    },
+    {
+      "id": "nav-headers",
+      "query": "rate limit response headers",
+      "expect": "/guides/rate-limits#limit-headers"
+    },
+    {
+      "id": "nav-429",
+      "query": "what to do after a 429",
+      "expect": "/guides/rate-limits#handling-429"
+    },
+    {
+      "id": "nav-cursor",
+      "query": "paginate with a cursor",
+      "expect": ["/guides/pagination#parameters", "/guides/pagination"]
+    },
+    {
+      "id": "nav-expired",
+      "query": "expired key error code",
+      "expect": "/guides/authentication#errors"
+    },
+    {
+      "id": "nav-rotate",
+      "query": "rotate my api key",
+      "expect": "/guides/authentication#api-keys"
+    },
+    {
+      "id": "nav-oauth",
+      "query": "refresh an expired access token",
+      "expect": "/guides/authentication#oauth-tokens"
+    },
+    {
+      "id": "nav-support",
+      "query": "find the request id for support",
+      "expect": "/guides/troubleshooting#contact-support"
+    }
+  ]
+}

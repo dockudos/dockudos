@@ -31,3 +31,4 @@ export * from './lib/ask.ts';
 export * from './lib/navigate.ts';
 export * from './lib/mcp.ts';
 export * from './lib/embed.ts';
+export * from './lib/eval.ts';

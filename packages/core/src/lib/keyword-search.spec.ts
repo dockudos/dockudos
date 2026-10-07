@@ -74,6 +74,8 @@ describe('tokenize', () => {
     expect(stem('rotating')).toBe(stem('rotated'));
     expect(stem('rotate')).toBe(stem('rotated'));
     expect(stem('policies')).toBe('policy');
+    expect(stem('retried')).toBe(stem('retries'));
+    expect(stem('retried')).toBe('retry');
     expect(stem('status')).toBe('status');
     expect(stem('e1042')).toBe('e1042');
   });

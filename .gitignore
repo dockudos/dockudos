@@ -60,3 +60,6 @@ test-output
 
 # dockudos build output (search index)
 .dockudos/index.json
+
+# AI evaluation output
+apps/example/eval/results

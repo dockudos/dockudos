@@ -281,3 +281,20 @@ export function validateNavigate(
     ...(context && { context }),
   };
 }
+
+/** Read the options back out of the message `navigate` sends the model. Used by the mock model. */
+export function parseOptions(
+  userMessage: string,
+): { n: number; where: string; text: string; request: string }[] {
+  const request = /\nRequest: ([\s\S]*)$/.exec(userMessage)?.[1] ?? '';
+  const out: { n: number; where: string; text: string; request: string }[] = [];
+  const re = /<<<OPTION (\S+) (\d+) \| ([^\n]*?)>>>\n([\s\S]*?)\n<<<END \1>>>/g;
+  for (const m of userMessage.matchAll(re))
+    out.push({
+      n: Number(m[2]),
+      where: m[3] as string,
+      text: m[4] as string,
+      request,
+    });
+  return out;
+}

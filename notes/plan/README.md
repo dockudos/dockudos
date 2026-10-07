@@ -8,7 +8,7 @@ Phase-by-phase plan derived from [development.md](../development.md), [features.
 | --- | --- | --- | --- |
 | 0 | [phase-0-foundation.md](./phase-0-foundation.md) | Workspace, tooling, CI, one MDX page rendering end to end | [ ] 3 items left: P0.2b, P0.11 first CI run, P0.20b commit |
 | 1 | [phase-1-core-library.md](./phase-1-core-library.md) | `npx dockudos init` gives a polished docs site in minutes (MVP) | [ ] 2 items left, both waiting on the owner: P1.30b publish to npm, and the "install from real npm" acceptance check |
-| 2 | [phase-2-search-and-ai.md](./phase-2-search-and-ai.md) | Visitors can find or ask for anything; AI tools can read the docs | [ ] |
+| 2 | [phase-2-search-and-ai.md](./phase-2-search-and-ai.md) | Visitors can find or ask for anything; AI tools can read the docs | [ ] 2 items left: P2.10b hosted search adapters (deferred by design, on demand) and the "first AI token under 2 s" check, which needs a live key (the `eval-live` workflow measures it) |
 | 3 | [phase-3-api-docs.md](./phase-3-api-docs.md) | A spec becomes an interactive API reference | [ ] |
 | 4 | [phase-4-content-at-scale.md](./phase-4-content-at-scale.md) | Versions, languages, private docs, export | [ ] |
 | 5 | [phase-5-platform-and-cloud.md](./phase-5-platform-and-cloud.md) | Self-hostable platform, then the paid managed cloud | [ ] |
@@ -36,7 +36,7 @@ Sequencing (from development.md): ship Phase 1 and publish to npm, then Phase 2 
 These apply to every phase; each phase file lists the concrete items.
 
 - [x] **Accessibility:** keyboard navigation, focus states, axe checks on `apps/example` in light and dark mode. *Phase 1: 22 axe runs, keyboard e2e for tabs, accordion, tooltip, drawer, sidebar and skip link. Keep adding as components arrive.*
-- [ ] **Security:** secrets only from env vars, rate limits on AI endpoints, retrieved text treated as untrusted data.
-- [ ] **Performance:** budgets from architecture.md section 10 tracked in CI once measurable.
+- [x] **Security:** secrets only from env vars, rate limits on AI endpoints, retrieved text treated as untrusted data. *Phase 2: keys read from the environment only and scanned for in bundles and responses (e2e), per-visitor and site-wide limits, excerpts quoted between random markers, no tools for the model.*
+- [x] **Performance:** budgets from architecture.md section 10 tracked in CI once measurable. *Phase 2: palette search under 100 ms on 1,000 pages (`search-benchmark.spec.ts`), palette chunk and first-load script budgets (`bundle.spec.ts`). First AI token: live job.*
 - [ ] **Docs:** `apps/docs` (built with dockudos) is updated alongside every feature.
 - [ ] **Open decisions resolved** (see Phase 0): license, name availability, first LLM/embedding adapters.
