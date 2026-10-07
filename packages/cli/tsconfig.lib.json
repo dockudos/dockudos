@@ -9,7 +9,17 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "references": [],
+  "references": [
+    {
+      "path": "../ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../next/tsconfig.lib.json"
+    },
+    {
+      "path": "../core/tsconfig.lib.json"
+    }
+  ],
   "exclude": [
     "vite.config.ts",
     "vite.config.mts",

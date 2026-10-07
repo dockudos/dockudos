@@ -30,11 +30,15 @@
       "default": "./dist/lib/*.js"
     },
     "./package.json": "./package.json",
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": {
+      "types": "./styles.d.ts",
+      "default": "./dist/styles.css"
+    }
   },
   "files": [
     "dist",
     "src/styles",
+    "styles.d.ts",
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {

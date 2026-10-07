@@ -61,12 +61,12 @@ import { loadConfig } from '@dockudos/core/node';
 import { withDocs } from '@dockudos/next';
 import { cn, Button } from '@dockudos/ui';
 import { cn as cn2 } from '@dockudos/ui/lib/utils';
-import { cli } from '@dockudos/cli';
+import { run } from '@dockudos/cli';
 
 const name: string = parseConfig({ name: 'x' }).name;
 const pages: string[] = buildPageTree(['index.mdx']).pages.map((p) => p.path);
 export const el = <Button className={cn('a', cn2('b'))}>{name}</Button>;
-export { pages, loadConfig, withDocs, cli };
+export { pages, loadConfig, withDocs, run };
 `,
   );
   run('npx', ['tsc', '-p', 'tsconfig.json']);
@@ -77,15 +77,17 @@ export { pages, loadConfig, withDocs, cli };
 import { loadConfig } from '@dockudos/core/node';
 import { withDocs } from '@dockudos/next';
 import { cn } from '@dockudos/ui';
-import { cli } from '@dockudos/cli';
+import { run } from '@dockudos/cli';
 if (parseConfig({ name: 'x' }).name !== 'x') throw new Error('core');
 if (typeof loadConfig !== 'function') throw new Error('core/node');
 if (!withDocs({}).pageExtensions.includes('mdx')) throw new Error('next');
 if (cn('a', 'b') !== 'a b') throw new Error('ui');
-if (cli() !== 'cli') throw new Error('cli');
+if (typeof run !== 'function') throw new Error('cli');
 console.log('smoke ok');
 `,
   );
+  // `withDocs()` validates docs.json when it is called, so a project needs one.
+  writeFileSync(join(dir, 'docs.json'), JSON.stringify({ name: 'x' }));
   run('node', ['smoke.mjs']);
   console.log('OK: published packages install, typecheck and import');
 } finally {

@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/@dockudos/core/docs.schema.json",
+  "name": "{{name}}",
+  "theme": { "primary": "#3b82f6" },
+  "navigation": [
+    {
+      "tab": "Docs",
+      "groups": [
+        {
+          "group": "Get started",
+          "pages": ["index", "quickstart"]
+        },
+        {
+          "group": "Guides",
+          "pages": ["guides/writing"]
+        }
+      ]
+    }
+  ]
+}

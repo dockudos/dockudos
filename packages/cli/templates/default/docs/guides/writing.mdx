@@ -1,0 +1,28 @@
+---
+title: Writing docs
+description: The building blocks available in every page.
+---
+
+## Callouts
+
+:::tip[Tip]
+Write a callout with three colons, or use the `<Callout>` component.
+:::
+
+## Code
+
+```ts title="hello.ts"
+export const hello = (name: string) => `Hello, ${name}`;
+```
+
+## Tabs
+
+<Tabs>
+  <Tab value="pnpm">`pnpm add my-package`</Tab>
+  <Tab value="npm">`npm install my-package`</Tab>
+</Tabs>
+
+## Links
+
+Link to other pages with a relative path, like [the quickstart](../quickstart.mdx).
+Run `dockudos broken-links` to find links that no longer work.

@@ -1,0 +1,20 @@
+---
+title: Quickstart
+description: Add a page and put it in the sidebar.
+---
+
+<Steps>
+  <Step title="Create a page">
+    Add `docs/my-page.mdx` with a `title` in its frontmatter.
+  </Step>
+  <Step title="Add it to the sidebar">
+    List `my-page` under a group in `docs.json`.
+  </Step>
+  <Step title="Build">
+    ```package-install
+    npm run build
+    ```
+  </Step>
+</Steps>
+
+Pages that are not listed in `docs.json` still work; they just are not in the sidebar.

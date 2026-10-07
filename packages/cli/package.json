@@ -17,9 +17,11 @@
   },
   "files": [
     "dist",
+    "templates",
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
+    "@dockudos/core": "workspace:*",
     "tslib": "^2.3.0"
   },
   "nx": {
@@ -29,5 +31,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "bin": {
+    "dockudos": "./dist/bin.js"
   }
 }

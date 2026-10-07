@@ -112,3 +112,4 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
   return buildPageTree(sources);
 }
 export * from './lib/last-modified.ts';
+export * from './lib/check-links.ts';

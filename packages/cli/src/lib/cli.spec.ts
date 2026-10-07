@@ -1,7 +1,400 @@
-import { cli } from './cli.ts';
+import { EventEmitter } from 'node:events';
+import { readFileSync } from 'node:fs';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { checkLinks, discoverPages, loadConfig } from '@dockudos/core/node';
+import type { ChildProcess } from 'node:child_process';
+import { type Env } from './io.ts';
+import { run } from './run.ts';
 
-describe('cli', () => {
-  it('should work', () => {
-    expect(cli()).toEqual('cli');
+let dir: string;
+beforeEach(async () => {
+  dir = await mkdtemp(join(tmpdir(), 'dockudos-cli-'));
+});
+afterEach(() => rm(dir, { recursive: true, force: true }));
+
+class FakeChild extends EventEmitter {
+  killed: string | undefined;
+  kill(signal: string) {
+    this.killed = signal;
+    // A killed dev server exits with a signal, which `exitCode` reports as 1.
+    queueMicrotask(() => this.emit('exit', null));
+    return true;
+  }
+}
+
+function makeEnv(overrides: Partial<Env> = {}) {
+  const out: string[] = [];
+  const err: string[] = [];
+  const children: { args: string[]; child: FakeChild }[] = [];
+  const watchers: (() => void)[] = [];
+  const env: Env = {
+    cwd: dir,
+    vars: {},
+    out: (t) => out.push(t),
+    err: (t) => err.push(t),
+    interactive: false,
+    ask: async (_q, fallback) => fallback,
+    spawn: ((_cmd: string, args: string[]) => {
+      const child = new FakeChild();
+      children.push({ args, child });
+      return child as unknown as ChildProcess;
+    }) as Env['spawn'],
+    watch: (_path, onChange) => {
+      watchers.push(onChange);
+      return { close: () => undefined };
+    },
+    ...overrides,
+  };
+  return {
+    env,
+    out,
+    err,
+    children,
+    watchers,
+    text: () => out.join(''),
+    errText: () => err.join(''),
+  };
+}
+
+async function project(files: Record<string, string>) {
+  await writeFile(join(dir, 'package.json'), '{"name":"p"}');
+  await mkdir(join(dir, 'node_modules', 'next', 'dist', 'bin'), {
+    recursive: true,
+  });
+  await writeFile(
+    join(dir, 'node_modules', 'next', 'package.json'),
+    '{"name":"next"}',
+  );
+  await writeFile(join(dir, 'node_modules', 'next', 'dist', 'bin', 'next'), '');
+  for (const [file, text] of Object.entries(files)) {
+    await mkdir(join(dir, file, '..'), { recursive: true });
+    await writeFile(join(dir, file), text);
+  }
+}
+
+const GOOD = {
+  'docs.json': '{"name":"T"}',
+  'docs/index.mdx': '# Home\n\n[x](./a.mdx)',
+  'docs/a.mdx': '# A',
+};
+
+describe('run', () => {
+  it('prints help, and exits 1 when no command is given', async () => {
+    const a = makeEnv();
+    expect(await run([], a.env)).toBe(1);
+    expect(a.text()).toContain('Usage: dockudos');
+    const b = makeEnv();
+    expect(await run(['--help'], b.env)).toBe(0);
+  });
+
+  it('prints the version', async () => {
+    const t = makeEnv();
+    expect(await run(['--version'], t.env, '1.2.3')).toBe(0);
+    expect(t.text()).toBe('1.2.3\n');
+  });
+
+  it('rejects an unknown command', async () => {
+    const t = makeEnv();
+    expect(await run(['frobnicate'], t.env)).toBe(1);
+    expect(t.errText()).toContain('Unknown command "frobnicate"');
+  });
+
+  it('reports a bad flag as a plain message', async () => {
+    const t = makeEnv();
+    expect(await run(['broken-links', '--nope'], t.env)).toBe(1);
+    expect(t.errText()).toMatch(/nope/);
+  });
+});
+
+describe('init', () => {
+  it('scaffolds a site with the site name, slug and install commands filled in', async () => {
+    const t = makeEnv({
+      vars: { npm_config_user_agent: 'pnpm/10.0.0 node/v22' },
+    });
+    expect(await run(['init', 'my-docs', '--name', 'Acme Docs'], t.env)).toBe(
+      0,
+    );
+    const root = join(dir, 'my-docs');
+
+    const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+    expect(pkg.name).toBe('my-docs');
+    expect(pkg.dependencies['@dockudos/next']).toMatch(/^(\^|0\.0\.)/);
+    expect(pkg.scripts.dev).toBe('dockudos dev');
+    expect(
+      JSON.parse(await readFile(join(root, 'docs.json'), 'utf8')).name,
+    ).toBe('Acme Docs');
+    expect(await readFile(join(root, 'README.md'), 'utf8')).toContain(
+      'pnpm install',
+    );
+    expect(await readFile(join(root, 'docs/index.mdx'), 'utf8')).toContain(
+      'title: Welcome to Acme Docs',
+    );
+    expect(t.text()).toContain('cd my-docs');
+    expect(t.text()).toContain('pnpm install');
+  });
+
+  it('renames the shipped placeholders and leaves no template tokens behind', async () => {
+    const t = makeEnv();
+    await run(['init', 'site', '--yes'], t.env);
+    const root = join(dir, 'site');
+    expect((await stat(join(root, '.gitignore'))).isFile()).toBe(true);
+    const all = (await readdir(root, { recursive: true })).filter(
+      (f) => !f.startsWith('node_modules'),
+    );
+    expect(
+      all.some((f) => f.endsWith('.tpl') || f.endsWith('_gitignore')),
+    ).toBe(false);
+    for (const file of all) {
+      const full = join(root, file);
+      if ((await stat(full)).isFile())
+        expect(await readFile(full, 'utf8')).not.toMatch(/\{\{\w+\}\}/);
+    }
+    expect((await stat(join(root, 'next.config.mjs'))).isFile()).toBe(true);
+  });
+
+  it('produces a site that validates and has no broken links', async () => {
+    const t = makeEnv();
+    await run(['init', 'site', '--yes'], t.env);
+    const root = join(dir, 'site');
+    const config = await loadConfig(root);
+    const tree = await discoverPages(join(root, 'docs'));
+    expect(config.navigation.length).toBeGreaterThan(0);
+    expect(
+      await checkLinks({
+        docsDir: join(root, 'docs'),
+        publicDir: join(root, 'public'),
+        tree,
+      }),
+    ).toEqual([]);
+  });
+
+  it('refuses a folder that is not empty and leaves it untouched', async () => {
+    await mkdir(join(dir, 'taken'));
+    await writeFile(join(dir, 'taken', 'keep.txt'), 'x');
+    const t = makeEnv();
+    expect(await run(['init', 'taken', '--yes'], t.env)).toBe(1);
+    expect(t.errText()).toContain('is not empty');
+    expect(await readdir(join(dir, 'taken'))).toEqual(['keep.txt']);
+  });
+
+  it('accepts an existing empty folder or one holding only .git', async () => {
+    await mkdir(join(dir, 'empty', '.git'), { recursive: true });
+    const t = makeEnv();
+    expect(await run(['init', 'empty', '--yes'], t.env)).toBe(0);
+  });
+
+  it('rejects an unknown package manager', async () => {
+    const t = makeEnv();
+    expect(await run(['init', 'x', '--package-manager', 'cargo'], t.env)).toBe(
+      1,
+    );
+    expect(t.errText()).toContain('Unknown package manager "cargo"');
+  });
+
+  it('asks for the folder, site name and package manager when interactive', async () => {
+    const answers: Record<string, string> = {
+      'Project folder': 'asked',
+      'Site name': 'Asked Docs',
+      'Package manager': 'yarn',
+    };
+    const t = makeEnv({
+      interactive: true,
+      ask: async (q, fallback) =>
+        answers[Object.keys(answers).find((k) => q.startsWith(k)) ?? ''] ??
+        fallback,
+    });
+    expect(await run(['init'], t.env)).toBe(0);
+    expect(
+      JSON.parse(await readFile(join(dir, 'asked', 'docs.json'), 'utf8')).name,
+    ).toBe('Asked Docs');
+    expect(await readFile(join(dir, 'asked', 'README.md'), 'utf8')).toContain(
+      'yarn install',
+    );
+  });
+
+  it('does not ask anything with --yes', async () => {
+    const ask = vi.fn();
+    const t = makeEnv({ interactive: true, ask });
+    expect(await run(['init', 'q', '--yes'], t.env)).toBe(0);
+    expect(ask).not.toHaveBeenCalled();
+  });
+
+  it('keeps quotes out of the site name so docs.json stays valid JSON', async () => {
+    const t = makeEnv();
+    await run(['init', 'q', '--name', 'Say "hi"'], t.env);
+    expect(() =>
+      JSON.parse(readFileSync(join(dir, 'q', 'docs.json'), 'utf8')),
+    ).not.toThrow();
+  });
+});
+
+describe('broken-links', () => {
+  it('passes a healthy site', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    expect(await run(['broken-links'], t.env)).toBe(0);
+    expect(t.text()).toContain('No broken links in 2 pages');
+  });
+
+  it('fails with file, line and the problem', async () => {
+    await project({
+      ...GOOD,
+      'docs/index.mdx': 'one\n\n[gone](./nope.mdx) [bad](./a.mdx#nowhere)',
+    });
+    const t = makeEnv();
+    expect(await run(['broken-links'], t.env)).toBe(1);
+    expect(t.errText()).toContain('index.mdx:3');
+    expect(t.errText()).toContain('no page at /nope');
+    expect(t.errText()).toContain('/a has no heading with id "nowhere"');
+    expect(t.errText()).toContain('2 broken links');
+  });
+
+  it('fails clearly on an invalid docs.json before checking links', async () => {
+    await project({ ...GOOD, 'docs.json': '{"navigation":[]}' });
+    const t = makeEnv();
+    expect(await run(['broken-links'], t.env)).toBe(1);
+    expect(t.errText()).toContain('name:');
+  });
+});
+
+describe('build', () => {
+  it('stops with the key name on a bad docs.json and never starts next', async () => {
+    await project({
+      ...GOOD,
+      'docs.json': '{"name":"T","theme":{"layout":"wide"}}',
+    });
+    const t = makeEnv();
+    expect(await run(['build'], t.env)).toBe(1);
+    expect(t.errText()).toContain('theme.layout');
+    expect(t.children).toHaveLength(0);
+  });
+
+  it('stops on a navigation entry that does not exist', async () => {
+    await project({
+      ...GOOD,
+      'docs.json':
+        '{"name":"T","navigation":[{"tab":"A","groups":[{"group":"G","pages":["missing"]}]}]}',
+    });
+    const t = makeEnv();
+    expect(await run(['build'], t.env)).toBe(1);
+    expect(t.errText()).toContain('page "missing" not found');
+  });
+
+  it('stops on broken links, naming them', async () => {
+    await project({ ...GOOD, 'docs/a.mdx': '[x](/missing)' });
+    const t = makeEnv();
+    expect(await run(['build'], t.env)).toBe(1);
+    expect(t.errText()).toContain('a.mdx:1');
+    expect(t.children).toHaveLength(0);
+  });
+
+  it("runs next build with the project's own next and passes extra arguments through", async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['build', '--debug'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    expect(t.children[0]!.args.slice(1)).toEqual(['build', '--debug']);
+    expect(t.children[0]!.args[0]).toMatch(
+      /node_modules\/next\/dist\/bin\/next$/,
+    );
+    t.children[0]!.child.emit('exit', 0);
+    expect(await done).toBe(0);
+  });
+
+  it('returns the exit code of next build', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['build'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    t.children[0]!.child.emit('exit', 3);
+    expect(await done).toBe(3);
+  });
+
+  it('explains when next is not installed', async () => {
+    await writeFile(join(dir, 'docs.json'), '{"name":"T"}');
+    await mkdir(join(dir, 'docs'));
+    await writeFile(join(dir, 'docs', 'index.mdx'), '# H');
+    const t = makeEnv();
+    expect(await run(['build'], t.env)).toBe(1);
+    expect(t.errText()).toContain('Could not find `next`');
+  });
+});
+
+describe('dev', () => {
+  it('starts next dev and exits with its code', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['dev', '-p', '4000'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    expect(t.children[0]!.args.slice(1)).toEqual(['dev', '-p', '4000']);
+    t.children[0]!.child.emit('exit', 0);
+    expect(await done).toBe(0);
+  });
+
+  it('fails fast on an invalid docs.json', async () => {
+    await project({ ...GOOD, 'docs.json': '{' });
+    const t = makeEnv();
+    expect(await run(['dev'], t.env)).toBe(1);
+    expect(t.errText()).toContain('not valid JSON');
+    expect(t.children).toHaveLength(0);
+  });
+
+  it('restarts when docs.json changes to something valid', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['dev'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+
+    await writeFile(join(dir, 'docs.json'), '{"name":"Renamed"}');
+    t.watchers[0]!();
+    await vi.waitFor(() => expect(t.children[0]!.child.killed).toBe('SIGTERM'));
+    await vi.waitFor(() => expect(t.children).toHaveLength(2));
+    expect(t.text()).toContain('docs.json changed, restarting');
+
+    t.children[1]!.child.emit('exit', 0);
+    expect(await done).toBe(0);
+  });
+
+  it('keeps running and reports the problem when docs.json becomes invalid', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['dev'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+
+    await writeFile(join(dir, 'docs.json'), '{"name":""}');
+    t.watchers[0]!();
+    await vi.waitFor(() =>
+      expect(t.errText()).toContain('Keeping the previous config'),
+    );
+    expect(t.children).toHaveLength(1);
+    expect(t.children[0]!.child.killed).toBeUndefined();
+
+    t.children[0]!.child.emit('exit', 0);
+    await done;
+  });
+
+  it('debounces a burst of change events into one restart', async () => {
+    await project(GOOD);
+    const t = makeEnv();
+    const done = run(['dev'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    t.watchers[0]!();
+    t.watchers[0]!();
+    t.watchers[0]!();
+    await vi.waitFor(() => expect(t.children).toHaveLength(2));
+    await new Promise((r) => setTimeout(r, 300));
+    expect(t.children).toHaveLength(2);
+    t.children[1]!.child.emit('exit', 0);
+    await done;
   });
 });
