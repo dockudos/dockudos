@@ -20,3 +20,7 @@ export * from './lib/content-index.ts';
 export * from './lib/keyword-search.ts';
 export * from './lib/search-backend.ts';
 export * from './lib/llms.ts';
+export * from './lib/ai-provider.ts';
+export * from './lib/ai-adapters.ts';
+export * from './lib/ai-mock.ts';
+export * from './lib/ai-config.ts';

@@ -250,6 +250,106 @@
       },
       "additionalProperties": false
     },
+    "ai": {
+      "default": {
+        "enabled": false,
+        "limits": {
+          "maxQuestionLength": 500,
+          "maxOutputTokens": 800,
+          "ratePerMinute": 10,
+          "maxHistoryTurns": 6,
+          "contextTokens": 3000
+        }
+      },
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "custom"]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseUrl": {
+          "type": "string",
+          "pattern": "^https?:\\/\\/\\S+$"
+        },
+        "embeddings": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "default": "openai",
+              "type": "string",
+              "enum": ["openai"]
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "baseUrl": {
+              "type": "string",
+              "pattern": "^https?:\\/\\/\\S+$"
+            },
+            "dimensions": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 8192
+            }
+          },
+          "required": ["model"],
+          "additionalProperties": false
+        },
+        "limits": {
+          "default": {
+            "maxQuestionLength": 500,
+            "maxOutputTokens": 800,
+            "ratePerMinute": 10,
+            "maxHistoryTurns": 6,
+            "contextTokens": 3000
+          },
+          "type": "object",
+          "properties": {
+            "maxQuestionLength": {
+              "default": 500,
+              "type": "integer",
+              "minimum": 20,
+              "maximum": 4000
+            },
+            "maxOutputTokens": {
+              "default": 800,
+              "type": "integer",
+              "minimum": 50,
+              "maximum": 8000
+            },
+            "ratePerMinute": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "maxHistoryTurns": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "contextTokens": {
+              "default": 3000,
+              "type": "integer",
+              "minimum": 200,
+              "maximum": 32000
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "shortcuts": {
       "default": true,
       "type": "boolean"

@@ -239,6 +239,48 @@ See [Kudos](../components/kudos.mdx).
 
 See [Search](../guides/search.mdx).
 
+## ai
+
+Off by default. Keys are never read from `docs.json`: set `DOCKUDOS_LLM_API_KEY` (and `DOCKUDOS_EMBEDDINGS_API_KEY`) in the environment.
+
+<TypeTable
+  type={{
+    enabled: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Turn on the assistant and AI navigation. Search, llms.txt and Markdown never need it.',
+    },
+    provider: {
+      type: '"openai" | "anthropic" | "custom"',
+      description:
+        'The language model. "openai" also covers any server with an OpenAI-compatible API (see baseUrl). "custom" is an adapter you pass in code. Required when enabled.',
+    },
+    model: {
+      type: 'string',
+      description:
+        'The model name, as the provider calls it. Required when enabled, except for "custom".',
+    },
+    baseUrl: {
+      type: 'string',
+      description:
+        'Address of a compatible API, for example http://localhost:11434/v1. Not a secret.',
+    },
+    embeddings: {
+      type: '{ provider: "openai", model: string, baseUrl?: string, dimensions?: number }',
+      description:
+        'Meaning-based search on top of keywords. Needs DOCKUDOS_EMBEDDINGS_API_KEY (or DOCKUDOS_LLM_API_KEY when both go to OpenAI).',
+    },
+    limits: {
+      type: 'object',
+      description:
+        'Caps on cost and abuse: maxQuestionLength (500), maxOutputTokens (800), ratePerMinute (10), maxHistoryTurns (6), contextTokens (3000).',
+    },
+  }}
+/>
+
+See [AI providers](../guides/ai-providers.mdx).
+
 ## actions
 
 <TypeTable

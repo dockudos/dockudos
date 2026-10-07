@@ -1,0 +1,97 @@
+---
+icon: cpu
+title: AI providers
+description: Choose the language model and embeddings, keep keys in the environment, or bring your own adapter.
+---
+
+The assistant, AI navigation and meaning-based search use a language model that you choose. dockudos does not tie
+you to one vendor and never sees your key: it is read from the server's environment, not from `docs.json`.
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "ai": {
+    "enabled": true,
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "embeddings": { "model": "text-embedding-3-small" },
+    "limits": { "ratePerMinute": 10, "maxOutputTokens": 800 }
+  }
+}
+```
+
+```bash title=".env.local"
+DOCKUDOS_LLM_API_KEY=sk-...
+DOCKUDOS_EMBEDDINGS_API_KEY=sk-...
+```
+
+<Callout type="warning" title="Keys never go in docs.json">
+  A key in `docs.json` is refused with a message that names the variable to use.
+  Keys stay on the server: they are not in the browser bundle and not in the
+  build output.
+</Callout>
+
+## Built-in providers
+
+| `ai.provider` | Models                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `openai`      | OpenAI chat models, and any server with an OpenAI-compatible API: set `baseUrl` (vLLM, Ollama, LiteLLM, OpenRouter, a gateway of your own). |
+| `anthropic`   | Claude models through the Messages API.                                                                                                     |
+| `custom`      | An adapter you write and pass in code (below).                                                                                              |
+
+Embeddings come from OpenAI or a compatible server (`/embeddings`). Without `ai.embeddings`, search is keyword-only, which
+works well for names and codes; embeddings add paraphrases and "how do I..." questions.
+
+| Variable                      | Used for                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| `DOCKUDOS_LLM_API_KEY`        | The language model. Also the embeddings, when the model is OpenAI and both use the same server. |
+| `DOCKUDOS_EMBEDDINGS_API_KEY` | The embeddings. Needed when they use another server or account.                                 |
+
+Without a key the site keeps working: search, `llms.txt` and Markdown never need one, and the assistant says that AI answers are
+not set up and offers related pages.
+
+The adapters use plain `fetch` and stream the answer. Errors name what went wrong ("The language model request failed (401): ...")
+without ever including the key.
+
+## Your own adapter
+
+A provider is a small interface. Implement `LLMProvider` to use any model:
+
+```ts
+import type { LLMProvider } from '@dockudos/core';
+
+export const myModel: LLMProvider = {
+  id: 'my-model',
+  // Yield the answer as pieces of text.
+  async *generate({ system, messages, maxTokens, signal }) {
+    const res = await fetch('https://llm.internal.example.com/chat', {
+      method: 'POST',
+      body: JSON.stringify({ system, messages, maxTokens }),
+      signal,
+    });
+    yield* readMyStream(res); // your parsing
+  },
+};
+```
+
+And `EmbeddingProvider` for vectors:
+
+```ts
+import type { EmbeddingProvider } from '@dockudos/core';
+
+export const myEmbeddings: EmbeddingProvider = {
+  id: 'my-embeddings',
+  model: 'v1', // recorded in the index, so vectors from different models never mix
+  dimensions: 384,
+  async embed(texts) {
+    return await callMyService(texts); // one vector per text, in order
+  },
+};
+```
+
+Set `"provider": "custom"` and pass the adapter where the API route is created.
+
+## Testing without a model
+
+`mockLLM` and `mockEmbeddings` from `@dockudos/core` need no network and no key. They are what dockudos itself uses in
+CI to check answers, citations and refusals.

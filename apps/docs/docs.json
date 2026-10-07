@@ -38,10 +38,12 @@
           "pages": ["guides/theming", "guides/branding"]
         },
         {
+          "group": "Search and AI",
+          "pages": ["guides/search", "guides/ai-outputs", "guides/ai-providers"]
+        },
+        {
           "group": "Reader experience",
           "pages": [
-            "guides/search",
-            "guides/ai-outputs",
             "guides/keyboard-shortcuts",
             "guides/hooks",
             "guides/page-actions"

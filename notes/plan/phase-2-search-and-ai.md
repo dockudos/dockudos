@@ -29,9 +29,9 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] P2.13 Respect `hidden` pages and (later) access rules in all outputs.
 
 ### 2D. Provider layer
-- [ ] P2.14 `LLMProvider` and `EmbeddingProvider` interfaces plus a mock provider for tests.
-- [ ] P2.15 First adapters (decided in P0.4); env var names finalised (`DOCKUDOS_LLM_API_KEY`, etc.); custom adapter docs.
-- [ ] P2.16 `ai` config block (provider, model, embeddings, limits) validated by the schema; secrets never read from `docs.json`.
+- [x] P2.14 `LLMProvider` and `EmbeddingProvider` interfaces plus a mock provider for tests.
+- [x] P2.15 First adapters (decided in P0.4); env var names finalised (`DOCKUDOS_LLM_API_KEY`, etc.); custom adapter docs.
+- [x] P2.16 `ai` config block (provider, model, embeddings, limits) validated by the schema; secrets never read from `docs.json`.
 
 ### 2E. Retrieval and answers
 - [ ] P2.17 Hybrid retrieval: keyword + vector via reciprocal rank fusion; filters for locale/version/access are no-op hooks now.

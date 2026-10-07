@@ -24,6 +24,16 @@ describe('parseConfig', () => {
       seo: { noindex: false },
       kudos: { enabled: false, endpoint: '/api/kudos' },
       search: { backend: 'builtin', limit: 10 },
+      ai: {
+        enabled: false,
+        limits: {
+          maxQuestionLength: 500,
+          maxOutputTokens: 800,
+          ratePerMinute: 10,
+          maxHistoryTurns: 6,
+          contextTokens: 3000,
+        },
+      },
       actions: {
         copyPage: false,
         assistants: false,
@@ -393,5 +403,66 @@ describe('parseConfig: search', () => {
     expect(messageOf({ name: 'A', search: { limit: 0 } })).toContain(
       'search.limit',
     );
+  });
+});
+
+describe('parseConfig: ai', () => {
+  it('is off by default and needs nothing', () => {
+    const ai = parseConfig({ name: 'A' }).ai;
+    expect(ai.enabled).toBe(false);
+    expect(ai.limits.ratePerMinute).toBe(10);
+  });
+
+  it('accepts a provider, model, compatible server, embeddings and limits', () => {
+    const ai = parseConfig({
+      name: 'A',
+      ai: {
+        enabled: true,
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        baseUrl: 'http://localhost:11434/v1',
+        embeddings: { model: 'text-embedding-3-small', dimensions: 512 },
+        limits: { ratePerMinute: 3 },
+      },
+    }).ai;
+    expect(ai.embeddings).toEqual({
+      provider: 'openai',
+      model: 'text-embedding-3-small',
+      dimensions: 512,
+    });
+    expect(ai.limits).toMatchObject({ ratePerMinute: 3, maxOutputTokens: 800 });
+  });
+
+  it('needs a provider and model once enabled, except a custom adapter needs no model', () => {
+    expect(messageOf({ name: 'A', ai: { enabled: true } })).toContain(
+      'ai.provider: is required',
+    );
+    expect(
+      messageOf({ name: 'A', ai: { enabled: true, provider: 'anthropic' } }),
+    ).toContain('ai.model: is required');
+    expect(() =>
+      parseConfig({ name: 'A', ai: { enabled: true, provider: 'custom' } }),
+    ).not.toThrow();
+  });
+
+  it('never accepts a secret in docs.json, and says where it goes', () => {
+    const message = messageOf({
+      name: 'A',
+      ai: { enabled: true, provider: 'openai', model: 'm', apiKey: 'sk-123' },
+    });
+    expect(message).toContain('unknown key ai.apiKey');
+    expect(message).toContain('DOCKUDOS_LLM_API_KEY');
+  });
+
+  it('rejects bad values', () => {
+    expect(messageOf({ name: 'A', ai: { provider: 'gemini' } })).toContain(
+      'ai.provider',
+    );
+    expect(messageOf({ name: 'A', ai: { baseUrl: 'ftp://x' } })).toContain(
+      'ai.baseUrl',
+    );
+    expect(
+      messageOf({ name: 'A', ai: { limits: { ratePerMinute: 0 } } }),
+    ).toContain('ai.limits.ratePerMinute');
   });
 });

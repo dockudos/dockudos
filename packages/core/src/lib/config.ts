@@ -163,6 +163,67 @@ const searchSchema = z
     path: ['endpoint'],
   });
 
+const httpUrl = z
+  .string()
+  .regex(
+    /^https?:\/\/\S+$/,
+    'must be an http(s) URL, like https://api.example.com/v1',
+  );
+
+const aiSchema = z
+  .strictObject({
+    /** Turn on the assistant ("Ask the docs") and AI navigation. Keyword search and `llms.txt` never need it. */
+    enabled: z.boolean().default(false),
+    /**
+     * The language model: `openai` (also any server with an OpenAI-compatible API, with `baseUrl`),
+     * `anthropic`, or `custom` for an adapter you pass in code. The key is read from the environment variable
+     * DOCKUDOS_LLM_API_KEY, never from this file.
+     */
+    provider: z.enum(['openai', 'anthropic', 'custom']).optional(),
+    /** The model's name, as the provider calls it. */
+    model: z.string().min(1).optional(),
+    /** Address of the provider's API, for compatible servers. Not a secret. */
+    baseUrl: httpUrl.optional(),
+    /** Meaning-based search on top of keywords. Needs DOCKUDOS_EMBEDDINGS_API_KEY (or DOCKUDOS_LLM_API_KEY for OpenAI). */
+    embeddings: z
+      .strictObject({
+        provider: z.enum(['openai']).default('openai'),
+        model: z.string().min(1),
+        baseUrl: httpUrl.optional(),
+        /** Vector length to request, for models that can shorten theirs. */
+        dimensions: z.number().int().min(8).max(8192).optional(),
+      })
+      .optional(),
+    limits: z
+      .strictObject({
+        /** Longest question accepted, in characters. */
+        maxQuestionLength: z.number().int().min(20).max(4000).default(500),
+        /** Most tokens an answer may use. */
+        maxOutputTokens: z.number().int().min(50).max(8000).default(800),
+        /** Questions one visitor (by address) may ask per minute. */
+        ratePerMinute: z.number().int().min(1).max(600).default(10),
+        /** Earlier turns sent along with a question. */
+        maxHistoryTurns: z.number().int().min(0).max(20).default(6),
+        /** Size of the documentation excerpts given to the model, in tokens (about 4 characters each). */
+        contextTokens: z.number().int().min(200).max(32000).default(3000),
+      })
+      .default(() => ({
+        maxQuestionLength: 500,
+        maxOutputTokens: 800,
+        ratePerMinute: 10,
+        maxHistoryTurns: 6,
+        contextTokens: 3000,
+      })),
+  })
+  .refine((v) => !v.enabled || v.provider, {
+    message: 'is required when ai.enabled is true',
+    path: ['provider'],
+  })
+  .refine((v) => !v.enabled || v.provider === 'custom' || v.model, {
+    message: 'is required when ai.enabled is true',
+    path: ['model'],
+  });
+
 const accessRuleSchema = z.strictObject({
   /**
    * Which URL paths the rule covers: `/print` (that page), `/team/*` (one level), `/team/**` (the
@@ -234,6 +295,8 @@ export const docsConfigSchema = z.strictObject({
   actions: actionsSchema.default(() => actionsSchema.parse({})),
   /** Search: where it runs and how many results it shows. */
   search: searchSchema.default(() => searchSchema.parse({})),
+  /** The assistant, AI navigation and meaning-based search. Off by default; keys come from the environment. */
+  ai: aiSchema.default(() => aiSchema.parse({})),
   /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
   shortcuts: z.boolean().default(true),
   /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */
@@ -297,7 +360,12 @@ type Issue = z.core.$ZodIssue;
 function describe(issue: Issue): string[] {
   if (issue.code === 'unrecognized_keys') {
     const extra = issue.keys.map((k) => formatPath([...issue.path, k]));
-    return [`unknown key ${extra.join(', ')}`];
+    const secret = issue.keys.some((k) => /key|secret|token|password/i.test(k));
+    const hint =
+      secret && issue.path[0] === 'ai'
+        ? '. Secrets never go in docs.json: set the DOCKUDOS_LLM_API_KEY environment variable'
+        : '';
+    return [`unknown key ${extra.join(', ')}${hint}`];
   }
   if (issue.code === 'invalid_union') {
     // Report the branch that got furthest, not a generic "Invalid input".
