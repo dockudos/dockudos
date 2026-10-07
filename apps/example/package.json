@@ -3,11 +3,28 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "sourceRoot": "apps/example/src"
+    "sourceRoot": "apps/example/src",
+    "tags": [
+      "scope:app"
+    ],
+    "targets": {
+      "e2e": {
+        "command": "playwright test",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "dependsOn": [
+          "build"
+        ],
+        "cache": false
+      }
+    }
   },
   "dependencies": {
     "next": "~16.1.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@dockudos/core": "workspace:*",
+    "@dockudos/next": "workspace:*"
   }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "Example Docs",
+  "navigation": [
+    {
+      "tab": "Guides",
+      "groups": [{ "group": "Get started", "pages": ["index", "guides/hello"] }]
+    }
+  ]
+}

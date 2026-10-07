@@ -1,6 +1,7 @@
 {
   "name": "@dockudos/next",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -19,6 +20,22 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
+    "@mdx-js/loader": "^3.1.1",
+    "@next/mdx": "^16.3.8",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/mdx": "^2.0.14"
+  },
+  "peerDependencies": {
+    "next": ">=15"
+  },
+  "nx": {
+    "tags": [
+      "scope:next"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

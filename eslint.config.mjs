@@ -16,10 +16,32 @@ export default [
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
+            // Direction of dependencies, see notes/adr/0005-package-layout.md
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'scope:core',
+              onlyDependOnLibsWithTags: ['scope:core'],
             },
+            {
+              sourceTag: 'scope:ui',
+              onlyDependOnLibsWithTags: ['scope:core', 'scope:ui'],
+            },
+            {
+              sourceTag: 'scope:next',
+              onlyDependOnLibsWithTags: [
+                'scope:core',
+                'scope:ui',
+                'scope:next',
+              ],
+            },
+            {
+              sourceTag: 'scope:cli',
+              onlyDependOnLibsWithTags: [
+                'scope:core',
+                'scope:next',
+                'scope:cli',
+              ],
+            },
+            { sourceTag: 'scope:app', onlyDependOnLibsWithTags: ['*'] },
           ],
         },
       ],

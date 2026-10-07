@@ -1,1 +1,2 @@
-export * from './lib/core.js';
+export * from './lib/config.ts';
+export * from './lib/page-tree.ts';

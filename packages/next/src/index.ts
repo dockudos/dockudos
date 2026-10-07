@@ -1,1 +1,1 @@
-export * from './lib/next.js';
+export * from './lib/with-docs.ts';

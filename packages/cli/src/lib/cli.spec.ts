@@ -1,4 +1,4 @@
-import { cli } from './cli.js';
+import { cli } from './cli.ts';
 
 describe('cli', () => {
   it('should work', () => {

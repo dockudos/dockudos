@@ -1,6 +1,7 @@
 {
   "name": "@dockudos/core",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -12,6 +13,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./node": {
+      "@dockudos/source": "./src/node.ts",
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "default": "./dist/node.js"
     }
   },
   "files": [
@@ -19,6 +26,15 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.6.5"
+  },
+  "nx": {
+    "tags": [
+      "scope:core"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

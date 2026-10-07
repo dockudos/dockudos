@@ -1,6 +1,7 @@
 {
   "name": "@dockudos/cli",
   "version": "0.0.1",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -20,5 +21,13 @@
   ],
   "dependencies": {
     "tslib": "^2.3.0"
+  },
+  "nx": {
+    "tags": [
+      "scope:cli"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

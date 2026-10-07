@@ -50,3 +50,10 @@ vitest.config.*.timestamp*
 .next
 out
 .nx/polygraph
+# Playwright
+test-results
+playwright-report
+test-output
+
+# Tooling
+.serena

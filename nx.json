@@ -55,8 +55,25 @@
     }
   ],
   "release": {
+    "projects": ["packages/*"],
+    "projectsRelationship": "fixed",
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many -t build"
+      "conventionalCommits": true,
+      "preVersionCommand": "pnpm nx run-many -t build"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "file": "CHANGELOG.md",
+        "createRelease": false
+      }
+    },
+    "git": {
+      "commit": true,
+      "tag": true,
+      "commitMessage": "chore(release): {version}"
+    },
+    "releaseTag": {
+      "pattern": "v{version}"
     }
   },
   "targetDefaults": {

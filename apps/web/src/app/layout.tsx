@@ -1,4 +1,5 @@
 import './global.css';
+import '@dockudos/ui/globals.css';
 
 export const metadata = {
   title: 'Welcome to web',
