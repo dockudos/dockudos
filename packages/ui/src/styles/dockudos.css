@@ -2103,9 +2103,18 @@
       color: var(--shiki-light) !important;
       background: transparent !important;
     }
-    .dk-pre {
+    .dk-pre,
+    :where(.dk-prose) pre {
       white-space: pre-wrap !important;
       overflow: visible !important;
+      overflow-wrap: anywhere;
+    }
+    :where(.dk-prose) pre code {
+      white-space: inherit;
+      overflow-wrap: anywhere;
+    }
+    .dk-table :where(td, th, code) {
+      overflow-wrap: anywhere;
     }
     .dk-pre code {
       min-width: 0 !important;
