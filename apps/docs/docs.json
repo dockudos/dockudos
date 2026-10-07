@@ -39,7 +39,12 @@
         },
         {
           "group": "Search and AI",
-          "pages": ["guides/search", "guides/ai-outputs", "guides/ai-providers"]
+          "pages": [
+            "guides/search",
+            "guides/ask-the-docs",
+            "guides/ai-providers",
+            "guides/ai-outputs"
+          ]
         },
         {
           "group": "Reader experience",

@@ -1,0 +1,18 @@
+---
+title: Rate limits
+description: How many requests you can send, and what to do when you hit the limit.
+---
+
+Each API key may send 60 requests per minute. Requests over the limit are rejected with status 429.
+
+## Limit headers
+
+Every response includes three headers: `RateLimit-Limit` is the number of requests allowed per minute, `RateLimit-Remaining` is how many are left in the current minute, and `RateLimit-Reset` is the number of seconds until the window resets.
+
+## Handling 429
+
+When you receive a 429 response, wait for the number of seconds in the `Retry-After` header and then retry. Retry with exponential backoff and a little random jitter so that many clients do not retry at the same moment.
+
+## Higher limits
+
+The Team plan raises the limit to 600 requests per minute. Enterprise customers can ask for a custom limit.

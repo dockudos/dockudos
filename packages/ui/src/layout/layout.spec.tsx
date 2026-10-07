@@ -474,3 +474,65 @@ describe('DocsLayout: kudos and brand', () => {
     expect(name).toHaveClass('sr-only');
   });
 });
+
+describe('DocsLayout assistant', () => {
+  const withAi = (ai: object) => ({
+    config: parseConfig({ name: 'Acme', ai }),
+    nav,
+    page: page('/start'),
+    toc: [],
+  });
+
+  it('shows the Ask AI button only when the assistant is enabled', () => {
+    const { unmount } = render(
+      <DocsLayout {...withAi({ enabled: false })}>x</DocsLayout>,
+    );
+    expect(screen.queryByRole('button', { name: 'Ask the docs' })).toBeNull();
+    unmount();
+    render(
+      <DocsLayout {...withAi({ enabled: true, provider: 'custom' })}>
+        x
+      </DocsLayout>,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Ask the docs' }),
+    ).toBeInTheDocument();
+  });
+
+  it('puts no provider, model or API address in the page', () => {
+    render(
+      <DocsLayout
+        {...withAi({
+          enabled: true,
+          provider: 'openai',
+          model: 'secret-model-name',
+          baseUrl: 'https://internal-gateway.example.com/v1',
+          embeddings: {
+            model: 'secret-embed',
+            baseUrl: 'https://internal-gateway.example.com/v1',
+          },
+        })}
+      >
+        x
+      </DocsLayout>,
+    );
+    const html = document.body.innerHTML;
+    expect(html).not.toMatch(
+      /secret-model-name|secret-embed|internal-gateway|openai/i,
+    );
+  });
+
+  it('opens the panel from the button', async () => {
+    const user = userEvent.setup();
+    render(
+      <DocsLayout {...withAi({ enabled: true, provider: 'custom' })}>
+        x
+      </DocsLayout>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Ask the docs' }));
+    expect(
+      await screen.findByRole('dialog', { name: /Ask the docs/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Ask a question')).toBeInTheDocument();
+  });
+});

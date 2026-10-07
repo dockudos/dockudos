@@ -47,7 +47,7 @@ function corpus() {
     description: sentence(),
     body: Array.from(
       { length: 6 },
-      (_, s) =>
+      () =>
         `## ${word()} ${word()}\n\n${Array.from({ length: 6 }, sentence).join(' ')}\n`,
     ).join('\n'),
   }));

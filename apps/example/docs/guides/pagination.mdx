@@ -1,0 +1,18 @@
+---
+title: Pagination
+description: Walk through long lists with cursors.
+---
+
+List endpoints return at most 100 items per request and use cursor pagination.
+
+## Parameters
+
+Pass `limit` to choose how many items to return, from 1 to 100. The default is 25.
+
+Pass `cursor` to continue from where the previous page ended. Use the `next_cursor` value from the previous response. When `next_cursor` is `null` there are no more items.
+
+```bash
+curl "https://api.acme.example/v1/users?limit=50&cursor=abc123" -H "Authorization: Bearer $ACME_KEY"
+```
+
+Cursors are opaque and expire after one hour. Do not build or change them yourself.

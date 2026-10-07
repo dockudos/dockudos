@@ -253,6 +253,7 @@
     "ai": {
       "default": {
         "enabled": false,
+        "endpoint": "/api/ask",
         "limits": {
           "maxQuestionLength": 500,
           "maxOutputTokens": 800,
@@ -274,6 +275,12 @@
         "model": {
           "type": "string",
           "minLength": 1
+        },
+        "endpoint": {
+          "default": "/api/ask",
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/.*"
         },
         "baseUrl": {
           "type": "string",

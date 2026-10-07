@@ -1,0 +1,30 @@
+---
+title: Authentication
+description: Sign requests with an API key or an OAuth token.
+---
+
+Every request to the Acme API must be authenticated. Send your credential in the `Authorization` header.
+
+```bash
+curl https://api.acme.example/v1/users -H "Authorization: Bearer $ACME_KEY"
+```
+
+## API keys
+
+Create a key in the dashboard under **Settings, then API keys**. A key is shown once, so copy it when it is created.
+
+Rotate a key every ninety days. To rotate, create a new key, deploy it, then delete the old one. Both keys work until the old one is deleted, so there is no downtime.
+
+Keep keys out of source control. Store them in an environment variable or a secrets manager.
+
+## OAuth tokens
+
+Apps that act for other people use OAuth. Send the user to the authorization page, exchange the returned code for an access token, and send the token as a bearer token. Access tokens expire after one hour and are renewed with a refresh token.
+
+## Errors
+
+A request with a missing or wrong credential returns status 401 and the error code `ERR_INVALID_KEY`.
+
+A key that was deleted or has expired returns status 401 and the error code `ERR_KEY_EXPIRED`. Create a new key and update your configuration.
+
+A valid key without permission for the resource returns status 403 and the error code `ERR_FORBIDDEN`.

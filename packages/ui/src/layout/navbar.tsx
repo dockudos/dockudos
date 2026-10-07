@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { useLink } from '../provider.tsx';
+import { AssistantButton } from './assistant-panel.tsx';
 import { PaletteButton } from './command-palette.tsx';
 import { ThemeToggle } from '../theme/theme-toggle.tsx';
 import type { TabLink } from './tab-links.ts';
@@ -83,6 +84,7 @@ export function Navbar({
   drawer,
   brand,
   search = false,
+  assistant = false,
 }: {
   name: string;
   logo: DocsConfig['logo'];
@@ -94,6 +96,8 @@ export function Navbar({
   brand?: ReactNode;
   /** Show the search button (the command palette). */
   search?: boolean;
+  /** Show the "Ask AI" button (the assistant panel). */
+  assistant?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -102,6 +106,7 @@ export function Navbar({
       <TabList tabs={tabs} className="dk-navbar-tabs" />
       <div className="dk-navbar-spacer" />
       {search && <PaletteButton />}
+      {assistant && <AssistantButton />}
       <ThemeToggle defaultMode={defaultMode} />
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>

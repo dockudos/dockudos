@@ -34,14 +34,14 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] P2.16 `ai` config block (provider, model, embeddings, limits) validated by the schema; secrets never read from `docs.json`.
 
 ### 2E. Retrieval and answers
-- [ ] P2.17 Hybrid retrieval: keyword + vector via reciprocal rank fusion; filters for locale/version/access are no-op hooks now.
-- [ ] P2.18 Embeddings at build time, cached by content hash; vector storage in the index file.
-- [ ] P2.19 `/api/ask`: retrieve, build prompt with labeled chunks within token budget, stream `token`, `sources`, `done`, `error` events.
-- [ ] P2.20 Citation validation: ids must belong to the retrieved set, invalid ids dropped, uncited answers retried or flagged.
-- [ ] P2.21 Refusals: decline when nothing relevant is retrieved or when out of scope; suggest related pages.
-- [ ] P2.22 Prompt-injection hardening: retrieved text delimited and labeled untrusted; no tools exposed to the assistant.
-- [ ] P2.23 Safeguards: per-IP rate limit, max question length, max output tokens, caching of repeated questions.
-- [ ] P2.24 Assistant UI in the palette and as a panel: streaming render, numbered source links, history.
+- [x] P2.17 Hybrid retrieval: keyword + vector via reciprocal rank fusion; filters for locale/version/access are no-op hooks now.
+- [x] P2.18 Embeddings at build time, cached by content hash; vector storage in the index file.
+- [x] P2.19 `/api/ask`: retrieve, build prompt with labeled chunks within token budget, stream `token`, `sources`, `done`, `error` events.
+- [x] P2.20 Citation validation: ids must belong to the retrieved set, invalid ids dropped, uncited answers retried or flagged.
+- [x] P2.21 Refusals: decline when nothing relevant is retrieved or when out of scope; suggest related pages.
+- [x] P2.22 Prompt-injection hardening: retrieved text delimited and labeled untrusted; no tools exposed to the assistant.
+- [x] P2.23 Safeguards: per-IP rate limit, max question length, max output tokens, caching of repeated questions.
+- [x] P2.24 Assistant UI in the palette and as a panel: streaming render, numbered source links, history.
 
 ### 2F. AI navigation
 - [ ] P2.25 `/api/navigate` returning `{ path, anchor, reason, alternatives? }`; model-ranked when an LLM is set, top chunk otherwise.
@@ -61,13 +61,13 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 
 - [ ] With **no** LLM key: keyword search, palette, `llms.txt`, Markdown twins and MCP search/get tools all work.
 - [ ] With a key: asking about any documented topic streams an answer whose every citation resolves to a real page and anchor.
-- [ ] An out-of-scope or unanswerable question is declined and suggests related pages.
+- [x] An out-of-scope or unanswerable question is declined and suggests related pages.
 - [ ] A natural-language navigation request jumps to the correct page and heading for every case in the eval set.
 - [ ] Citation validity is 100% on the eval set; retrieval hit rate, refusal accuracy and navigation accuracy are recorded and tracked per commit.
 - [ ] Palette search latency under 100 ms on a 1,000-page generated corpus (done: `search-benchmark.spec.ts`); first AI token under 2 s with the reference provider.
-- [ ] No API key appears in client bundles, `docs.json` or build output (verified by a bundle scan).
+- [x] No API key appears in client bundles, `docs.json` or build output (verified by a bundle scan).
 - [ ] An MCP-capable coding tool connects and retrieves a page from the example site.
-- [ ] Rate limits and size caps return clear errors, not crashes.
+- [x] Rate limits and size caps return clear errors, not crashes.
 
 ## Tests
 
@@ -75,21 +75,21 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] Chunker: size cap, heading path, anchors, stable ids, content change alters only affected chunks.
 - [x] Extractor on fixtures with code blocks, tables, MDX components.
 - [x] Keyword engine: exact API names, error codes, typos, ranking with heading boost.
-- [ ] RRF fusion with known rankings; keyword-only fallback.
-- [ ] Embedding cache: hit, miss, invalidation by content hash.
-- [ ] Citation validator: valid, invalid, missing ids.
-- [ ] Rate limiter and token-budget packer.
+- [x] RRF fusion with known rankings; keyword-only fallback.
+- [x] Embedding cache: hit, miss, invalidation by content hash.
+- [x] Citation validator: valid, invalid, missing ids.
+- [x] Rate limiter and token-budget packer.
 - [x] `llms.txt` / `llms-full.txt` output format and hidden-page exclusion.
 
 ### Retrieval and AI (fixed corpus, mock provider)
 - [ ] Retrieval hit rate over the eval question set (top-5 contains expected page).
-- [ ] Answer stream contract: event order, sources mapped to URLs with anchors.
-- [ ] Refusal cases and prompt-injection fixtures (docs containing "ignore previous instructions") do not change behavior.
+- [x] Answer stream contract: event order, sources mapped to URLs with anchors.
+- [x] Refusal cases and prompt-injection fixtures (docs containing "ignore previous instructions") do not change behavior.
 - [ ] Navigation accuracy over labeled targets, with and without an LLM.
 
 ### Integration / E2E (Playwright)
 - [x] Cmd+K opens the palette; typing returns results; Enter navigates.
-- [ ] Ask flow with mocked LLM: streamed text, clickable numbered sources.
+- [x] Ask flow with mocked LLM: streamed text, clickable numbered sources.
 - [ ] AI navigation lands on the heading and shows the reason.
 - [x] `curl -H "Accept: text/markdown"` returns the Markdown twin.
 - [ ] MCP client smoke test: list tools, call `search_docs` and `get_page`.

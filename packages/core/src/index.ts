@@ -24,3 +24,7 @@ export * from './lib/ai-provider.ts';
 export * from './lib/ai-adapters.ts';
 export * from './lib/ai-mock.ts';
 export * from './lib/ai-config.ts';
+export * from './lib/retrieval.ts';
+export * from './lib/embed-index.ts';
+export * from './lib/rate-limit.ts';
+export * from './lib/ask.ts';

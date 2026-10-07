@@ -51,6 +51,8 @@ export interface ScoredChunk {
   chunk: ChunkRecord;
   page: PageRecord;
   score: number;
+  /** Share of the query's content words found in the chunk, 0 to 1. Low coverage means a weak match. */
+  coverage?: number;
 }
 
 const FIELD_WEIGHT = { text: 1, heading: 3, title: 2, description: 1 };
@@ -202,10 +204,13 @@ export class KeywordSearch implements SearchBackend {
       const [whole, ...parts] = word.terms;
       if (whole === undefined) return;
       const resolve = (term: string, weight: number) => {
+        // The word being typed also stands for every longer word it begins.
+        const longer = isLast && term.length >= 2 ? this.#prefixed(term) : [];
         if (this.#postings.has(term)) bump(term, weight);
-        else for (const near of this.#fuzzy(term)) bump(near, weight * 0.5);
-        if (isLast && term.length >= 2)
-          for (const longer of this.#prefixed(term)) bump(longer, weight * 0.6);
+        // A typo, but not an unfinished word: "compon" is the start of "component", not a misspelling.
+        else if (longer.length === 0)
+          for (const near of this.#fuzzy(term)) bump(near, weight * 0.5);
+        for (const next of longer) bump(next, weight * 0.6);
       };
       resolve(whole, 1);
       for (const part of parts) resolve(part, 0.3);
@@ -233,7 +238,7 @@ export class KeywordSearch implements SearchBackend {
           : normalize(doc.page.title) === exact)
       )
         score += EXACT_BONUS;
-      ranked.push({ chunk: doc.chunk, page: doc.page, score });
+      ranked.push({ chunk: doc.chunk, page: doc.page, score, coverage });
     }
     ranked.sort(
       (a, b) =>

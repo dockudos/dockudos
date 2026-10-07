@@ -89,7 +89,18 @@ export const myEmbeddings: EmbeddingProvider = {
 };
 ```
 
-Set `"provider": "custom"` and pass the adapter where the API route is created.
+Set `"provider": "custom"` and pass the adapter where the API route is created:
+
+```ts title="src/app/api/[...dockudos]/route.ts"
+import { createDocsApi } from '@dockudos/next/api';
+import { myEmbeddings, myModel } from '../../../my-model';
+
+export const { GET, POST } = createDocsApi({
+  ai: { llm: myModel, embeddings: myEmbeddings },
+});
+```
+
+See [Ask the docs](./ask-the-docs.mdx).
 
 ## Testing without a model
 

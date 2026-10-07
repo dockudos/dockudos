@@ -182,6 +182,11 @@ const aiSchema = z
     provider: z.enum(['openai', 'anthropic', 'custom']).optional(),
     /** The model's name, as the provider calls it. */
     model: z.string().min(1).optional(),
+    /** The route that answers questions. Default `/api/ask`. */
+    endpoint: z
+      .string()
+      .startsWith('/', 'must start with "/"')
+      .default('/api/ask'),
     /** Address of the provider's API, for compatible servers. Not a secret. */
     baseUrl: httpUrl.optional(),
     /** Meaning-based search on top of keywords. Needs DOCKUDOS_EMBEDDINGS_API_KEY (or DOCKUDOS_LLM_API_KEY for OpenAI). */

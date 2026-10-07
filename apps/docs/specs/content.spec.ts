@@ -84,6 +84,7 @@ describe('the dockudos documentation', () => {
       'init',
       'dev',
       'build',
+      'index',
       'broken-links',
       'pdf',
       'kudos',

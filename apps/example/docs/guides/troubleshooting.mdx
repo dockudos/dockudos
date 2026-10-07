@@ -1,0 +1,19 @@
+---
+title: Troubleshooting
+description: What common error statuses mean and how to fix them.
+---
+
+## Status codes
+
+| Status | Meaning                                     | What to do                                          |
+| ------ | ------------------------------------------- | --------------------------------------------------- |
+| 400    | The request was malformed                   | Check the body and parameters against the reference |
+| 401    | The credential is missing, wrong or expired | See Authentication                                  |
+| 403    | The credential lacks permission             | Ask an owner to grant access                        |
+| 404    | The resource does not exist                 | Check the identifier                                |
+| 429    | Too many requests                           | Wait and retry, see Rate limits                     |
+| 500    | Something failed on our side                | Retry later and contact support if it continues     |
+
+## Contact support
+
+Email support@acme.example with the request id from the `X-Request-Id` response header. Team and Enterprise plans get a reply within one business day.

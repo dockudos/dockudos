@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { type GraphData, PageDataProvider } from '../docs-context.tsx';
 import { Kudos } from '../components/kudos.tsx';
 import { PrintExpander } from './print-expander.tsx';
+import { AssistantPanel } from './assistant-panel.tsx';
 import { CommandPalette } from './command-palette.tsx';
 import { Navbar } from './navbar.tsx';
 import { PageActions } from './page-actions.tsx';
@@ -29,7 +30,10 @@ import { TutorialHeader } from './tutorial-header.tsx';
 export interface DocsLayoutProps {
   config: Pick<DocsConfig, 'name' | 'logo' | 'theme'> &
     Partial<
-      Pick<DocsConfig, 'kudos' | 'actions' | 'shortcuts' | 'seo' | 'search'>
+      Pick<
+        DocsConfig,
+        'kudos' | 'actions' | 'shortcuts' | 'seo' | 'search' | 'ai'
+      >
     >;
   nav: Navigation;
   page: Page;
@@ -72,6 +76,13 @@ export function DocsLayout({
   const first = (tab: (typeof nav.tabs)[number]) =>
     flattenSidebar(tab.sidebar)[0]?.path;
   const shortcuts = config.shortcuts !== false;
+  // Only what the browser needs. Never the provider, model or any address of the model's API.
+  const ai = config.ai?.enabled
+    ? {
+        endpoint: config.ai.endpoint,
+        maxQuestionLength: config.ai.limits.maxQuestionLength,
+      }
+    : undefined;
   const actions = config.actions;
   const siteUrl = config.seo?.siteUrl?.replace(/\/+$/, '');
   const editUrl = actions?.editUrl
@@ -93,6 +104,7 @@ export function DocsLayout({
         defaultMode={config.theme.mode}
         drawer={sidebar}
         search={shortcuts}
+        assistant={shortcuts && !!ai}
       />
       <div className="dk-body">
         <aside className="dk-sidebar" aria-label="Sidebar">
@@ -110,7 +122,14 @@ export function DocsLayout({
               <CommandPalette
                 entries={paletteEntries(nav)}
                 search={config.search}
+                ai={ai}
               />
+              {ai && (
+                <AssistantPanel
+                  endpoint={ai.endpoint}
+                  maxQuestionLength={ai.maxQuestionLength}
+                />
+              )}
               <ShortcutsDialog />
             </>
           )}

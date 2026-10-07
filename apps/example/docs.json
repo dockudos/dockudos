@@ -23,6 +23,17 @@
             "guides/code",
             "guides/api"
           ]
+        },
+        {
+          "group": "Acme API",
+          "pages": [
+            "guides/authentication",
+            "guides/pagination",
+            "guides/rate-limits",
+            "guides/webhooks",
+            "guides/billing",
+            "guides/troubleshooting"
+          ]
         }
       ]
     }
@@ -63,6 +74,15 @@
         "dir": "icons/mono",
         "monochrome": true
       }
+    }
+  },
+  "ai": {
+    "enabled": true,
+    "provider": "openai",
+    "model": "e2e-model",
+    "baseUrl": "http://127.0.0.1:4399/v1",
+    "limits": {
+      "ratePerMinute": 30
     }
   }
 }

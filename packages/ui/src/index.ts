@@ -81,3 +81,7 @@ export * from './components/icons-context.tsx';
 export * from './components/render-icon.tsx';
 export * from './lib/icon-pack.ts';
 export * from './hooks/use-search.ts';
+export * from './lib/ask-store.ts';
+export * from './components/answer.tsx';
+export * from './components/ask-view.tsx';
+export * from './layout/assistant-panel.tsx';

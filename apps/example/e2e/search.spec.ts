@@ -31,15 +31,18 @@ test.describe('search', () => {
   test('never finds hidden or protected pages', async ({ page, request }) => {
     await page.goto('/');
     await page.keyboard.press(`${MOD}+k`);
-    await page.getByRole('combobox').fill('secret');
+    await page.getByRole('combobox').fill('Quokka');
     await expect(page.getByText(/No results for/)).toBeVisible();
+    await expect(
+      page.getByRole('option').filter({ hasNotText: 'Ask AI' }),
+    ).toHaveCount(0);
 
     const index = await request.get('/api/search/index');
     expect(index.status()).toBe(200);
     const text = await index.text();
-    expect(text).not.toContain('Top secret plan');
+    expect(text).not.toMatch(/Top secret plan|Quokka/);
     expect(text).not.toContain('"/private');
-    const body = await (await request.get('/api/search?q=secret')).json();
+    const body = await (await request.get('/api/search?q=Quokka')).json();
     expect(JSON.stringify(body)).not.toContain('private');
   });
 

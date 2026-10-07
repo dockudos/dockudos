@@ -36,10 +36,20 @@ dockudos build [next build options]
 
 1. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
 2. Checks every link, anchor and image. Any error stops here.
-3. Builds the [search index](../guides/search.mdx#the-content-index) into `.dockudos/index.json`, reusing pages that did not change.
+3. Runs [`index`](#index): the search index, reusing pages that did not change, plus embeddings when configured.
 4. Runs `next build`.
 
 Exits with the status of `next build`, or 1 when a check fails, with the reason printed.
+
+## index
+
+```bash
+dockudos index
+```
+
+Builds the [search index](../guides/search.mdx#the-content-index) into `.dockudos/index.json` without building the site, and
+computes [embeddings](../guides/ask-the-docs.mdx#meaning-based-search) when `ai.embeddings` is configured. `dockudos build` does the same
+as a step. Keys are read from the environment, then from `.env.local` and `.env`.
 
 ## broken-links
 

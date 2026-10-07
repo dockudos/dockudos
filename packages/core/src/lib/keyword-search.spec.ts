@@ -101,6 +101,23 @@ describe('KeywordSearch', () => {
     expect(top('rotaet')).toEqual(['/guides/auth#api-keys']); // swapped letters
   });
 
+  it('treats an unfinished word as a prefix, not as a typo of some other word', () => {
+    const e = new KeywordSearch(
+      buildContentIndex([
+        {
+          path: '/a',
+          title: 'Components',
+          body: 'Reusable components for pages.',
+        },
+        { path: '/b', title: 'Common', body: 'Common problems and fixes.' },
+      ]).index,
+    );
+    expect(e.search('compon')[0]?.path).toBe('/a');
+    expect(e.search('compon').map((h) => h.path)).toEqual(['/a']);
+    // A finished word that is nowhere is still forgiven.
+    expect(e.search('componnts')[0]?.path).toBe('/a');
+  });
+
   it('matches the word being typed as a prefix', () => {
     expect(top('billi')[0]).toMatch(/^\/guides\/billing/);
     expect(top('rota')).toEqual(['/guides/auth#api-keys']);

@@ -2,6 +2,7 @@ import { brokenLinks } from './broken-links.ts';
 import { build } from './build.ts';
 import { dev } from './dev.ts';
 import { init } from './init.ts';
+import { indexCommand } from './index-command.ts';
 import { kudos } from './kudos.ts';
 import { pdf } from './pdf.ts';
 import { type Env, CliError } from './io.ts';
@@ -14,6 +15,7 @@ Commands:
   init [folder]     Create a new docs site (--name, --package-manager, --yes)
   dev [next args]   Start the dev server; restarts when docs.json changes
   build [next args] Validate docs.json, check links, then build the site
+  index             Build the search index (and embeddings, when configured) without building the site
   broken-links      Check internal links and anchors (--external also checks http links)
   pdf               Print every page into one PDF (-o file, --no-build, --page-size, --chrome, --user, --token)
   kudos             Show page feedback collected by the kudos widget (--path, --json, --file)
@@ -28,6 +30,7 @@ const COMMANDS: Record<string, (env: Env, args: string[]) => Promise<number>> =
     init,
     dev,
     build,
+    index: indexCommand,
     'broken-links': brokenLinks,
     kudos,
     pdf,

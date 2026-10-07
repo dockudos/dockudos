@@ -1,7 +1,11 @@
 'use client';
 
-import type { SearchHit, Snippet } from '@dockudos/core';
-import { Search } from 'lucide-react';
+import {
+  type SearchHit,
+  type Snippet,
+  looksLikeQuestion,
+} from '@dockudos/core';
+import { ArrowLeft, Search, Sparkles } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import {
   type KeyboardEvent,
@@ -12,6 +16,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { AskView } from '../components/ask-view.tsx';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';
 import {
@@ -83,7 +88,15 @@ export function PaletteButton() {
 /** One line of the results: a page from the navigation, or a section found by full-text search. */
 type Row =
   | { kind: 'page'; key: string; entry: PaletteEntry }
-  | { kind: 'hit'; key: string; hit: SearchHit };
+  | { kind: 'hit'; key: string; hit: SearchHit }
+  | { kind: 'ask'; key: string };
+
+/** The `ai` key of docs.json, as far as the palette needs it. Present means the assistant is on. */
+export interface PaletteAi {
+  /** The ask route. Default `/api/ask`. */
+  endpoint?: string;
+  maxQuestionLength?: number;
+}
 
 /** Text with the matched words marked. */
 function Highlighted({ snippet }: { snippet: Snippet }) {
@@ -116,11 +129,17 @@ function Highlighted({ snippet }: { snippet: Snippet }) {
 export function CommandPalette({
   entries,
   search,
+  ai,
 }: {
   entries: readonly PaletteEntry[];
   search?: SearchSettings;
+  /** Turns on "Ask AI": a row that answers the query in the palette, and Tab to switch to it. */
+  ai?: PaletteAi;
 }) {
   const [open, setOpen] = useState(false);
+  // 'ask' shows the conversation with the assistant instead of search results.
+  const [mode, setMode] = useState<'search' | 'ask'>('search');
+  const [question, setQuestion] = useState<string | undefined>();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const navigate = useNavigate();
@@ -175,18 +194,26 @@ export function CommandPalette({
   const searching = !!client && query.trim() !== '';
   // Results of full-text search, then pages whose title matches but that have no text to find.
   const rows = useMemo((): Row[] => {
-    if (!searching || found.status === 'error') return pageRows;
-    const hits = found.hits.map(
-      (hit): Row => ({ kind: 'hit', key: `hit:${hit.id}`, hit }),
-    );
-    const covered = new Set(found.hits.map((h) => h.path));
-    return [
-      ...hits,
-      ...pageRows.filter(
-        (r) => r.kind === 'page' && !covered.has(r.entry.path),
-      ),
-    ];
-  }, [searching, found, pageRows]);
+    let results: Row[] = pageRows;
+    if (searching && found.status !== 'error') {
+      const hits = found.hits.map(
+        (hit): Row => ({ kind: 'hit', key: `hit:${hit.id}`, hit }),
+      );
+      const covered = new Set(found.hits.map((h) => h.path));
+      results = [
+        ...hits,
+        ...pageRows.filter(
+          (r) => r.kind === 'page' && !covered.has(r.entry.path),
+        ),
+      ];
+    }
+    if (!ai || !query.trim()) return results;
+    // A query that reads like a question goes to the assistant first; keywords keep search results first.
+    const askRow: Row = { kind: 'ask', key: 'ask' };
+    return looksLikeQuestion(query)
+      ? [askRow, ...results]
+      : [...results, askRow];
+  }, [searching, found, pageRows, ai, query]);
 
   useEffect(() => setActive(0), [query, open, found.query]);
   useEffect(() => {
@@ -195,8 +222,17 @@ export function CommandPalette({
       ?.scrollIntoView?.({ block: 'nearest' });
   }, [active, rows]);
 
+  const startAsking = () => {
+    const asked = query.trim();
+    if (!ai || !asked) return;
+    setQuestion(asked);
+    setQuery('');
+    setMode('ask');
+  };
+
   const go = (row: Row | undefined) => {
     if (!row) return;
+    if (row.kind === 'ask') return startAsking();
     setOpen(false);
     setQuery('');
     navigate(row.kind === 'hit' ? row.hit.url : row.entry.path);
@@ -218,6 +254,9 @@ export function CommandPalette({
     } else if (e.key === 'Enter') {
       e.preventDefault();
       go(rows[active]);
+    } else if (e.key === 'Tab' && ai && query.trim() && !e.shiftKey) {
+      e.preventDefault();
+      startAsking();
     }
   };
 
@@ -235,128 +274,186 @@ export function CommandPalette({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) setQuery('');
+        if (!next) {
+          setQuery('');
+          setMode('search');
+          setQuestion(undefined);
+        }
       }}
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <Dialog.Content
           aria-describedby={undefined}
+          // In the conversation, Esc goes back to search; a second Esc closes.
+          onEscapeKeyDown={(e) => {
+            if (mode === 'ask') {
+              e.preventDefault();
+              setMode('search');
+            }
+          }}
           className="fixed top-[12vh] left-1/2 z-50 w-[min(36rem,94vw)] -translate-x-1/2 overflow-hidden rounded-xl border bg-background shadow-2xl data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
-          <Dialog.Title className="sr-only">Search pages</Dialog.Title>
-          <div className="flex items-center gap-2 border-b px-4">
-            <Search
-              className="size-4 shrink-0 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <input
-              autoFocus
-              role="combobox"
-              aria-expanded="true"
-              aria-controls={listId}
-              aria-activedescendant={
-                rows[active] ? `${listId}-${active}` : undefined
-              }
-              aria-autocomplete="list"
-              aria-label="Search pages"
-              placeholder={client ? 'Search the docs…' : 'Search pages…'}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={onKeyDown}
-              className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-          <ul
-            ref={list}
-            id={listId}
-            role="listbox"
-            aria-label="Results"
-            className="m-0 max-h-[50vh] list-none overflow-y-auto p-2"
-          >
-            {rows.map((row, i) => (
-              <li
-                key={row.key}
-                id={`${listId}-${i}`}
-                role="option"
-                aria-selected={i === active}
-                onMouseMove={() => setActive(i)}
-                onClick={() => go(row)}
-                className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+          {mode === 'ask' && ai ? (
+            <div className="flex h-[min(34rem,70vh)] flex-col">
+              <Dialog.Title className="sr-only">Ask the docs</Dialog.Title>
+              <div className="flex items-center gap-2 border-b px-3 py-2">
+                <button
+                  type="button"
+                  onClick={() => setMode('search')}
+                  className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                  Search
+                </button>
+                <span className="flex items-center gap-1.5 text-sm font-medium">
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  Ask the docs
+                </span>
+              </div>
+              <AskView
+                endpoint={ai.endpoint}
+                maxQuestionLength={ai.maxQuestionLength}
+                initialQuestion={question}
+                onNavigate={() => {
+                  setOpen(false);
+                  setMode('search');
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <Dialog.Title className="sr-only">Search pages</Dialog.Title>
+              <div className="flex items-center gap-2 border-b px-4">
+                <Search
+                  className="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <input
+                  autoFocus
+                  role="combobox"
+                  aria-expanded="true"
+                  aria-controls={listId}
+                  aria-activedescendant={
+                    rows[active] ? `${listId}-${active}` : undefined
+                  }
+                  aria-autocomplete="list"
+                  aria-label="Search pages"
+                  placeholder={client ? 'Search the docs…' : 'Search pages…'}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+              <ul
+                ref={list}
+                id={listId}
+                role="listbox"
+                aria-label="Results"
+                className="m-0 max-h-[50vh] list-none overflow-y-auto p-2"
               >
-                {row.kind === 'page' ? (
-                  <>
-                    {row.entry.icon && (
-                      <span className="text-muted-foreground">
-                        {renderIcon(row.entry.icon, 16)}
-                      </span>
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">
-                        {row.entry.title}
-                      </span>
-                      {row.entry.description && (
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {row.entry.description}
+                {!rows.some((r) => r.kind !== 'ask') && !waiting && (
+                  <li
+                    role="presentation"
+                    className="px-3 py-6 text-center text-sm text-muted-foreground"
+                  >
+                    {client ? 'No results for' : 'No pages match'} “{query}”.
+                  </li>
+                )}
+                {rows.map((row, i) => (
+                  <li
+                    key={row.key}
+                    id={`${listId}-${i}`}
+                    role="option"
+                    aria-selected={i === active}
+                    onMouseMove={() => setActive(i)}
+                    onClick={() => go(row)}
+                    className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+                  >
+                    {row.kind === 'ask' ? (
+                      <>
+                        <span className="text-primary">
+                          <Sparkles className="size-4" aria-hidden="true" />
                         </span>
-                      )}
-                    </span>
-                    {row.entry.group && (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {row.entry.group}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {byPath.get(row.hit.path)?.icon && (
-                      <span className="text-muted-foreground">
-                        {renderIcon(byPath.get(row.hit.path)?.icon, 16)}
-                      </span>
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">
-                        {row.hit.title}
-                        {row.hit.headingPath.length > 0 && (
-                          <span className="font-normal text-muted-foreground">
-                            {' › '}
-                            {row.hit.headingPath.join(' › ')}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">
+                            Ask AI: “{query.trim()}”
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            Get an answer with sources
+                          </span>
+                        </span>
+                        <Shortcut keys="tab" />
+                      </>
+                    ) : row.kind === 'page' ? (
+                      <>
+                        {row.entry.icon && (
+                          <span className="text-muted-foreground">
+                            {renderIcon(row.entry.icon, 16)}
                           </span>
                         )}
-                      </span>
-                      <span className="line-clamp-2 text-xs text-muted-foreground">
-                        <Highlighted snippet={row.hit.snippet} />
-                      </span>
-                    </span>
-                    {byPath.get(row.hit.path)?.group && (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {byPath.get(row.hit.path)?.group}
-                      </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">
+                            {row.entry.title}
+                          </span>
+                          {row.entry.description && (
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {row.entry.description}
+                            </span>
+                          )}
+                        </span>
+                        {row.entry.group && (
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {row.entry.group}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {byPath.get(row.hit.path)?.icon && (
+                          <span className="text-muted-foreground">
+                            {renderIcon(byPath.get(row.hit.path)?.icon, 16)}
+                          </span>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">
+                            {row.hit.title}
+                            {row.hit.headingPath.length > 0 && (
+                              <span className="font-normal text-muted-foreground">
+                                {' › '}
+                                {row.hit.headingPath.join(' › ')}
+                              </span>
+                            )}
+                          </span>
+                          <span className="line-clamp-2 text-xs text-muted-foreground">
+                            <Highlighted snippet={row.hit.snippet} />
+                          </span>
+                        </span>
+                        {byPath.get(row.hit.path)?.group && (
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {byPath.get(row.hit.path)?.group}
+                          </span>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </li>
-            ))}
-            {rows.length === 0 && !waiting && (
-              <li
-                role="presentation"
-                className="px-3 py-6 text-center text-sm text-muted-foreground"
+                  </li>
+                ))}
+              </ul>
+              <div role="status" className="sr-only">
+                {status}
+              </div>
+              <div
+                className="flex gap-4 border-t px-4 py-2 text-xs text-muted-foreground"
+                aria-hidden="true"
               >
-                {client ? 'No results for' : 'No pages match'} “{query}”.
-              </li>
-            )}
-          </ul>
-          <div role="status" className="sr-only">
-            {status}
-          </div>
-          <div
-            className="flex gap-4 border-t px-4 py-2 text-xs text-muted-foreground"
-            aria-hidden="true"
-          >
-            <span>↑↓ to move</span>
-            <span>Enter to open</span>
-            <span>Esc to close</span>
-          </div>
+                <span>↑↓ to move</span>
+                <span>Enter to open</span>
+                {ai && <span>Tab to ask AI</span>}
+                <span>Esc to close</span>
+              </div>
+            </>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

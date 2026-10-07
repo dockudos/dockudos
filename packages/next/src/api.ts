@@ -1,4 +1,18 @@
-import { type ContentIndex, KeywordSearch, hashText } from '@dockudos/core';
+import {
+  type AskEvent,
+  type ContentIndex,
+  type EmbeddingProvider,
+  type FetchLike,
+  type LLMProvider,
+  AskError,
+  KeywordSearch,
+  ask,
+  createAnswerCache,
+  createRateLimiter,
+  hashText,
+  resolveAiProviders,
+  validateAsk,
+} from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
 import { createMarkdownHandler } from './markdown.ts';
 import { getSite } from './server.ts';
@@ -25,9 +39,21 @@ export const apiError = (
 ) =>
   json({ error: message }, status, { 'cache-control': 'no-store', ...headers });
 
+export interface AiOptions {
+  /** A language model of your own, used instead of the one `ai.provider` names. Needed for `"custom"`. */
+  llm?: LLMProvider;
+  /** Embeddings of your own, used instead of `ai.embeddings`. */
+  embeddings?: EmbeddingProvider;
+  /** Where API keys are read from. Default `process.env`. */
+  env?: Record<string, string | undefined>;
+  fetch?: FetchLike;
+}
+
 export interface DocsApiOptions {
   /** How the page route checks `access` rules. Default: the rules of `docs.json`. */
   access?: AccessOptions;
+  /** Adapters and environment for the assistant. The settings themselves are the `ai` key of `docs.json`. */
+  ai?: AiOptions;
 }
 
 // One engine per index object: building it is the expensive part of a search.
@@ -144,6 +170,176 @@ export function createPageHandler({ access }: DocsApiOptions = {}) {
   };
 }
 
+const MAX_BODY_BYTES = 32 * 1024;
+
+/**
+ * Who is asking, for rate limiting. Takes the address the platform or proxy in front of the site reports.
+ * Behind a proxy you do not control, anyone can send these headers; the shared ceiling in `createAskHandler`
+ * still caps the total.
+ */
+export function clientKey(request: Request): string {
+  const h = request.headers;
+  const forwarded = h.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return (
+    h.get('cf-connecting-ip')?.trim() ||
+    h.get('x-real-ip')?.trim() ||
+    forwarded ||
+    'unknown'
+  ).slice(0, 64);
+}
+
+const sse = (event: AskEvent) => `data: ${JSON.stringify(event)}\n\n`;
+
+/**
+ * `POST /api/ask` with `{ question, history? }` streams the answer as server-sent events: `sources`, `token`s,
+ * then `done` (or `error`). Requests are limited per visitor and overall, questions and bodies have size
+ * caps, and the same question asked again within ten minutes is answered from memory. Needs `ai.enabled`.
+ */
+export function createAskHandler({
+  llm,
+  embeddings,
+  env = process.env,
+  fetch,
+}: AiOptions = {}) {
+  const cache = createAnswerCache<AskEvent[]>({ max: 200 });
+  let limiters:
+    | {
+        perVisitor: ReturnType<typeof createRateLimiter>;
+        overall: ReturnType<typeof createRateLimiter>;
+        rate: number;
+      }
+    | undefined;
+  let warned = false;
+
+  return async function POST(request: Request): Promise<Response> {
+    const site = await getSite();
+    const { ai } = site.config;
+    if (!ai.enabled)
+      return apiError(
+        404,
+        'The assistant is not enabled. Set "ai.enabled" in docs.json.',
+      );
+
+    const { ratePerMinute } = ai.limits;
+    if (limiters?.rate !== ratePerMinute)
+      limiters = {
+        rate: ratePerMinute,
+        perVisitor: createRateLimiter({ limit: ratePerMinute }),
+        // A ceiling for the whole site, so spoofed addresses cannot multiply the cost.
+        overall: createRateLimiter({ limit: Math.max(60, ratePerMinute * 30) }),
+      };
+    const turn = limiters.perVisitor.take(clientKey(request));
+    const total = limiters.overall.take('all');
+    if (!turn.allowed || !total.allowed)
+      return apiError(
+        429,
+        turn.allowed
+          ? 'The assistant is busy. Try again in a moment.'
+          : `Too many questions. Try again in ${turn.retryAfter} seconds.`,
+        {
+          'retry-after': String(
+            turn.allowed ? total.retryAfter : turn.retryAfter,
+          ),
+        },
+      );
+
+    const length = Number(request.headers.get('content-length') ?? 0);
+    if (length > MAX_BODY_BYTES)
+      return apiError(413, 'The request is too large.');
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_BYTES)
+      return apiError(413, 'The request is too large.');
+    let body: unknown;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return apiError(400, 'The request body is not valid JSON.');
+    }
+    let question;
+    try {
+      question = validateAsk(body, ai.limits);
+    } catch (error) {
+      if (error instanceof AskError)
+        return apiError(error.status, error.message);
+      throw error;
+    }
+
+    const cacheKey = question.history?.length
+      ? undefined
+      : hashText(
+          [
+            question.question.toLowerCase().replace(/\s+/g, ' '),
+            question.locale,
+            question.version,
+          ].join('\u0000'),
+        );
+    const headers = {
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-store, no-transform',
+      'x-accel-buffering': 'no',
+    };
+    const encoder = new TextEncoder();
+    const cached = cacheKey ? cache.get(cacheKey) : undefined;
+    if (cached) return new Response(cached.map(sse).join(''), { headers });
+
+    const resolved = resolveAiProviders(ai, { env, llm, embeddings, fetch });
+    if (!warned && resolved.problems.length) {
+      warned = true;
+      for (const problem of resolved.problems)
+        console.warn(`dockudos: ${problem}`);
+    }
+    const index = await site.index();
+    const events = ask(
+      {
+        siteName: site.config.name,
+        index,
+        keyword: engineFor(index),
+        llm: resolved.llm,
+        embeddings: resolved.embeddings,
+        limits: ai.limits,
+      },
+      question,
+      request.signal,
+    );
+
+    const seen: AskEvent[] = [];
+    return new Response(
+      new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          const { value, done } = await events.next();
+          if (done) {
+            const last = seen.at(-1);
+            if (
+              cacheKey &&
+              last?.type === 'done' &&
+              last.refused !== 'no-llm' &&
+              last.flagged === undefined
+            ) {
+              // Replay as one piece of text: a cached answer needs no typing effect.
+              const text = seen
+                .flatMap((e) => (e.type === 'token' ? [e.text] : []))
+                .join('');
+              cache.set(cacheKey, [
+                ...seen.filter((e) => e.type === 'sources'),
+                { type: 'token', text },
+                last,
+              ]);
+            }
+            controller.close();
+            return;
+          }
+          seen.push(value);
+          controller.enqueue(encoder.encode(sse(value)));
+        },
+        async cancel() {
+          await events.return(undefined);
+        },
+      }),
+      { headers },
+    );
+  };
+}
+
 type Route = (request: Request) => Promise<Response>;
 export type RouteContext = { params: Promise<{ dockudos?: string[] }> };
 
@@ -154,7 +350,7 @@ export type RouteContext = { params: Promise<{ dockudos?: string[] }> };
  *     import { createDocsApi } from '@dockudos/next/api';
  *     export const { GET, POST } = createDocsApi();
  *
- * It answers `/api/search`, `/api/search/index`, `/api/page` and `/api/markdown`; routes you add yourself (such as
+ * It answers `/api/search`, `/api/search/index`, `/api/page`, `/api/markdown` and `POST /api/ask`; routes you add yourself (such as
  * `/api/kudos`) win over it.
  */
 export function createDocsApi(options: DocsApiOptions = {}) {
@@ -164,7 +360,9 @@ export function createDocsApi(options: DocsApiOptions = {}) {
     page: createPageHandler(options),
     markdown: createMarkdownHandler(options),
   };
-  const post: Record<string, Route> = {};
+  const post: Record<string, Route> = {
+    ask: createAskHandler(options.ai),
+  };
 
   const dispatch =
     (routes: Record<string, Route>) =>

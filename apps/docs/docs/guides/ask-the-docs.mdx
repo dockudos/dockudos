@@ -1,0 +1,105 @@
+---
+icon: sparkles
+title: Ask the docs
+description: An assistant that answers from your documentation and cites the pages it used.
+---
+
+Turn on `ai` and readers can ask a question in plain language. The answer streams in, every claim points to the
+section it came from, and a question your docs do not cover is declined instead of guessed.
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "ai": {
+    "enabled": true,
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5"
+  }
+}
+```
+
+```bash title=".env.local"
+DOCKUDOS_LLM_API_KEY=sk-...
+```
+
+Choose the model and keep the key in the environment: see [AI providers](./ai-providers.mdx). Without a key the site
+still works, and the assistant offers related pages.
+
+## For readers
+
+- Open the palette (<Shortcut keys="mod+k" />) and type a question. A query that reads like a question puts **Ask AI** first;
+  for keywords it comes last. Press <Kbd>Tab</Kbd> to ask from any search.
+- Or open the side panel with the **Ask AI** button or <Shortcut keys="mod+i" />, to read a page and ask about it together.
+- Follow-up questions work: the conversation is kept, in the tab, until you start a new one.
+- `[1]` in an answer links to the section it came from, and the sources are listed under the answer.
+
+## What it does
+
+1. **Finds the relevant sections.** [Search](./search.mdx) over the content index. With embeddings, a second ranking by meaning is
+   merged with the keyword ranking (reciprocal rank fusion), so paraphrases are found as well as exact names.
+2. **Gives the model only those sections**, up to `ai.limits.contextTokens`, each numbered, with instructions to answer from
+   them alone and to cite them.
+3. **Checks the answer.** A citation that does not name a section the model was given is removed. An answer that cites nothing is
+   shown with a warning and the pages it may have come from.
+4. **Declines when it should.** If nothing relevant was found, the model is not called at all. If the model finds that the sections do not
+   answer, or the question is not about your documentation, the reader gets a refusal and related pages.
+
+## Meaning-based search
+
+Add embeddings to find answers by meaning:
+
+```json title="docs.json"
+{
+  "ai": {
+    "enabled": true,
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "embeddings": { "model": "text-embedding-3-small" }
+  }
+}
+```
+
+`dockudos build` (or `dockudos index`) computes a vector per section and stores it in `.dockudos/index.json`. Vectors are cached by
+the text and the model, so the next build only embeds sections that changed, and changing the model re-embeds everything. If the
+key is missing or the provider fails, the build says so and carries on: search and answers use keywords until the next build.
+The vectors stay on the server; the browser downloads the index without them.
+
+## Safety
+
+| Risk                                       | What dockudos does                                                                                                                                                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A page that tries to give the model orders | Pages are quoted between markers that carry a random value pages cannot know, and labelled as untrusted data. The assistant has no tools, so there is nothing for an injected instruction to do.                                            |
+| Invented sources                           | Citations are checked against the sections that were supplied; others are dropped.                                                                                                                                                          |
+| Private pages                              | Hidden pages and pages behind an [access rule](./protecting-pages.mdx) are not in the index, so they cannot be retrieved.                                                                                                                   |
+| Cost and abuse                             | A question is capped at `maxQuestionLength` characters, an answer at `maxOutputTokens`, a visitor at `ratePerMinute` questions a minute (and the whole site at 30 times that). A repeated question is answered from memory for ten minutes. |
+| Leaking the key                            | The key is only read on the server. The page carries no provider, model or address.                                                                                                                                                         |
+| Rendering what the model writes            | Answers are shown as text: no HTML, no images, no links except the citations.                                                                                                                                                               |
+
+Limits that return an error (too long, too many, malformed) answer with a status and a message, never a crash: `413` too long,
+`429` too many (with `Retry-After`), `400` malformed.
+
+<Callout type="note" title="Behind a proxy">
+  The per-visitor limit goes by the address your platform reports
+  (`x-forwarded-for`, `x-real-ip`, `cf-connecting-ip`). Rate limits are kept in
+  memory, so each server instance counts for itself. The whole-site ceiling
+  still holds if addresses are spoofed.
+</Callout>
+
+## Privacy
+
+dockudos stores nothing about questions. The question, recent turns of the conversation and the matching sections are sent to your model
+provider, under their terms. The conversation is kept in the reader's browser tab (`sessionStorage`) and goes when the tab closes.
+
+## The route
+
+`POST /api/ask` (from the [catch-all API route](./search.mdx#the-routes)) takes `{ "question": "...", "history": [...] }` and answers
+with server-sent events:
+
+| Event                                                             | Meaning                                                                                               |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `{"type":"sources","items":[{"n":1,"title":"...","url":"/a#b"}]}` | The sections the model was given, numbered. Sent first, so `[1]` can be linked as it streams.         |
+| `{"type":"token","text":"..."}`                                   | A piece of the answer.                                                                                |
+| `{"type":"done","citations":[1]}`                                 | The answer is complete. Also carries `refused`, `flagged` or `related` when there is no sound answer. |
+| `{"type":"error","message":"..."}`                                | The answer failed.                                                                                    |
+
+Use it from your own interface with `AskView`, or the headless `createAskStore` from `@dockudos/ui`.

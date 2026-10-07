@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { LLM_KEY } from './e2e/constants';
 
 const port = 4300;
 
@@ -9,16 +10,25 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: { baseURL: `http://localhost:${port}`, trace: 'on-first-retry' },
   // Serves the production build; the `e2e` target builds first.
-  webServer: {
-    command: `pnpm exec next start -p ${port}`,
-    url: `http://localhost:${port}`,
-    reuseExistingServer: !process.env.CI,
-    // Secrets for the `access` rules in docs.json. They are only ever read from the environment.
-    env: {
-      DOCKUDOS_BASIC_AUTH: 'reader:s3cret-pass,editor:other-pass',
-      DOCKUDOS_TOKEN: 'example-token-1234',
+  webServer: [
+    // A stand-in for the language model that `ai` in docs.json points at.
+    {
+      command: 'node e2e/fake-llm.mjs',
+      url: 'http://127.0.0.1:4399/__calls',
+      reuseExistingServer: !process.env.CI,
     },
-  },
+    {
+      command: `pnpm exec next start -p ${port}`,
+      url: `http://localhost:${port}`,
+      reuseExistingServer: !process.env.CI,
+      // Secrets, only ever read from the environment: the `access` rules in docs.json, and the model's key.
+      env: {
+        DOCKUDOS_BASIC_AUTH: 'reader:s3cret-pass,editor:other-pass',
+        DOCKUDOS_TOKEN: 'example-token-1234',
+        DOCKUDOS_LLM_API_KEY: LLM_KEY,
+      },
+    },
+  ],
   projects: [
     {
       name: 'chromium',

@@ -75,11 +75,11 @@ interface AskRequest {
   version?: string;
 }
 
-// Streamed response events
+// Streamed response events (as built): `sources` is sent first, so `[n]` can be linked while the answer streams.
 type AskEvent =
+  | { type: "sources"; items: { n: number; title: string; url: string; headingPath: string[] }[] }
   | { type: "token"; text: string }
-  | { type: "sources"; items: { title: string; url: string; headingPath: string[] }[] }
-  | { type: "done" }
+  | { type: "done"; citations: number[]; refused?: string; flagged?: "uncited"; related?: AskSource[] }
   | { type: "error"; message: string };
 ```
 

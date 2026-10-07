@@ -26,6 +26,7 @@ describe('parseConfig', () => {
       search: { backend: 'builtin', limit: 10 },
       ai: {
         enabled: false,
+        endpoint: '/api/ask',
         limits: {
           maxQuestionLength: 500,
           maxOutputTokens: 800,
