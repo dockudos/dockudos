@@ -3,3 +3,6 @@ export * from './lib/page-tree.ts';
 export * from './lib/frontmatter.ts';
 export * from './lib/navigation.ts';
 export * from './lib/helpers.ts';
+export * from './lib/redirects.ts';
+export * from './lib/include.ts';
+export * from './lib/seo.ts';

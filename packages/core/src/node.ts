@@ -81,3 +81,4 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
   if (errors.length) throw new ContentError(errors);
   return buildPageTree(sources);
 }
+export * from './lib/last-modified.ts';
