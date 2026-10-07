@@ -1,0 +1,100 @@
+---
+icon: circle-help
+title: Quiz
+description: Ask questions with instant feedback and a score. Quiz, Question and Answer are its parts.
+---
+
+Use `Quiz` to let readers test themselves at the end of a page or tutorial. Mark the right answers with `correct`. A
+question with one right answer is a single choice; with several, readers select all that apply.
+
+<Quiz id="quiz-demo" title="Check your understanding">
+  <Question
+    text="Where does the URL of a page come from?"
+    explanation="The URL is the file path without the extension, so docs/guides/seo.mdx is served at /guides/seo."
+  >
+    <Answer>The title in the frontmatter</Answer>
+    <Answer correct>The path of the file</Answer>
+    <Answer>The order in docs.json</Answer>
+  </Question>
+  <Question text="Which of these are components?">
+    <Answer correct>Callout</Answer>
+    <Answer>docs.json</Answer>
+    <Answer correct>Tabs</Answer>
+  </Question>
+</Quiz>
+
+```mdx
+<Quiz id="urls" title="Check your understanding">
+  <Question
+    text="Where does the URL of a page come from?"
+    explanation="The URL is the file path without the extension."
+  >
+    <Answer>The title in the frontmatter</Answer>
+    <Answer correct>The path of the file</Answer>
+  </Question>
+</Quiz>
+```
+
+Readers choose, press **Check answer**, and see whether they were right, the correct answers and your explanation. **Try
+again** redoes one question; **Start again** clears the whole quiz. When every question is checked, a score appears.
+
+## Saving answers
+
+With an `id`, checked answers are saved in the reader's browser (`localStorage`), so the score is there when they come
+back. Without one, nothing is saved and a reload starts again. The `id` must be unique on the page; changing it starts a
+fresh quiz. Answers are kept per question text; give a `Question` an `id` if you expect to reword it.
+
+A `Question` can also be used on its own, outside a `Quiz`. It gives feedback but has no score and saves nothing.
+
+<Callout type="note">
+  A quiz runs in the reader's browser, so the right answers are in the page. It
+  is for learning, not for grading.
+</Callout>
+
+## Props
+
+<TypeTable
+  type={{
+    'Quiz.id': {
+      type: 'string',
+      description: 'Saves the answers in this browser. Unique on the page.',
+    },
+    'Quiz.title': {
+      type: 'string',
+      description:
+        'A heading above the questions; also the name of the group for screen readers.',
+    },
+    'Question.text': {
+      type: 'string',
+      required: true,
+      description: 'The question.',
+    },
+    'Question.explanation': {
+      type: 'ReactNode',
+      description: 'Shown after the reader checks, and on paper.',
+    },
+    'Question.id': {
+      type: 'string',
+      description:
+        'Keeps the saved answer if you change the text. Defaults to the text.',
+    },
+    'Answer.correct': {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'This is a right answer. Several make the question "select all".',
+    },
+  }}
+/>
+
+A `Question` must be a direct child of the `Quiz` to count towards the score, and its answers direct children of the
+`Question`. Text between questions is shown as it is.
+
+## Accessibility and printing
+
+Each question is a `fieldset` with its text as the legend, and the choices are native radio buttons or checkboxes, so the
+keyboard works as in any form. The result is never color alone: right and wrong answers get a check or cross and are
+named for screen readers, and "Correct." or "Not quite." is announced after checking.
+
+On paper there is nothing to press, so every right answer is marked "(correct)" and every explanation is shown. Buttons and
+the score are left out.

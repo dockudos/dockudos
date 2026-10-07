@@ -140,7 +140,12 @@
             },
             {
               "group": "Tutorials",
-              "pages": ["components/tutorial-intro", "components/checkpoint"]
+              "pages": [
+                "components/tutorial-intro",
+                "components/checkpoint",
+                "components/exercise",
+                "components/quiz"
+              ]
             },
             {
               "group": "Feedback",

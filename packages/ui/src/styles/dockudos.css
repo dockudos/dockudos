@@ -1251,6 +1251,248 @@
   .dk-checklist-item > div > :last-child {
     margin-bottom: 0;
   }
+  .dk-checklist-label {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  .dk-checklist-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .dk-checklist-input:focus-visible + .dk-checklist-box {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  .dk-checklist-label:hover .dk-checklist-box {
+    color: var(--foreground);
+  }
+  .dk-checklist-item[data-checked] .dk-checklist-label > div {
+    color: var(--muted-foreground);
+  }
+  .dk-checklist-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0 1.25rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-checklist-reset,
+  .dk-quiz-button {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .dk-checklist-reset:hover,
+  .dk-quiz-button:hover:not(:disabled) {
+    border-color: var(--primary);
+  }
+  .dk-checklist-reset:focus-visible,
+  .dk-quiz-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .dk-quiz {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .dk-quiz-title {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+  }
+  .dk-quiz-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 1.75rem;
+  }
+  .dk-quiz-score {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .dk-quiz-footer .dk-quiz-button {
+    margin-left: auto;
+  }
+  .dk-question {
+    min-width: 0;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    border: 0;
+  }
+  .dk-question-text {
+    padding: 0;
+    font-weight: 600;
+  }
+  .dk-question-hint {
+    margin: 0.125rem 0 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-answers {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dk-answer {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+  .dk-answer:has(input:disabled) {
+    cursor: default;
+  }
+  .dk-answer input {
+    flex: none;
+    margin-top: 0.3rem;
+    accent-color: var(--primary);
+  }
+  .dk-answer:has(input:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-answer[data-chosen] {
+    border-color: var(--primary);
+  }
+  .dk-answer[data-state='correct'] {
+    border-color: var(--dk-callout-tip);
+    background: color-mix(in oklch, var(--dk-callout-tip) 12%, transparent);
+  }
+  .dk-answer[data-state='wrong'] {
+    border-color: var(--dk-callout-danger);
+    background: color-mix(in oklch, var(--dk-callout-danger) 12%, transparent);
+  }
+  .dk-answer-mark {
+    display: inline-flex;
+    flex: none;
+    width: 0.875rem;
+    margin-top: 0.3rem;
+  }
+  .dk-answer[data-state='correct'] .dk-answer-mark {
+    color: var(--dk-callout-tip);
+  }
+  .dk-answer[data-state='wrong'] .dk-answer-mark {
+    color: var(--dk-callout-danger);
+  }
+  .dk-answer-text > :first-child {
+    margin-top: 0;
+  }
+  .dk-answer-text > :last-child {
+    margin-bottom: 0;
+  }
+  .dk-question-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .dk-quiz-primary:not(:disabled) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .dk-quiz-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .dk-question-verdict {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .dk-question[data-result='right'] .dk-question-verdict {
+    color: var(--dk-callout-tip);
+  }
+  .dk-question[data-result='wrong'] .dk-question-verdict {
+    color: var(--dk-callout-danger);
+  }
+  .dk-question-explanation {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--border);
+    font-size: 0.9375rem;
+  }
+  .dk-question-explanation[hidden] {
+    display: none;
+  }
+  .dk-question-explanation > :first-child {
+    margin-top: 0;
+  }
+  .dk-question-explanation > :last-child {
+    margin-bottom: 0;
+  }
+
+  .dk-exercise {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-lg);
+  }
+  .dk-exercise-title {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+  .dk-reveal {
+    margin: 0.5rem 0 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .dk-reveal > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--radius-md);
+  }
+  .dk-reveal > summary::-webkit-details-marker {
+    display: none;
+  }
+  .dk-reveal > summary:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-reveal-chevron {
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted-foreground);
+    transition: transform 0.2s;
+  }
+  .dk-reveal[open] .dk-reveal-chevron {
+    transform: rotate(90deg);
+  }
+  .dk-reveal-body {
+    padding: 0.5rem 0.75rem 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .dk-reveal-body > :first-child {
+    margin-top: 0;
+  }
+  .dk-reveal-body > :last-child {
+    margin-bottom: 0;
+  }
 
   .dk-nav-step {
     display: inline-flex;
@@ -2023,6 +2265,19 @@
       display: block;
       margin: 1rem 0;
       font-style: italic;
+    }
+    .dk-answer[data-correct] .dk-answer-text::after {
+      content: ' (correct)';
+      font-weight: 600;
+    }
+    .dk-question-explanation[hidden] {
+      display: block !important;
+    }
+    .dk-quiz,
+    .dk-question,
+    .dk-exercise,
+    .dk-checklist-item {
+      break-inside: avoid;
     }
 
     /* One column, full width, no sticky positioning, no motion. */

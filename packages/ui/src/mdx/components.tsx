@@ -35,6 +35,8 @@ import { Prompt } from '../components/prompt.tsx';
 import { View } from '../components/view.tsx';
 import { Visibility } from '../components/visibility.tsx';
 import { Checklist, ChecklistItem } from '../components/checklist.tsx';
+import { Answer, Question, Quiz } from '../components/quiz.tsx';
+import { Exercise, Hint, Solution } from '../components/exercise.tsx';
 import { Download } from '../components/download.tsx';
 import { Quote } from '../components/quote.tsx';
 import { Checkpoint, TutorialIntro } from '../components/tutorial.tsx';
@@ -81,6 +83,12 @@ export const mdxComponents = {
   Checkpoint,
   Checklist,
   ChecklistItem,
+  Quiz,
+  Question,
+  Answer,
+  Exercise,
+  Hint,
+  Solution,
   Download,
   Quote,
   Stats,

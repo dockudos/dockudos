@@ -8,14 +8,16 @@ const EVENT = 'dockudos:storage';
  * State kept in `localStorage` and shared between components using the same key (and between tabs).
  * Storage can be blocked or full; then the value lives in memory for this page view and nothing throws.
  * The first render always uses `initial`, so server and client markup agree.
+ * With a `null` key nothing is read or written: the value lives in memory only.
  */
 export function useLocalStorage<T>(
-  key: string,
+  key: string | null,
   initial: T,
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const [value, setValue] = useState<T>(initial);
 
   useEffect(() => {
+    if (key === null) return;
     const read = () => {
       try {
         const raw = localStorage.getItem(key);
@@ -41,11 +43,13 @@ export function useLocalStorage<T>(
       setValue((prev) => {
         const resolved =
           typeof next === 'function' ? (next as (p: T) => T)(prev) : next;
-        try {
-          localStorage.setItem(key, JSON.stringify(resolved));
-          queueMicrotask(() => window.dispatchEvent(new CustomEvent(EVENT)));
-        } catch {
-          // blocked or full: the value still updates for this page view
+        if (key !== null) {
+          try {
+            localStorage.setItem(key, JSON.stringify(resolved));
+            queueMicrotask(() => window.dispatchEvent(new CustomEvent(EVENT)));
+          } catch {
+            // blocked or full: the value still updates for this page view
+          }
         }
         return resolved;
       });

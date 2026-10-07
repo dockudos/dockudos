@@ -88,7 +88,7 @@ a "Setup" heading, and links such as `/guides/auth#keys` still land in the right
 | ------------------------------------------- | ---------------------------------------------------------------------------------- |
 | Callout, Badge                              | Keeps its color and border; never split across pages.                              |
 | Tabs, CodeGroup, package tabs               | Every panel is printed, each under its tab's name.                                 |
-| Accordion, Expandable, Files                | Opened.                                                                            |
+| Accordion, Expandable, Files, Exercise      | Opened: every hint and the solution show.                                          |
 | Steps                                       | Numbered as on screen.                                                             |
 | Code block                                  | Light colors, wrapped, no copy button. Highlighted and diff lines keep their tint. |
 | Tooltip                                     | The tip is printed in brackets after the term.                                     |
@@ -96,6 +96,8 @@ a "Setup" heading, and links such as `/guides/auth#keys` still land in the right
 | Mermaid, math, images, Frame                | Printed, scaled to the page width.                                                 |
 | TypeTable, ParamField, Endpoint, Update     | Printed in full; table headers repeat across pages.                                |
 | Cards, Columns, Hero                        | Printed, without hover effects; links show their address.                          |
+| Checklist                                   | Ticks print as they are; the count and Reset button are left out.                  |
+| Quiz                                        | Right answers are marked "(correct)" and explanations shown; buttons are left out. |
 | Banner, CopyText buttons, Graph view, Kudos | Left out.                                                                          |
 
 Your own components follow the same rules: add `data-print="hide"` to something that is only useful on

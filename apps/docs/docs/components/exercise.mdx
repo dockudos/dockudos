@@ -1,0 +1,54 @@
+---
+icon: pencil
+title: Exercise
+description: A task for the reader, with hints and a solution they can reveal. Exercise, Hint and Solution are its parts.
+---
+
+`Exercise` frames a task. `Hint` and `Solution` stay closed until the reader opens them, so they can try first.
+
+<Exercise title="Add a page">
+  Create a page called `about` and put it in the sidebar.
+
+  <Hint>Pages are MDX files in `docs/`. The sidebar is listed in `docs.json`.</Hint>
+  <Hint title="Hint 2">The page id is the file path without `.mdx`.</Hint>
+  <Solution>
+    Create `docs/about.mdx` with a `title`, then add `"about"` to a group's `pages` in `docs.json`.
+  </Solution>
+</Exercise>
+
+```mdx
+<Exercise title="Add a page">
+  Create a page called `about` and put it in the sidebar.
+
+  <Hint>The sidebar is listed in `docs.json`.</Hint>
+  <Solution>Create `docs/about.mdx`, then add `"about"` to `pages`.</Solution>
+</Exercise>
+```
+
+Use several `Hint`s, from a nudge to nearly the answer, and give them their own `title` to number them. Pair it with a
+[`Quiz`](./quiz.mdx) to check understanding, or a [`Checkpoint`](./checkpoint.mdx) to say what the reader should see.
+
+<TypeTable
+  type={{
+    'Exercise.title': {
+      type: 'string',
+      default: '"Exercise"',
+      description: 'What the reader is asked to do, in a few words.',
+    },
+    'Hint.title': {
+      type: 'string',
+      default: '"Hint"',
+      description: 'The label on the closed hint.',
+    },
+    'Solution.title': {
+      type: 'string',
+      default: '"Solution"',
+      description: 'The label on the closed solution.',
+    },
+  }}
+/>
+
+## Accessibility and printing
+
+`Hint` and `Solution` are native `<details>` elements: they work from the keyboard and without JavaScript, and screen
+readers announce whether they are open. On paper every hint and the solution are opened.

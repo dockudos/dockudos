@@ -18,15 +18,46 @@ description: A list of things done and not yet done, for release checklists and 
 </Checklist>
 ```
 
-A checklist is static: it shows a state, and it does not let the reader tick items. Each item says "Done" or "Not done" to
-screen readers, and the icon differs in shape as well as color. Items can hold links, code and more Markdown.
+Without an `id` a checklist is static: it shows a state. Each item says "Done" or "Not done" to screen readers, and the icon
+differs in shape as well as color. Items can hold links, code and more Markdown.
+
+## Let readers tick items
+
+Give the list an `id` and each item becomes a checkbox. Ticks are saved in the reader's browser (`localStorage`), so they
+are still there on the next visit, and a count shows the progress. `checked` is the starting state; "Reset" returns to it.
+
+<Checklist id="checklist-demo">
+  <ChecklistItem>Install dockudos</ChecklistItem>
+  <ChecklistItem>Write a page</ChecklistItem>
+  <ChecklistItem checked>Read this page</ChecklistItem>
+</Checklist>
+
+```mdx
+<Checklist id="launch">
+  <ChecklistItem>Install dockudos</ChecklistItem>
+  <ChecklistItem id="first-page">Write a page</ChecklistItem>
+</Checklist>
+```
+
+- The `id` must be unique on the page. Progress is saved per page and `id`; changing the `id` starts a fresh list.
+- Items are remembered by position. Add `id` to an item if you reorder or insert items and want existing ticks to stay
+  with the right one.
+- Storage is per browser: it is not shared between devices or readers. If the browser blocks storage, the ticks
+  still work until the page is closed.
+- Items must be direct children of the `Checklist`.
 
 <TypeTable
   type={{
+    id: {
+      type: 'string',
+      description:
+        'On Checklist: makes it tickable and saves the ticks. On ChecklistItem: keeps a saved tick with the item when items move.',
+    },
     checked: {
       type: 'boolean',
       default: 'false',
-      description: 'On ChecklistItem. Done or satisfied.',
+      description:
+        'On ChecklistItem. Done or satisfied; the starting state in a tickable list.',
     },
     children: {
       type: 'ReactNode',
@@ -34,3 +65,8 @@ screen readers, and the icon differs in shape as well as color. Items can hold l
     },
   }}
 />
+
+## Accessibility and printing
+
+A tickable item is a native checkbox inside a label, so it works with a keyboard and a screen reader, and the count is
+announced as it changes. On paper the ticks show as they are, and the count and Reset button are left out.

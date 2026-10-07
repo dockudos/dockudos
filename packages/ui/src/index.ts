@@ -54,6 +54,8 @@ export * from './components/stats.tsx';
 export * from './components/quote.tsx';
 export * from './components/download.tsx';
 export * from './components/checklist.tsx';
+export * from './components/quiz.tsx';
+export * from './components/exercise.tsx';
 export * from './components/view.tsx';
 export * from './components/visibility.tsx';
 export * from './layout/docs-book.tsx';
