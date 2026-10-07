@@ -16,31 +16,58 @@ export function Files({ children }: { children: ReactNode }) {
   );
 }
 
-export function File({ name }: { name: string }) {
+const customIcon = (icon: ReactNode) => (
+  <span
+    aria-hidden="true"
+    className="inline-flex shrink-0 items-center [&_img]:size-4 [&_svg]:size-4"
+  >
+    {icon}
+  </span>
+);
+
+export interface FileProps {
+  name: string;
+  /** Replaces the default file icon. Any element: an SVG, an `<img>`, an icon component. */
+  icon?: ReactNode;
+}
+
+export function File({ name, icon }: FileProps) {
   return (
     <li
       role="treeitem"
       aria-selected="false"
       className="flex items-center gap-2 py-0.5"
     >
-      <FileIcon
-        className="size-4 shrink-0 text-muted-foreground"
-        aria-hidden="true"
-      />
+      {icon ? (
+        customIcon(icon)
+      ) : (
+        <FileIcon
+          className="size-4 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
+      )}
       <span className="font-mono text-[0.8125rem]">{name}</span>
     </li>
   );
 }
 
+export interface FolderProps {
+  name: string;
+  defaultOpen?: boolean;
+  /** Replaces the folder icon, open and closed. Use `openIcon` to show a different one when open. */
+  icon?: ReactNode;
+  /** Icon shown while the folder is open. Defaults to `icon`. */
+  openIcon?: ReactNode;
+  children?: ReactNode;
+}
+
 export function Folder({
   name,
   defaultOpen = false,
+  icon,
+  openIcon,
   children,
-}: {
-  name: string;
-  defaultOpen?: boolean;
-  children?: ReactNode;
-}) {
+}: FolderProps) {
   return (
     <li
       role="treeitem"
@@ -48,16 +75,33 @@ export function Folder({
       aria-selected="false"
       className="py-0.5"
     >
-      <details open={defaultOpen} className="group">
+      <details open={defaultOpen} className="dk-anim-details group">
         <summary className="flex cursor-pointer list-none items-center gap-2 rounded focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none [&::-webkit-details-marker]:hidden">
-          <FolderIcon
-            className="size-4 shrink-0 text-primary group-open:hidden"
-            aria-hidden="true"
-          />
-          <FolderOpen
-            className="hidden size-4 shrink-0 text-primary group-open:block"
-            aria-hidden="true"
-          />
+          {icon ? (
+            openIcon ? (
+              <>
+                <span className="contents group-open:hidden">
+                  {customIcon(icon)}
+                </span>
+                <span className="hidden group-open:contents">
+                  {customIcon(openIcon)}
+                </span>
+              </>
+            ) : (
+              customIcon(icon)
+            )
+          ) : (
+            <>
+              <FolderIcon
+                className="size-4 shrink-0 text-primary group-open:hidden"
+                aria-hidden="true"
+              />
+              <FolderOpen
+                className="hidden size-4 shrink-0 text-primary group-open:block"
+                aria-hidden="true"
+              />
+            </>
+          )}
           <span className="font-mono text-[0.8125rem] font-medium">{name}</span>
         </summary>
         <ul role="group" className="m-0 ml-2 list-none border-l pl-3">

@@ -125,6 +125,10 @@ test('tabs and accordion work from the keyboard, the tooltip on hover', async ({
   await expect(accordion).toHaveAttribute('aria-expanded', 'true');
   await expect(page.getByText('A docs framework.')).toBeVisible();
 
+  // Let the accordion finish opening: a layout shift while hovering closes the tooltip.
+  await page.evaluate(() =>
+    Promise.all(document.getAnimations().map((a) => a.finished)),
+  );
   await page.getByText('MDX', { exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText(
     'Markdown with components',
@@ -183,4 +187,40 @@ test('the graph view lists every page as a link', async ({ page }) => {
   await expect(
     graph.getByRole('link', { name: 'Hello guide' }),
   ).toHaveAttribute('href', '/guides/hello');
+});
+
+test('animations are switched off when the visitor prefers reduced motion', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/guides/components');
+  const duration = await page
+    .locator('.dk-page-title')
+    .evaluate((el) => getComputedStyle(el).animationDuration);
+  expect(parseFloat(duration)).toBeLessThan(0.001);
+});
+
+test('accordion content animates open and closed', async ({ page }) => {
+  await page.goto('/guides/components');
+  const trigger = page.getByRole('button', { name: 'What is dockudos?' });
+  await trigger.click();
+  const content = page
+    .locator('.dk-accordion-content[data-state="open"]')
+    .first();
+  expect(
+    await content.evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('dk-accordion-down');
+  await trigger.click();
+  await expect(page.getByText('A docs framework.')).toBeHidden();
+});
+
+test('the new components render and the custom file icons show', async ({
+  page,
+}) => {
+  await page.goto('/guides/components');
+  await expect(page.locator('[data-badge="green"]')).toHaveText('New');
+  await expect(page.locator('kbd').first()).toBeVisible();
+  await expect(page.getByText('Optional detail')).toBeVisible();
+  await expect(page.getByText('📂')).toBeVisible();
+  await expect(page.getByText('🟦')).toBeVisible();
 });

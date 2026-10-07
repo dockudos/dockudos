@@ -38,7 +38,7 @@ export function Tab({
   return (
     <Primitive.Content
       value={value}
-      className="p-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none [&>:first-child]:mt-0 [&>:last-child]:mb-0"
+      className="p-4 text-sm data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none [&>:first-child]:mt-0 [&>:last-child]:mb-0"
     >
       {children}
     </Primitive.Content>

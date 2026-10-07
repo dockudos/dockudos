@@ -2,17 +2,23 @@ import type { ComponentType } from 'react';
 import { Accordion, Accordions } from '../components/accordion.tsx';
 import { Banner } from '../components/banner.tsx';
 import { CodeBlock, CodeGroup } from '../components/code-block.tsx';
+import { Badge } from '../components/badge.tsx';
 import { Callout } from '../components/callout.tsx';
 import { Card, Cards } from '../components/cards.tsx';
+import { Columns } from '../components/columns.tsx';
+import { Expandable } from '../components/expandable.tsx';
 import { File, Files, Folder } from '../components/files.tsx';
+import { Frame } from '../components/frame.tsx';
 import { GithubInfo } from '../components/github-info.tsx';
 import { GraphView } from '../components/graph-view.tsx';
 import { Mermaid } from '../components/mermaid.tsx';
 import { InlineToc } from '../components/inline-toc.tsx';
+import { Kbd } from '../components/kbd.tsx';
 import { Step, Steps } from '../components/steps.tsx';
 import { Tab, Tabs } from '../components/tabs.tsx';
 import { Tooltip } from '../components/tooltip.tsx';
 import { TypeTable } from '../components/type-table.tsx';
+import { Video } from '../components/video.tsx';
 import { ZoomableImage } from '../components/zoomable-image.tsx';
 
 /** Components available in every MDX file without importing. */
@@ -36,6 +42,12 @@ export const mdxComponents = {
   TypeTable,
   GraphView,
   CodeGroup,
+  Badge,
+  Kbd,
+  Frame,
+  Video,
+  Columns,
+  Expandable,
   Mermaid,
   pre: CodeBlock,
   img: ZoomableImage,

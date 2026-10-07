@@ -55,7 +55,7 @@ export function Callout({
       role="note"
       data-callout={kind}
       className={cn(
-        'my-5 flex gap-3 rounded-lg border border-l-4 p-4 text-sm leading-relaxed',
+        'my-5 flex gap-3 rounded-lg border border-l-4 p-4 text-sm leading-relaxed animate-in fade-in-0 duration-300',
         'border-[color-mix(in_oklch,var(--c)_35%,transparent)] border-l-[var(--c)] bg-[color-mix(in_oklch,var(--c)_8%,transparent)]',
         className,
       )}

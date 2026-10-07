@@ -18,7 +18,8 @@ const pages = [
 for (const scheme of ['light', 'dark'] as const) {
   for (const path of pages) {
     test(`no axe violations on ${path} (${scheme})`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: scheme });
+      // Reduced motion: no element is mid-fade when axe measures its contrast.
+      await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
       await page.goto(path);
       await page.waitForLoadState('networkidle');
       const results = await new AxeBuilder({ page })

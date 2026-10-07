@@ -82,3 +82,35 @@ The <Tooltip tip="MDX is Markdown with components.">MDX</Tooltip> format.
 ## Auto type table
 
 <AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
+
+## Badges and keys
+
+<Badge color="green">New</Badge> <Badge color="amber">Beta</Badge>
+<Badge color="red">Deprecated</Badge>
+and <Kbd>Ctrl+K</Kbd> or <Kbd>Esc</Kbd>.
+
+## Columns, frame, expandable
+
+<Columns cols={2}>
+  <Card title="Left">First column.</Card>
+  <Card title="Right">Second column.</Card>
+</Columns>
+
+<Frame caption="A framed image">
+  <img src="/example.png" alt="A blue box" width={120} height={60} />
+</Frame>
+
+<Expandable title="Optional detail">Hidden until you open it.</Expandable>
+
+## Custom file icons
+
+<Files>
+  <Folder
+    name="src"
+    defaultOpen
+    icon={<span>📁</span>}
+    openIcon={<span>📂</span>}
+  >
+    <File name="app.ts" icon={<span>🟦</span>} />
+  </Folder>
+</Files>

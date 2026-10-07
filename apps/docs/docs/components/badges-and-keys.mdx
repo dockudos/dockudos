@@ -1,0 +1,28 @@
+---
+title: Badge and Kbd
+description: Small inline labels and keyboard keys.
+---
+
+## Badge
+
+<Badge>Default</Badge> <Badge color="blue">Info</Badge>
+<Badge color="green">New</Badge> <Badge color="amber">Beta</Badge>
+<Badge color="red">Deprecated</Badge>
+
+```mdx
+This API is <Badge color="amber">Beta</Badge>.
+```
+
+Colors: `gray` (default), `blue`, `green`, `amber`, `red`. Color is never the only signal: put the
+meaning in the text.
+
+## Kbd
+
+Press <Kbd>Ctrl+K</Kbd> to search, or <Kbd>Esc</Kbd> to close.
+
+```mdx
+Press <Kbd>Ctrl+K</Kbd>, or <Kbd>Esc</Kbd>.
+```
+
+A `+` inside the text separates keys, so `Ctrl+K` shows two keys. To show a literal plus key, pass
+it as an expression: `<Kbd>{'+'}</Kbd>`.

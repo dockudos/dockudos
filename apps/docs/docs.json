@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/@dockudos/core/docs.schema.json",
   "name": "dockudos",
-  "theme": { "primary": "#4f46e5" },
+  "theme": {
+    "primary": "#4f46e5"
+  },
   "navigation": [
     {
       "tab": "Guides",
@@ -52,6 +54,9 @@
             "components/steps-and-cards",
             "components/tooltip-and-banner",
             "components/files",
+            "components/badges-and-keys",
+            "components/layout-blocks",
+            "components/video",
             "components/type-tables",
             "components/page-data",
             "components/github-info"

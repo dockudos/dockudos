@@ -1,0 +1,39 @@
+---
+title: Video
+description: A video file, or an embedded player.
+---
+
+```mdx
+<Video title="Product tour" src="/tour.mp4" poster="/tour.png" />
+
+<Video title="Intro" embed="https://www.youtube.com/embed/VIDEO_ID" />
+```
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      required: true,
+      description: 'Accessible name. Describe the video.',
+    },
+    src: {
+      type: 'string',
+      description:
+        'A video file. Plays inline with controls; a download link is the fallback.',
+    },
+    embed: {
+      type: 'string',
+      description: 'An https:// URL of an embeddable player.',
+    },
+    poster: { type: 'string', description: 'Preview image for a video file.' },
+    ratio: {
+      type: 'string',
+      default: '"16 / 9"',
+      description: 'Aspect ratio of an embed.',
+    },
+  }}
+/>
+
+Give one of `src` or `embed`. An embed must be `https://`, is loaded lazily, and runs in a sandbox
+that does not allow it to navigate your page. Anything else fails the build.
+Captions are your responsibility: add a `<track>` through your own component if the video has speech.

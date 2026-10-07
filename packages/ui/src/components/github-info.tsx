@@ -39,8 +39,15 @@ const compact = new Intl.NumberFormat('en', { notation: 'compact' });
 const NAME = /^[A-Za-z0-9_.-]+$/;
 
 export async function GithubInfo({ owner, repo }: GithubInfoProps) {
-  if (!NAME.test(owner) || !NAME.test(repo) || owner === '..' || repo === '..') {
-    throw new Error(`<GithubInfo>: "${owner}/${repo}" is not a GitHub owner and repository name`);
+  if (
+    !NAME.test(owner) ||
+    !NAME.test(repo) ||
+    owner === '..' ||
+    repo === '..'
+  ) {
+    throw new Error(
+      `<GithubInfo>: "${owner}/${repo}" is not a GitHub owner and repository name`,
+    );
   }
   const data = await fetchRepo(owner, repo);
   return (

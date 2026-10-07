@@ -1,0 +1,46 @@
+---
+title: Columns, Frame and Expandable
+description: Side-by-side content, framed media, and optional detail.
+---
+
+## Columns
+
+<Columns cols={2}>
+  <Card title="Before">The old way.</Card>
+  <Card title="After">The new way.</Card>
+</Columns>
+
+```mdx
+<Columns cols={3}>
+  <Card title="One">…</Card>
+  <Card title="Two">…</Card>
+  <Card title="Three">…</Card>
+</Columns>
+```
+
+`cols` is 2, 3 or 4. Columns stack on phones. Anything can go in a column.
+
+## Frame
+
+<Frame caption="A blue box, framed with a caption">
+  <img src="/example.png" alt="A blue rectangle" width={120} height={60} />
+</Frame>
+
+```mdx
+<Frame caption="The dashboard">![The dashboard](./dashboard.png)</Frame>
+```
+
+## Expandable
+
+<Expandable title="Show the details">
+  Optional content that most readers can skip. It is a native `details` element:
+  it works without JavaScript, and Enter or Space opens it.
+</Expandable>
+
+```mdx
+<Expandable title="Show the details" defaultOpen>
+  …
+</Expandable>
+```
+
+Use `Accordions` for a group of related questions, `Expandable` for a single optional block.

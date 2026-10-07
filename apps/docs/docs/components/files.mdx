@@ -27,3 +27,54 @@ description: Show a file tree.
 ```
 
 Folders open and close with Enter or Space. `defaultOpen` starts one open.
+
+## Custom icons
+
+`File` and `Folder` take an `icon`: any element, such as an SVG, an `<img>` or an icon component.
+`Folder` also takes `openIcon`, shown while it is open; without it `icon` is used for both states.
+
+<Files>
+  <Folder
+    name="src"
+    defaultOpen
+    icon={<span>📁</span>}
+    openIcon={<span>📂</span>}
+  >
+    <File name="app.ts" icon={<span>🟦</span>} />
+    <File name="notes.md" />
+  </Folder>
+</Files>
+
+```mdx
+<Files>
+  <Folder
+    name="src"
+    defaultOpen
+    icon={<MyFolder />}
+    openIcon={<MyFolderOpen />}
+  >
+    <File name="app.ts" icon={<img src="/ts.svg" alt="" />} />
+  </Folder>
+</Files>
+```
+
+Icons are decorative: they are hidden from screen readers, and sized to 1rem.
+
+<TypeTable
+  type={{
+    icon: {
+      type: 'ReactNode',
+      description: 'On File and Folder. Replaces the default icon.',
+    },
+    openIcon: {
+      type: 'ReactNode',
+      description:
+        'On Folder. Shown while the folder is open. Defaults to icon.',
+    },
+    defaultOpen: {
+      type: 'boolean',
+      default: 'false',
+      description: 'On Folder.',
+    },
+  }}
+/>

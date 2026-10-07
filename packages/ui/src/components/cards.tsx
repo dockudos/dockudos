@@ -50,7 +50,7 @@ export function Card({ title, href, icon, children }: CardProps) {
   const className = cn(
     'block rounded-lg border bg-card p-4 text-card-foreground no-underline',
     href &&
-      'transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+      'transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
   );
   if (!href) return <div className={className}>{body}</div>;
   return external ? (

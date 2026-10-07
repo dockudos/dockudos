@@ -42,9 +42,9 @@ export function ZoomableImage({
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <Dialog.Content
-          className="fixed inset-4 z-50 flex items-center justify-center outline-none"
+          className="fixed inset-4 z-50 flex items-center justify-center outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">{alt || 'Image'}</Dialog.Title>
