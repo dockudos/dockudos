@@ -1,4 +1,4 @@
-import { defineMdxComponents } from '@dockudos/ui';
+import { defineMdxComponents } from '@dockudos/next/mdx-components';
 import type { MDXComponents } from 'mdx/types';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {

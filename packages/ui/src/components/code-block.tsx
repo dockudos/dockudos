@@ -16,6 +16,15 @@ type PreProps = ComponentProps<'pre'> & {
  */
 export function CodeBlock({ children, className, ...props }: PreProps) {
   const { 'data-title': title, ...pre } = props;
+  // Highlighted fences carry `data-language`. A bare `<pre>` (hand-written, or inside a
+  // Twoslash popup) keeps its plain form: no frame, no copy button.
+  if (!pre['data-language']) {
+    return (
+      <pre className={className} {...pre}>
+        {children}
+      </pre>
+    );
+  }
   return (
     <figure className="dk-code" data-has-title={title ? '' : undefined}>
       {title && <figcaption className="dk-code-title">{title}</figcaption>}

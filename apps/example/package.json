@@ -9,7 +9,17 @@
     ],
     "targets": {
       "e2e": {
-        "command": "playwright test",
+        "command": "playwright test --project=chromium",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "dependsOn": [
+          "build"
+        ],
+        "cache": false
+      },
+      "e2e-visual": {
+        "command": "playwright test --project=visual",
         "options": {
           "cwd": "{projectRoot}"
         },
@@ -27,5 +37,6 @@
     "@dockudos/core": "workspace:*",
     "@dockudos/next": "workspace:*",
     "@dockudos/ui": "workspace:*"
-  }
+  },
+  "devDependencies": {}
 }

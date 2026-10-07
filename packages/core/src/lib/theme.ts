@@ -8,8 +8,8 @@ interface Oklch {
   h: number;
 }
 
-const WHITE_FG = 'oklch(0.985 0 0)';
-const DARK_FG = 'oklch(0.205 0 0)';
+const WHITE_FG = 'oklch(1 0 0)';
+const DARK_FG = 'oklch(0.145 0 0)';
 
 /** `#rgb` or `#rrggbb` to OKLCH (Ottosson's OKLab, sRGB input). */
 export function hexToOklch(hex: string): Oklch {
@@ -39,18 +39,72 @@ const fmt = ({ l, c, h }: Oklch) =>
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, v));
 
+/** OKLCH to linear sRGB, clipped to the gamut (what a browser shows for an out-of-gamut color). */
+function oklchToLinear({ l, c, h }: Oklch): [number, number, number] {
+  const a = c * Math.cos((h * Math.PI) / 180);
+  const b = c * Math.sin((h * Math.PI) / 180);
+  const l_ = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m_ = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s_ = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const rgb = [
+    4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+    -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_,
+  ];
+  return rgb.map((v) => clamp(v, 0, 1)) as [number, number, number];
+}
+
+const luminance = (color: Oklch) => {
+  const [r, g, b] = oklchToLinear(color);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+/** WCAG contrast ratio between two colors (1 to 21). */
+export function contrastRatio(a: Oklch, b: Oklch): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [
+    number,
+    number,
+  ];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+const LIGHT_BG: Oklch = { l: 1, c: 0, h: 0 };
+const DARK_BG: Oklch = { l: 0.145, c: 0, h: 0 };
+const MIN_CONTRAST = 4.5;
+
+/** Move lightness away from `bg` in small steps until `color` reaches the contrast needed for body text. */
+function withContrast(color: Oklch, bg: Oklch, direction: 1 | -1): Oklch {
+  const out = { ...color };
+  while (
+    contrastRatio(out, bg) < MIN_CONTRAST &&
+    out.l > 0.02 &&
+    out.l < 0.98
+  ) {
+    out.l += 0.01 * direction;
+  }
+  return out;
+}
+
 /**
  * CSS variable values derived from one brand color, for both color schemes.
- * Light mode keeps the brand color but never lighter than needed for white
- * text to stay readable; dark mode lifts it so it stands out on dark surfaces.
+ * The brand color is nudged just far enough to stay readable as text and as a
+ * button background: darker in light mode, lighter in dark mode (WCAG AA, 4.5:1).
  */
 export function generatePalette(primary: string): {
   light: Record<string, string>;
   dark: Record<string, string>;
 } {
   const base = hexToOklch(primary);
-  const light: Oklch = { ...base, l: clamp(base.l, 0.35, 0.62) };
-  const dark: Oklch = { ...base, l: clamp(base.l, 0.68, 0.85) };
+  const light = withContrast(
+    { ...base, l: clamp(base.l, 0.3, 0.62) },
+    LIGHT_BG,
+    -1,
+  );
+  const dark = withContrast(
+    { ...base, l: clamp(base.l, 0.6, 0.85) },
+    DARK_BG,
+    1,
+  );
   const tint = (l: number, c: number): Oklch => ({
     l,
     c: Math.min(base.c, c),

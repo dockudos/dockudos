@@ -290,8 +290,15 @@ describe('CodeBlock', () => {
     </CodeBlock>
   );
 
+  it('leaves a pre without a language as a plain pre (hand-written, or inside a Twoslash popup)', () => {
+    const { container } = render(<CodeBlock><code>plain</code></CodeBlock>);
+    expect(container.querySelector('figure')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy code' })).not.toBeInTheDocument();
+    expect(container.querySelector('pre')).toHaveTextContent('plain');
+  });
+
   it('renders the title and a copy button', () => {
-    render(block({ 'data-title': 'a.ts' }));
+    render(block({ 'data-title': 'a.ts', 'data-language': 'ts' }));
     expect(screen.getByText('a.ts')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Copy code' }),
@@ -305,7 +312,7 @@ describe('CodeBlock', () => {
       value: { writeText },
       configurable: true,
     });
-    render(block());
+    render(block({ 'data-language': 'ts' }));
     await user.click(screen.getByRole('button', { name: 'Copy code' }));
     expect(writeText).toHaveBeenCalledWith('const a = 1;');
     expect(await screen.findByRole('status')).toHaveTextContent(
@@ -319,7 +326,7 @@ describe('CodeBlock', () => {
       value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
       configurable: true,
     });
-    render(block());
+    render(block({ 'data-language': 'ts' }));
     await user.click(screen.getByRole('button', { name: 'Copy code' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Copy failed');
   });
@@ -335,11 +342,11 @@ describe('CodeBlock', () => {
     render(
       <CodeGroup>
         <>
-          <CodeBlock data-title="a.ts">
+          <CodeBlock data-title="a.ts" data-language="ts">
             <code>a</code>
           </CodeBlock>
         </>
-        <CodeBlock data-title="b.js">
+        <CodeBlock data-title="b.js" data-language="js">
           <code>b</code>
         </CodeBlock>
       </CodeGroup>,

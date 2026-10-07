@@ -26,7 +26,13 @@
       "import": "./dist/client.js",
       "default": "./dist/client.js"
     },
-    "./katex.css": "./katex.css"
+    "./katex.css": "./katex.css",
+    "./mdx-components": {
+      "@dockudos/source": "./src/mdx-components.ts",
+      "types": "./dist/mdx-components.d.ts",
+      "import": "./dist/mdx-components.js",
+      "default": "./dist/mdx-components.js"
+    }
   },
   "files": [
     "dist",

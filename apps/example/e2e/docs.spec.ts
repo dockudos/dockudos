@@ -11,7 +11,10 @@ test('renders docs/index.mdx at /', async ({ page }) => {
 
 test('renders a nested page and follows links to it', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'hello guide' }).click();
+  await page
+    .locator('.dk-prose')
+    .getByRole('link', { name: 'hello guide' })
+    .click();
   await expect(page).toHaveURL('/guides/hello');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Hello guide' }),
@@ -64,6 +67,9 @@ test('compiles callouts, includes and page links', async ({ page }) => {
     'Careful',
   );
   await expect(page.getByText('included from')).toBeVisible();
-  await page.getByRole('link', { name: 'hello guide' }).click();
+  await page
+    .locator('.dk-prose')
+    .getByRole('link', { name: 'hello guide' })
+    .click();
   await expect(page).toHaveURL('/guides/hello#first-steps');
 });

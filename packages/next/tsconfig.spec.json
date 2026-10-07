@@ -10,7 +10,9 @@
       "vitest"
     ],
     "forceConsistentCasingInFileNames": true,
-    "rewriteRelativeImportExtensions": false
+    "rewriteRelativeImportExtensions": false,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "es2022"]
   },
   "include": [
     "vite.config.ts",
