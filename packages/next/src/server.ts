@@ -69,10 +69,8 @@ export function getSite(options: SiteOptions = {}): Promise<Site> {
 
 async function loadSite(root: string, docsDir: string): Promise<Site> {
   const dir = join(root, docsDir);
-  const [config, tree] = await Promise.all([
-    loadConfig(root),
-    discoverPages(dir),
-  ]);
+  const config = await loadConfig(root);
+  const tree = await discoverPages(dir, { prefix: config.urlPrefix });
   return {
     root,
     config,
@@ -90,11 +88,15 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       });
       return extractToc(source);
     },
-    graph: () => buildGraph(tree, dir),
+    graph: () => buildGraph(tree, dir, config.urlPrefix),
   };
 }
 
-async function buildGraph(tree: PageTree, dir: string): Promise<PageGraph> {
+async function buildGraph(
+  tree: PageTree,
+  dir: string,
+  prefix?: string,
+): Promise<PageGraph> {
   const pages = tree.pages.filter((p) => !p.hidden);
   const byPath = new Map(pages.map((p) => [p.path, p]));
   const edges = new Map<string, { from: string; to: string }>();
@@ -104,7 +106,7 @@ async function buildGraph(tree: PageTree, dir: string): Promise<PageGraph> {
       const source = await readFile(join(dir, page.file), 'utf8');
       for (const { href, kind } of extractLinks(source)) {
         if (kind !== 'link') continue;
-        const link = resolveDocLink(page.file, href);
+        const link = resolveDocLink(page.file, href, { prefix });
         if (link.kind !== 'internal' || link.path === page.path) continue;
         if (!byPath.has(link.path)) continue;
         edges.set(`${page.path}>${link.path}`, {

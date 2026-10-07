@@ -113,3 +113,13 @@ describe('discoverPages: layout', () => {
     await expect(discoverPages(dir)).rejects.toThrow(/layout/);
   });
 });
+
+describe('discoverPages: prefix', () => {
+  it('mounts pages under the prefix', async () => {
+    await writeFile(join(dir, 'index.mdx'), '# H');
+    await mkdir(join(dir, 'g'));
+    await writeFile(join(dir, 'g', 'a.mdx'), '# A');
+    const tree = await discoverPages(dir, { prefix: '/docs' });
+    expect(tree.pages.map((p) => p.path)).toEqual(['/docs', '/docs/g/a']);
+  });
+});

@@ -157,6 +157,25 @@ describe('parseConfig: full schema', () => {
   });
 });
 
+describe('parseConfig: urlPrefix', () => {
+  it('accepts a mount point', () => {
+    expect(parseConfig({ name: 'A', urlPrefix: '/docs' }).urlPrefix).toBe(
+      '/docs',
+    );
+    expect(
+      parseConfig({ name: 'A', urlPrefix: '/help/center' }).urlPrefix,
+    ).toBe('/help/center');
+    expect(parseConfig({ name: 'A' }).urlPrefix).toBeUndefined();
+  });
+
+  it.each(['docs', '/docs/', '/', '//docs'])(
+    'rejects %j naming the key',
+    (urlPrefix) => {
+      expect(messageOf({ name: 'A', urlPrefix })).toContain('urlPrefix');
+    },
+  );
+});
+
 describe('docs.schema.json', () => {
   it('is in sync with the zod schema (run `pnpm schema` to update)', async () => {
     const { readFile } = await import('node:fs/promises');

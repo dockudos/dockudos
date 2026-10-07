@@ -102,6 +102,17 @@ const seoSchema = z.strictObject({
  */
 export const docsConfigSchema = z.strictObject({
   $schema: z.string().optional(),
+  /**
+   * Where the docs are mounted in the site, for apps that have other routes
+   * (`/docs`). Match it with the folder of the catch-all route. Default: the site root.
+   */
+  urlPrefix: z
+    .string()
+    .regex(
+      /^\/[^/]+(?:\/[^/]+)*$/,
+      'must start with "/" and not end with "/", like "/docs"',
+    )
+    .optional(),
   name: z.string().min(1),
   logo: logoSchema.optional(),
   favicon: z.string().min(1).optional(),

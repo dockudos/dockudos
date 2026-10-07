@@ -73,6 +73,26 @@ describe('links', () => {
   });
 });
 
+describe('links with a url prefix', () => {
+  it('puts relative page links under the mount point and leaves absolute ones alone', async () => {
+    const out = String(
+      await compile(
+        {
+          value: '[a](./other.mdx#x) [b](/docs/else) [c](/pricing)',
+          path: join(docsDir, 'guides/page.mdx'),
+        },
+        {
+          jsx: true,
+          remarkPlugins: [[remarkLinks, { docsDir, prefix: '/docs' }]],
+        },
+      ),
+    );
+    expect(out).toContain('href="/docs/guides/other#x"');
+    expect(out).toContain('href="/docs/else"');
+    expect(out).toContain('href="/pricing"');
+  });
+});
+
 describe('headings', () => {
   it('gives headings the ids that extractToc predicts', async () => {
     const source =

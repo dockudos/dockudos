@@ -30,7 +30,7 @@ export async function loadProject(root: string): Promise<Project> {
   const docsDir = join(root, 'docs');
   try {
     const config = await loadConfig(root);
-    const tree = await discoverPages(docsDir);
+    const tree = await discoverPages(docsDir, { prefix: config.urlPrefix });
     const nav = buildNavigation(config, tree);
     resolveRedirects(
       config.redirects,
@@ -51,6 +51,7 @@ export async function findBrokenLinks(
   const problems = await checkLinks({
     docsDir: project.docsDir,
     publicDir: join(root, 'public'),
+    prefix: project.config.urlPrefix,
     tree: project.tree,
     redirectSources: project.config.redirects.map((r) => r.source),
     external,

@@ -54,7 +54,10 @@ export function loadConfigSync(root: string): DocsConfig {
 }
 
 /** Walk `<docsDir>`, read each page's frontmatter and build the page tree. */
-export async function discoverPages(docsDir: string): Promise<PageTree> {
+export async function discoverPages(
+  docsDir: string,
+  options: { prefix?: string } = {},
+): Promise<PageTree> {
   let entries;
   try {
     entries = await readdir(docsDir, { recursive: true, withFileTypes: true });
@@ -109,7 +112,7 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
       ),
     );
   }
-  return buildPageTree(sources);
+  return buildPageTree(sources, options);
 }
 export * from './lib/last-modified.ts';
 export * from './lib/check-links.ts';

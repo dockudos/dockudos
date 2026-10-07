@@ -127,3 +127,30 @@ describe('extractLinks', () => {
     ]);
   });
 });
+
+describe('resolveDocLink: prefix', () => {
+  const opts = { prefix: '/docs' };
+
+  it('puts relative links under the mount point', () => {
+    expect(resolveDocLink('guides/auth.mdx', './other.mdx#x', opts)).toEqual({
+      kind: 'internal',
+      path: '/docs/guides/other',
+      hash: 'x',
+    });
+    expect(resolveDocLink('guides/auth.mdx', '../index.mdx', opts)).toEqual({
+      kind: 'internal',
+      path: '/docs',
+    });
+  });
+
+  it('takes absolute links as full site paths', () => {
+    expect(resolveDocLink('a.mdx', '/docs/guides/x', opts)).toEqual({
+      kind: 'internal',
+      path: '/docs/guides/x',
+    });
+    expect(resolveDocLink('a.mdx', '/pricing', opts)).toEqual({
+      kind: 'internal',
+      path: '/pricing',
+    });
+  });
+});

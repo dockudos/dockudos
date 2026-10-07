@@ -14,10 +14,15 @@ const DOC_EXT = /\.mdx?$/;
 
 /**
  * Classify a link written in the file `from` (docs-relative, forward slashes)
- * and resolve internal ones to site paths. `./other.mdx#h` in
+ * and resolve internal ones to site paths. Relative links get `prefix` (the docs mount point);
+ * absolute ones are already full site paths. `./other.mdx#h` in
  * `guides/auth.mdx` becomes `{ kind: 'internal', path: '/guides/other', hash: 'h' }`.
  */
-export function resolveDocLink(from: string, href: string): DocLink {
+export function resolveDocLink(
+  from: string,
+  href: string,
+  { prefix = '' }: { prefix?: string } = {},
+): DocLink {
   if (EXTERNAL.test(href)) return { kind: 'external', href };
   if (href.startsWith('#')) return { kind: 'anchor', hash: href.slice(1) };
 
@@ -38,8 +43,14 @@ export function resolveDocLink(from: string, href: string): DocLink {
     else parts.push(seg);
   }
   if (parts.at(-1) === 'index') parts.pop();
-  const path =
-    '/' + parts.map((s) => toUrlSegment(decodeURIComponent(s))).join('/');
+  const rel = parts.map((s) => toUrlSegment(decodeURIComponent(s))).join('/');
+  // Relative links are relative to the docs folder, so they get the mount prefix. Absolute
+  // `/site/paths` are taken as written.
+  const path = rawPath.startsWith('/')
+    ? '/' + rel
+    : rel
+      ? `${prefix}/${rel}`
+      : prefix || '/';
   return hash ? { kind: 'internal', path, hash } : { kind: 'internal', path };
 }
 

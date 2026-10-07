@@ -51,11 +51,20 @@ export interface PageTree {
 
 const DOC_EXT = /\.mdx?$/;
 
-/** Build a page tree from file paths relative to the docs folder. Non-markdown files are ignored. */
+/**
+ * Build a page tree from file paths relative to the docs folder. Non-markdown files are ignored.
+ * With `prefix` (`/docs`) every page path starts with it; `slug` stays relative to the mount point.
+ */
 export function buildPageTree(
   sources: readonly (string | PageSource)[],
+  { prefix = '' }: { prefix?: string } = {},
 ): PageTree {
-  const root: Folder = { type: 'folder', name: '', path: '/', children: [] };
+  const root: Folder = {
+    type: 'folder',
+    name: '',
+    path: prefix || '/',
+    children: [],
+  };
 
   const entries = sources
     .map((s) => (typeof s === 'string' ? { file: s } : s))
@@ -79,7 +88,7 @@ export function buildPageTree(
     const slug = isIndex ? segments : [...segments, leaf];
     const page: Page = {
       type: 'page',
-      path: '/' + slug.join('/'),
+      path: slug.length ? prefix + '/' + slug.join('/') : prefix || '/',
       slug,
       file,
       title:

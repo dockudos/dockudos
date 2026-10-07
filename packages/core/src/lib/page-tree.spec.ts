@@ -121,3 +121,24 @@ describe('buildPageTree: metadata and URLs', () => {
     );
   });
 });
+
+describe('buildPageTree: prefix', () => {
+  const tree = buildPageTree(
+    ['index.mdx', 'guides/index.mdx', 'guides/auth.mdx'],
+    { prefix: '/docs' },
+  );
+
+  it('prefixes every page path but leaves slugs relative to the mount point', () => {
+    expect(tree.pages.map((p) => [p.path, p.slug.join('/')])).toEqual([
+      ['/docs', ''],
+      ['/docs/guides', 'guides'],
+      ['/docs/guides/auth', 'guides/auth'],
+    ]);
+  });
+
+  it('is unchanged without a prefix', () => {
+    expect(
+      buildPageTree(['index.mdx', 'a.mdx']).pages.map((p) => p.path),
+    ).toEqual(['/', '/a']);
+  });
+});

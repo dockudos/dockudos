@@ -40,6 +40,7 @@ export function withDocs(
     options: mdxPipeline({
       docsDir: absoluteDocsDir,
       publicDir: resolve(root, 'public'),
+      prefix: config.urlPrefix,
     }),
   });
 
@@ -52,7 +53,9 @@ export function withDocs(
     async redirects() {
       const own = (await nextConfig.redirects?.()) ?? [];
       if (config.redirects.length === 0) return own;
-      const pages = await discoverPages(absoluteDocsDir);
+      const pages = await discoverPages(absoluteDocsDir, {
+        prefix: config.urlPrefix,
+      });
       return [
         ...own,
         ...resolveRedirects(

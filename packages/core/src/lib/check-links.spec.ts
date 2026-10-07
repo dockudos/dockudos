@@ -95,6 +95,18 @@ describe('checkLinks: internal', () => {
   });
 });
 
+describe('checkLinks: prefix', () => {
+  it('resolves relative links under the mount point and absolute ones as written', async () => {
+    await put('index.mdx', '[a](./a.mdx) [b](/docs/a) [c](/a)');
+    await put('a.mdx', 'A');
+    const tree = await discoverPages(docs, { prefix: '/docs' });
+    const problems = await checkLinks({ docsDir: docs, tree, prefix: '/docs' });
+    expect(problems.map((p) => [p.href, p.message])).toEqual([
+      ['/a', 'no page at /a'],
+    ]);
+  });
+});
+
 describe('checkLinks: external', () => {
   const response = (status: number) => ({ status }) as Response;
 

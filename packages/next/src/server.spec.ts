@@ -201,3 +201,33 @@ describe('graph', () => {
     ]);
   });
 });
+
+describe('urlPrefix', () => {
+  it('mounts pages under the prefix, finds them by relative slug, and builds canonical URLs with it', async () => {
+    await config({ urlPrefix: '/docs', seo: { siteUrl: 'https://acme.dev' } });
+    const site = await getSite({ root });
+    expect(site.find(['guides', 'auth'])?.path).toBe('/docs/guides/auth');
+    expect(site.find()?.path).toBe('/docs');
+    expect(
+      pageMetadata(site, site.find(['guides', 'auth']) as never).alternates
+        ?.canonical,
+    ).toBe('https://acme.dev/docs/guides/auth');
+    expect(await (await sitemapResponse(site)).text()).toContain(
+      '<loc>https://acme.dev/docs/guides/auth</loc>',
+    );
+  });
+
+  it('draws graph edges between prefixed pages', async () => {
+    await config({ urlPrefix: '/docs' });
+    await writeFile(
+      join(root, 'docs', 'a.mdx'),
+      '[b](./b.mdx) [c](/docs/guides/auth)',
+    );
+    await writeFile(join(root, 'docs', 'b.mdx'), 'B');
+    const graph = await (await getSite({ root })).graph();
+    expect(graph.edges).toEqual([
+      { from: '/docs/a', to: '/docs/b' },
+      { from: '/docs/a', to: '/docs/guides/auth' },
+    ]);
+  });
+});

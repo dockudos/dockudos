@@ -5,6 +5,10 @@
     "$schema": {
       "type": "string"
     },
+    "urlPrefix": {
+      "type": "string",
+      "pattern": "^\\/[^/]+(?:\\/[^/]+)*$"
+    },
     "name": {
       "type": "string",
       "minLength": 1

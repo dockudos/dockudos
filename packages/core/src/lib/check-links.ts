@@ -21,6 +21,8 @@ export interface CheckLinksOptions {
   /** Absolute path of `public/`, for links like `/logo.svg`. */
   publicDir?: string;
   tree: PageTree;
+  /** Mount point of the docs in the site (`urlPrefix`), so relative links resolve to real page paths. */
+  prefix?: string;
   /** Old URLs that redirect somewhere, so links to them still count as valid. */
   redirectSources?: readonly string[];
   /** Also request `http(s)` links. Off by default: slow and flaky. */
@@ -97,7 +99,7 @@ export async function checkLinks(
       problems.push({ file, line, href, message, severity: 'error' });
 
     for (const { href, line } of extractLinks(source)) {
-      const link = resolveDocLink(file, href);
+      const link = resolveDocLink(file, href, { prefix: options.prefix });
 
       if (link.kind === 'external') {
         if (/^https?:\/\//i.test(href)) externals.push({ file, line, href });

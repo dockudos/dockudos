@@ -8,6 +8,8 @@ export interface MdxPipelineOptions {
   docsDir: string;
   /** Absolute path of the project's `public` folder. */
   publicDir: string;
+  /** Where the docs are mounted in the site (`urlPrefix`). */
+  prefix?: string;
 }
 
 const require = createRequire(import.meta.url);
@@ -22,7 +24,11 @@ const own = (name: string) =>
  * `node_modules` cannot see our dependencies. Paths also keep the options
  * serializable, which Turbopack needs.
  */
-export function mdxPipeline({ docsDir, publicDir }: MdxPipelineOptions): {
+export function mdxPipeline({
+  docsDir,
+  publicDir,
+  prefix,
+}: MdxPipelineOptions): {
   remarkPlugins: Plugin[];
   rehypePlugins: Plugin[];
 } {
@@ -36,7 +42,8 @@ export function mdxPipeline({ docsDir, publicDir }: MdxPipelineOptions): {
       [own('remark-include'), { docsDir }],
       own('remark-admonitions'),
       own('remark-code'),
-      [own('remark-links'), { docsDir }],
+      // Turbopack needs JSON-serializable options, so absent values are left out, not `undefined`.
+      [own('remark-links'), { docsDir, ...(prefix && { prefix }) }],
       [own('remark-images'), { publicDir }],
       [own('remark-math-styles'), { css: '@dockudos/next/katex.css' }],
     ],

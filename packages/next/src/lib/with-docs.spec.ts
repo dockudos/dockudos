@@ -71,6 +71,26 @@ describe('withDocs', () => {
   });
 });
 
+describe('withDocs: loader options', () => {
+  it('are JSON-serializable, which Turbopack requires (no undefined values)', () => {
+    vi.stubEnv('TURBOPACK', '1');
+    try {
+      const rules = docs().turbopack?.rules as Record<
+        string,
+        { loaders: { options: object }[] }[]
+      >;
+      const options = Object.values(rules)
+        .flat()
+        .flatMap((r) => r.loaders.map((l) => l.options));
+      expect(options.length).toBeGreaterThan(0);
+      // `toStrictEqual` treats an `undefined` property as a difference, which is what JSON drops.
+      expect(JSON.parse(JSON.stringify(options))).toStrictEqual(options);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe('withDocs: docs.json', () => {
   it('fails at call time with the key name when docs.json is invalid', async () => {
     await writeConfig({ theme: { layout: 'wide' } });
