@@ -5,6 +5,7 @@ import {
   createAskHandler,
   createNavigateHandler,
   createGuard,
+  preflight,
 } from './ai-api.ts';
 import {
   MAX_LIMIT,
@@ -173,5 +174,14 @@ export function createDocsApi(options: DocsApiOptions = {}) {
         return apiError(500, 'Something went wrong.');
       }
     };
-  return { GET: dispatch(get), POST: dispatch(post) };
+  // Browsers on other, allowed origins ask before they post.
+  const preflights: Record<string, Route> = {
+    ask: preflight,
+    navigate: preflight,
+  };
+  return {
+    GET: dispatch(get),
+    POST: dispatch(post),
+    OPTIONS: dispatch(preflights),
+  };
 }

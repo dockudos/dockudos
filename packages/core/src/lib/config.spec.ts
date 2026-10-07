@@ -29,6 +29,7 @@ describe('parseConfig', () => {
         endpoint: '/api/ask',
         navigateEndpoint: '/api/navigate',
         navigation: true,
+        allowedOrigins: [],
         limits: {
           maxQuestionLength: 500,
           maxOutputTokens: 800,
@@ -455,6 +456,27 @@ describe('parseConfig: ai', () => {
     });
     expect(message).toContain('unknown key ai.apiKey');
     expect(message).toContain('DOCKUDOS_LLM_API_KEY');
+  });
+
+  it('takes the origins that may embed or call the assistant', () => {
+    expect(
+      parseConfig({
+        name: 'A',
+        ai: {
+          allowedOrigins: ['https://app.acme.com', 'http://localhost:3000'],
+        },
+      }).ai.allowedOrigins,
+    ).toEqual(['https://app.acme.com', 'http://localhost:3000']);
+    for (const bad of [
+      'app.acme.com',
+      'https://app.acme.com/path',
+      '*',
+      'https://a b.com',
+    ])
+      expect(
+        messageOf({ name: 'A', ai: { allowedOrigins: [bad] } }),
+        bad,
+      ).toContain('ai.allowedOrigins[0]');
   });
 
   it('rejects bad values', () => {

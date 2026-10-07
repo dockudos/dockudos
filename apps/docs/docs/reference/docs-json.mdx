@@ -271,6 +271,12 @@ Off by default. Keys are never read from `docs.json`: set `DOCKUDOS_LLM_API_KEY`
       default: '"/api/ask"',
       description: 'The route that answers questions. Must start with "/".',
     },
+    allowedOrigins: {
+      type: 'string[]',
+      default: '[]',
+      description:
+        'Other sites that may call the assistant from a browser or frame it: origins like https://app.acme.com, with no path.',
+    },
     navigateEndpoint: {
       type: 'string',
       default: '"/api/navigate"',
@@ -295,7 +301,7 @@ Off by default. Keys are never read from `docs.json`: set `DOCKUDOS_LLM_API_KEY`
   }}
 />
 
-See [AI providers](../guides/ai-providers.mdx), [Ask the docs](../guides/ask-the-docs.mdx) and [AI navigation](../guides/ai-navigation.mdx).
+See [AI providers](../guides/ai-providers.mdx), [Ask the docs](../guides/ask-the-docs.mdx) and [AI navigation](../guides/ai-navigation.mdx) and [Embed the assistant](../guides/embed-assistant.mdx).
 
 ## actions
 

@@ -127,3 +127,4 @@ export * from './lib/last-modified.ts';
 export * from './lib/check-links.ts';
 export * from './lib/icon-packs.ts';
 export * from './lib/site-index.ts';
+export * from './lib/mcp-site.ts';

@@ -362,3 +362,193 @@ describe('POST /api/navigate', () => {
     expect(limited.headers.get('retry-after')).toBeTruthy();
   });
 });
+
+describe('callers from other places', () => {
+  const body = (extra: object = {}) => ({
+    question: 'How do I rotate a key?',
+    ...extra,
+  });
+  const KEY = 'api-key-for-tests-1234';
+  const env = { DOCKUDOS_API_KEYS: `${KEY}, another-key-5678` };
+
+  it('refuses a browser on another origin, and lets the site itself and tools without an Origin in', async () => {
+    const api = createDocsApi({ ai: { llm: citing(), env } });
+    const evil = await api.POST(
+      post(body(), { origin: 'https://evil.example' }),
+      ctx('ask'),
+    );
+    expect(evil.status).toBe(403);
+    expect((await evil.json()).error).toContain('ai.allowedOrigins');
+    expect(evil.headers.get('access-control-allow-origin')).toBeNull();
+
+    await writeSite({ limits: { ratePerMinute: 50 } });
+    const own = await api.POST(
+      post(body(), { origin: 'http://docs.test', host: 'docs.test' }),
+      ctx('ask'),
+    );
+    expect(own.status).toBe(200);
+    expect((await api.POST(post(body()), ctx('ask'))).status).toBe(200);
+    expect(
+      (await api.POST(post(body(), { origin: 'null' }), ctx('ask'))).status,
+    ).toBe(403);
+  });
+
+  it('lets a listed origin read the answer, errors included, and answers its preflight', async () => {
+    await writeSite({
+      allowedOrigins: ['https://app.acme.com'],
+      limits: { ratePerMinute: 2, maxQuestionLength: 100 },
+    });
+    const api = createDocsApi({ ai: { llm: citing(), env } });
+    const from = (extra: Record<string, string> = {}) => ({
+      origin: 'https://app.acme.com',
+      'x-forwarded-for': '7.7.7.7',
+      ...extra,
+    });
+
+    const pre = await api.OPTIONS(
+      new Request('http://docs.test/api/ask', {
+        method: 'OPTIONS',
+        headers: {
+          origin: 'https://app.acme.com',
+          'access-control-request-method': 'POST',
+        },
+      }),
+      ctx('ask'),
+    );
+    expect(pre.status).toBe(204);
+    expect(pre.headers.get('access-control-allow-origin')).toBe(
+      'https://app.acme.com',
+    );
+    expect(pre.headers.get('access-control-allow-headers')).toContain(
+      'authorization',
+    );
+    expect(pre.headers.get('access-control-allow-methods')).toContain('POST');
+
+    const ok = await api.POST(post(body(), from()), ctx('ask'));
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get('access-control-allow-origin')).toBe(
+      'https://app.acme.com',
+    );
+    expect(ok.headers.get('content-type')).toContain('text/event-stream');
+    await ok.text();
+
+    const tooLong = await api.POST(
+      post({ question: 'x'.repeat(101) }, from()),
+      ctx('ask'),
+    );
+    expect(tooLong.status).toBe(413);
+    expect(tooLong.headers.get('access-control-allow-origin')).toBe(
+      'https://app.acme.com',
+    );
+
+    const limited = await api.POST(post(body(), from()), ctx('ask'));
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('access-control-allow-origin')).toBe(
+      'https://app.acme.com',
+    );
+    expect(limited.headers.get('access-control-expose-headers')).toContain(
+      'retry-after',
+    );
+  });
+
+  it('refuses the preflight of an origin that is not listed, and when the assistant is off', async () => {
+    const api = createDocsApi({ ai: { llm: citing() } });
+    const pre = (origin: string) =>
+      api.OPTIONS(
+        new Request('http://docs.test/api/ask', {
+          method: 'OPTIONS',
+          headers: { origin },
+        }),
+        ctx('ask'),
+      );
+    expect((await pre('https://evil.example')).status).toBe(403);
+    await writeSite(null);
+    expect((await pre('https://app.acme.com')).status).toBe(403);
+  });
+
+  it('gives an API key its own, larger budget; a wrong key is refused', async () => {
+    await writeSite({ limits: { ratePerMinute: 1 } });
+    const llm = citing();
+    const api = createDocsApi({ ai: { llm, env } });
+    const withKey = (key: string, header = 'authorization') =>
+      post(body(), {
+        [header]: header === 'authorization' ? `Bearer ${key}` : key,
+      });
+
+    // A visitor without a key gets one question a minute.
+    expect(
+      (
+        await api.POST(
+          post(body(), { 'x-forwarded-for': '5.5.5.5' }),
+          ctx('ask'),
+        )
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await api.POST(
+          post(body(), { 'x-forwarded-for': '5.5.5.5' }),
+          ctx('ask'),
+        )
+      ).status,
+    ).toBe(429);
+
+    // A key gets six, counted for the key, whatever the address.
+    for (let i = 0; i < 6; i++) {
+      const res = await api.POST(withKey(KEY), ctx('ask'));
+      expect(res.status, `request ${i + 1}`).toBe(200);
+      await res.text();
+    }
+    expect((await api.POST(withKey(KEY), ctx('ask'))).status).toBe(429);
+    // Another key has its own budget, and the x-api-key header works too.
+    expect(
+      (await api.POST(withKey('another-key-5678', 'x-api-key'), ctx('ask')))
+        .status,
+    ).toBe(200);
+
+    const wrong = await api.POST(withKey('not-the-key-at-all'), ctx('ask'));
+    expect(wrong.status).toBe(401);
+    expect(wrong.headers.get('www-authenticate')).toBe('Bearer');
+    expect((await wrong.json()).error).toBe('The API key is not valid.');
+    // With no keys configured, any key is wrong.
+    const none = createDocsApi({ ai: { llm, env: {} } });
+    expect((await none.POST(withKey(KEY), ctx('ask'))).status).toBe(401);
+  });
+
+  it('passes the context on to retrieval and the model, and keeps differently-placed questions apart in the cache', async () => {
+    await writeSite({ limits: { ratePerMinute: 50 } });
+    const llm = citing();
+    const api = createDocsApi({ ai: { llm } });
+    const ask = async (context: object) => {
+      const res = await api.POST(post(body({ context })), ctx('ask'));
+      await res.text();
+    };
+    await ask({ hint: 'API keys screen' });
+    await ask({ hint: 'API keys screen' });
+    await ask({ hint: 'Billing screen' });
+    expect(llm.calls).toHaveLength(2);
+    expect(llm.calls[0]?.messages.at(-1)?.content).toContain(
+      'The reader is working on: API keys screen',
+    );
+  });
+
+  it('takes the context for navigation too', async () => {
+    await writeSite({ limits: { ratePerMinute: 50 } });
+    const llm = mockLLM(
+      () => '{"choice":1,"confidence":"high","reason":"Here."}',
+    );
+    const api = createDocsApi({ ai: { llm } });
+    const res = await api.POST(
+      new Request('http://docs.test/api/navigate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          query: 'rotate my key',
+          context: { path: '/guides/auth' },
+        }),
+      }),
+      ctx('navigate'),
+    );
+    expect(res.status).toBe(200);
+  });
+});

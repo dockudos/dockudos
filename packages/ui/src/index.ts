@@ -87,3 +87,5 @@ export * from './components/ask-view.tsx';
 export * from './layout/assistant-panel.tsx';
 export * from './lib/navigate-client.ts';
 export * from './components/navigation-notice.tsx';
+export * from './components/embedded-assistant.tsx';
+export * from './components/docs-assistant.tsx';

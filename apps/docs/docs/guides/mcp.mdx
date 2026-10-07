@@ -1,0 +1,66 @@
+---
+icon: plug
+title: MCP server
+description: Let AI coding tools search and read your documentation directly.
+---
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is how coding tools such as Claude Code and Cursor use outside
+sources. dockudos gives them yours: three read-only tools over the same index that powers [search](./search.mdx).
+
+| Tool          | Input                               | Output                                                     |
+| ------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `search_docs` | `query`, optional `limit` (1 to 20) | The best sections: page, heading path, link and a snippet. |
+| `get_page`    | `path`, such as `/guides/auth`      | The whole page as Markdown.                                |
+| `list_pages`  | optional `query`, `limit`           | Titles and descriptions of the public pages.               |
+
+No model and no key are involved: it works with `ai` turned off.
+
+## On your site
+
+`dockudos init` creates the route. For an existing site:
+
+```ts title="src/app/mcp/route.ts"
+import { createMcpHandler } from '@dockudos/next/mcp';
+
+export const { POST, GET, DELETE } = createMcpHandler();
+```
+
+It speaks Streamable HTTP at `/mcp`. Add it to a tool:
+
+```bash
+claude mcp add --transport http acme-docs https://docs.acme.com/mcp
+```
+
+## From a project on disk
+
+`dockudos mcp` serves the project in the current folder over standard input and output, with no server to deploy. It is for people writing
+the docs, or for tools that start their own server:
+
+```bash
+claude mcp add acme-docs -- npx dockudos mcp
+```
+
+```json title=".mcp.json"
+{
+  "mcpServers": {
+    "acme-docs": { "command": "npx", "args": ["dockudos", "mcp"] }
+  }
+}
+```
+
+Nothing but protocol messages goes to standard output; problems go to standard error. It uses the index `dockudos build` wrote, or builds one.
+
+## What it can see
+
+- **Search and list** see public pages only. Hidden pages and pages behind an [access rule](./protecting-pages.mdx) are not in the index.
+- **`get_page`** also reads hidden pages, by their path, as their URL works. A page behind an access rule needs the credentials that rule asks for:
+  send them in the `Authorization` header of the connection (`claude mcp add --header "Authorization: Bearer $TOKEN" ...`). Over stdio there is
+  no one to ask, so protected pages are not readable.
+- Private sections are therefore readable with the right token, but not searchable. To protect the whole `/mcp` route, add a rule for it like any other path.
+
+## Safeguards
+
+The route only answers `POST`. A browser request from another origin is refused (list the ones you want in `allowedOrigins`:
+`createMcpHandler({ allowedOrigins: ['https://app.acme.com'] })`); tools do not send an `Origin`, so they are unaffected. Bodies over
+32 KB are refused, and each visitor gets 120 requests a minute (`ratePerMinute`). Tool arguments are checked and an unexpected failure
+answers with a generic error, never a stack trace.

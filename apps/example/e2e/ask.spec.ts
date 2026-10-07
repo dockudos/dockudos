@@ -1,12 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { LLM_KEY } from './constants';
+import { modelCalls } from './fake-llm';
 
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-const FAKE_LLM = 'http://127.0.0.1:4399';
-
-test.beforeEach(async ({ request }) => {
-  await request.delete(`${FAKE_LLM}/__calls`);
-});
 
 test.describe('ask the docs', () => {
   test('the panel streams an answer with numbered sources that open the section', async ({
@@ -69,18 +65,26 @@ test.describe('ask the docs', () => {
     await expect(
       page.getByText(/60 requests per minute/).first(),
     ).toBeVisible();
+    // Wait for the first answer to finish; a question asked while one is being written is not sent.
+    await expect(
+      page.getByRole('button', { name: 'Stop answering' }),
+    ).toHaveCount(0);
     await box.fill('And what happens when I go over it?');
     await page.keyboard.press('Enter');
     await expect(page.getByText(/429/).first()).toBeVisible();
 
-    // (The first question may be answered from memory if it was asked before, so look at the last call.)
-    const calls = await (await request.get(`${FAKE_LLM}/__calls`)).json();
-    expect(calls.length).toBeGreaterThanOrEqual(1);
-    // The follow-up carries the first exchange.
-    const roles = calls
-      .at(-1)
-      .body.messages.map((m: { role: string }) => m.role);
-    expect(roles).toEqual(['system', 'user', 'assistant', 'user']);
+    // The follow-up carries the first exchange. (The first question may be answered from memory.)
+    const calls = await modelCalls(
+      request,
+      'And what happens when I go over it?',
+    );
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.body.messages.map((m) => m.role)).toEqual([
+      'system',
+      'user',
+      'assistant',
+      'user',
+    ]);
 
     await page.reload();
     await page.getByRole('button', { name: 'Ask the docs' }).click();
@@ -101,9 +105,7 @@ test.describe('ask the docs', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByText(/couldn't find anything/)).toBeVisible();
     // Nothing relevant, so the model was never asked.
-    expect(
-      await (await request.get(`${FAKE_LLM}/__calls`)).json(),
-    ).toHaveLength(0);
+    expect(await modelCalls(request, 'airspeed velocity')).toHaveLength(0);
   });
 
   test('a page that tells the model to ignore its rules changes nothing', async ({
@@ -112,13 +114,14 @@ test.describe('ask the docs', () => {
   }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Ask the docs' }).click();
-    await page
-      .getByLabel('Ask a question')
-      .fill('How many times are webhooks retried?');
+    // A retry must not be served from memory, so it asks in slightly different words.
+    const question = `How many times are webhooks retried${'?'.repeat(1 + test.info().retry)}`;
+    await page.getByLabel('Ask a question').fill(question);
     await page.keyboard.press('Enter');
     await expect(page.getByText(/three times/).first()).toBeVisible();
 
-    const [call] = await (await request.get(`${FAKE_LLM}/__calls`)).json();
+    const [call] = await modelCalls(request, question);
+    if (!call) throw new Error('the model was never asked');
     const { body } = call;
     // The model is sent instructions and excerpts, with no tools to act with.
     expect(Object.keys(body).sort()).toEqual(

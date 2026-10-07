@@ -31,12 +31,15 @@
     }
   },
   "dependencies": {
-    "next": "~16.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "@dockudos/core": "workspace:*",
     "@dockudos/next": "workspace:*",
-    "@dockudos/ui": "workspace:*"
+    "@dockudos/ui": "workspace:*",
+    "next": "~16.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@dockudos/cli": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1"
+  }
 }

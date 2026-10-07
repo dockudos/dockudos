@@ -66,6 +66,11 @@ export function cosine(a: readonly number[], b: readonly number[]): number {
 }
 
 export interface RetrieveOptions extends Pick<SearchOptions, 'filter'> {
+  /**
+   * Prefer some chunks: the score of each is multiplied by what this returns (1 leaves it alone). Used for hints
+   * about where the reader is, so a question asked from the billing screen finds billing first.
+   */
+  boost?: (chunk: ChunkRecord, page: PageRecord) => number;
   /** How many chunks to return. Default 8. */
   limit?: number;
   /** Where meaning-based search comes from. Without it (or without vectors in the index), keywords alone. */
@@ -109,6 +114,7 @@ export async function retrieve(
     limit = 8,
     embeddings,
     filter,
+    boost,
     minSimilarity = 0.25,
     signal,
   }: RetrieveOptions = {},
@@ -116,7 +122,12 @@ export async function retrieve(
   const pool = limit * 4;
   const byKeyword: RetrievedChunk[] = keyword
     .rank(query, { limit: pool, filter })
-    .results.map((r) => ({ ...r, via: ['keyword' as const] }));
+    .results.map((r) => ({
+      ...r,
+      score: r.score * (boost?.(r.chunk, r.page) ?? 1),
+      via: ['keyword' as const],
+    }));
+  if (boost) byKeyword.sort((a, b) => b.score - a.score);
 
   if (!hasVectorsFor(index, embeddings) || !embeddings)
     return { chunks: byKeyword.slice(0, limit), mode: 'keyword' };

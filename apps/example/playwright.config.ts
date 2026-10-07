@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { LLM_KEY } from './e2e/constants';
+import { API_KEY, LLM_KEY } from './e2e/constants';
 
 const port = 4300;
 
@@ -17,6 +17,12 @@ export default defineConfig({
       url: 'http://127.0.0.1:4399/__calls',
       reuseExistingServer: !process.env.CI,
     },
+    // A plain page on another origin, with the widget script in it: the "product" that embeds the assistant.
+    {
+      command: 'node e2e/host-page.mjs',
+      url: 'http://127.0.0.1:4390',
+      reuseExistingServer: !process.env.CI,
+    },
     {
       command: `pnpm exec next start -p ${port}`,
       url: `http://localhost:${port}`,
@@ -26,6 +32,8 @@ export default defineConfig({
         DOCKUDOS_BASIC_AUTH: 'reader:s3cret-pass,editor:other-pass',
         DOCKUDOS_TOKEN: 'example-token-1234',
         DOCKUDOS_LLM_API_KEY: LLM_KEY,
+        // For programs that call /api/ask themselves.
+        DOCKUDOS_API_KEYS: API_KEY,
       },
     },
   ],

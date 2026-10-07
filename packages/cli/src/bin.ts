@@ -49,6 +49,8 @@ const env: Env = {
   fetch: async (url, headers) => ({
     status: (await fetch(url, { headers })).status,
   }),
+  stdinLines: () =>
+    createInterface({ input: process.stdin, crlfDelay: Infinity }),
   renderPdf: (options) => renderPdf(options, process.env),
 };
 

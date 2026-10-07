@@ -43,6 +43,8 @@
             "guides/search",
             "guides/ask-the-docs",
             "guides/ai-navigation",
+            "guides/embed-assistant",
+            "guides/mcp",
             "guides/ai-providers",
             "guides/ai-outputs"
           ]

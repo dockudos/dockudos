@@ -24,6 +24,8 @@ export interface Env {
     url: string,
     headers?: Record<string, string>,
   ) => Promise<{ status: number }>;
+  /** Lines read from standard input, one at a time, until it closes. */
+  stdinLines: () => AsyncIterable<string>;
   /** Print a page to PDF with headless Chrome. */
   renderPdf: (options: PdfOptions) => Promise<Uint8Array>;
 }

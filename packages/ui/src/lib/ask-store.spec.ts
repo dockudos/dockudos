@@ -35,11 +35,8 @@ const answer = (text = 'Rotate it [1].') =>
 
 describe('createAskStore', () => {
   it('sends the question and reads the stream into an answer turn', async () => {
-    const fetch = vi.fn(async (_url: string, _init?: RequestInit) => answer());
-    const store = createAskStore({
-      fetch: fetch as typeof globalThis.fetch,
-      storage: null,
-    });
+    const fetch = vi.fn<typeof globalThis.fetch>(async () => answer());
+    const store = createAskStore({ fetch, storage: null });
     const seen: boolean[] = [];
     store.subscribe(() => seen.push(store.getState().busy));
     await store.ask('  How do I rotate a key?  ');
@@ -65,11 +62,8 @@ describe('createAskStore', () => {
   });
 
   it('sends earlier turns as history so follow-ups have context', async () => {
-    const fetch = vi.fn(async (_url: string, _init?: RequestInit) => answer());
-    const store = createAskStore({
-      fetch: fetch as typeof globalThis.fetch,
-      storage: null,
-    });
+    const fetch = vi.fn<typeof globalThis.fetch>(async () => answer());
+    const store = createAskStore({ fetch, storage: null });
     await store.ask('first');
     await store.ask('second');
     const body = JSON.parse(

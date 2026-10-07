@@ -187,7 +187,7 @@ describe('CommandPalette full-text search', () => {
 describe('CommandPalette assistant', () => {
   let n = 0;
   const askFetch = () =>
-    vi.fn(async (_url: string, _init?: RequestInit) => {
+    vi.fn<typeof globalThis.fetch>(async () => {
       const events = [
         {
           type: 'sources',

@@ -220,3 +220,31 @@ describe('withDocs: Markdown twins', () => {
     expect(match(negotiated?.source, '/logo.svg')).toBe(false);
   });
 });
+
+describe('withDocs: the embeddable assistant', () => {
+  const headers = async (config = {}) => docs(config).headers?.();
+
+  it('lets only the site itself frame /embed, until origins are listed', async () => {
+    expect(await headers()).toEqual([
+      {
+        source: '/embed',
+        headers: [
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+        ],
+      },
+    ]);
+  });
+
+  it('lets the listed origins frame it, after the user’s own headers', async () => {
+    await writeConfig({
+      name: 'Test',
+      ai: { allowedOrigins: ['https://app.acme.com', 'http://localhost:3000'] },
+    });
+    const mine = { source: '/x', headers: [{ key: 'X-A', value: '1' }] };
+    const out = await headers({ headers: async () => [mine] });
+    expect(out?.[0]).toEqual(mine);
+    expect(out?.[1]?.headers[0]?.value).toBe(
+      "frame-ancestors 'self' https://app.acme.com http://localhost:3000",
+    );
+  });
+});

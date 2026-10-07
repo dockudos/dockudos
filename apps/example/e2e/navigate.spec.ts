@@ -1,12 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { LLM_KEY } from './constants';
+import { modelCalls } from './fake-llm';
 
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-const FAKE_LLM = 'http://127.0.0.1:4399';
-
-test.beforeEach(async ({ request }) => {
-  await request.delete(`${FAKE_LLM}/__calls`);
-});
 
 test.describe('AI navigation', () => {
   test('a request jumps to the right heading and says why', async ({
@@ -113,14 +109,17 @@ test.describe('AI navigation', () => {
   test('the model sees short quotations and no tools, and the key stays out of the answer', async ({
     request,
   }) => {
+    // A retry must not be served from memory, so it asks in slightly different words.
+    const query = `how do I paginate with a cursor${'?'.repeat(test.info().retry)}`;
     const res = await request.post('/api/navigate', {
       headers: { 'x-forwarded-for': '10.4.4.4' },
-      data: { query: 'how do I paginate with a cursor' },
+      data: { query },
     });
     expect(await res.text()).not.toContain(LLM_KEY);
-    const [call] = await (await request.get(`${FAKE_LLM}/__calls`)).json();
+    const [call] = await modelCalls(request, query);
+    if (!call) throw new Error('the model was never asked');
     expect(call.body.tools).toBeUndefined();
-    const user = call.body.messages.at(-1).content as string;
+    const user = call.body.messages.at(-1)?.content ?? '';
     expect(user).toContain('<<<OPTION');
     expect(user.endsWith('Request: how do I paginate with a cursor')).toBe(
       true,

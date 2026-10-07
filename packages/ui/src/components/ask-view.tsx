@@ -1,6 +1,6 @@
 'use client';
 
-import type { AskSource } from '@dockudos/core';
+import type { AskContext, AskSource } from '@dockudos/core';
 import { RotateCcw, SendHorizontal, Square } from 'lucide-react';
 import {
   type FormEvent,
@@ -11,16 +11,26 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { type AskStore, type AskTurn, getAskStore } from '../lib/ask-store.ts';
+import {
+  type AskState,
+  type AskStore,
+  type AskTurn,
+  getAskStore,
+} from '../lib/ask-store.ts';
 import { useNavigate } from '../provider.tsx';
 import { AnswerText } from './answer.tsx';
 
+/** What the server renders: no conversation. One object, because React compares snapshots by identity. */
+const SERVER_STATE: AskState = { turns: [], busy: false };
+const getServerState = () => SERVER_STATE;
+
 /** The store for an ask route, as React state. */
 export function useAsk(store: AskStore) {
-  const state = useSyncExternalStore(store.subscribe, store.getState, () => ({
-    turns: [] as readonly AskTurn[],
-    busy: false,
-  }));
+  const state = useSyncExternalStore(
+    store.subscribe,
+    store.getState,
+    getServerState,
+  );
   return { ...state, ask: store.ask, stop: store.stop, reset: store.reset };
 }
 
@@ -133,6 +143,7 @@ export function AskView({
   onNavigate,
   autoFocus = true,
   initialQuestion,
+  context,
 }: {
   endpoint?: string;
   /** Use a store of your own instead of the shared one for `endpoint`. */
@@ -143,9 +154,15 @@ export function AskView({
   autoFocus?: boolean;
   /** A question to send as soon as the view appears, once. */
   initialQuestion?: string;
+  /** Where the reader is, for hosts that embed the assistant in their own product. */
+  context?: AskContext;
 }) {
   const shared = store ?? getAskStore(endpoint);
   const { turns, busy, ask, stop, reset } = useAsk(shared);
+  const contextKey = JSON.stringify(context ?? null);
+  useEffect(() => {
+    shared.setContext(context);
+  }, [shared, contextKey]);
   const navigate = useNavigate();
   const [draft, setDraft] = useState('');
   const log = useRef<HTMLDivElement>(null);

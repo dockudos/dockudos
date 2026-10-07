@@ -51,6 +51,15 @@ Builds the [search index](../guides/search.mdx#the-content-index) into `.dockudo
 computes [embeddings](../guides/ask-the-docs.mdx#meaning-based-search) when `ai.embeddings` is configured. `dockudos build` does the same
 as a step. Keys are read from the environment, then from `.env.local` and `.env`.
 
+## mcp
+
+```bash
+dockudos mcp
+```
+
+Serves this project's docs to AI coding tools over the [Model Context Protocol](../guides/mcp.mdx), on standard input and output.
+Nothing else is written to standard output.
+
 ## broken-links
 
 ```bash

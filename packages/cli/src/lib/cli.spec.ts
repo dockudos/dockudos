@@ -56,6 +56,9 @@ function makeEnv(overrides: Partial<Env> = {}) {
     },
     freePort: async () => 4555,
     fetch: async () => ({ status: 200 }),
+    stdinLines: async function* () {
+      /* no input */
+    },
     renderPdf: async () => new TextEncoder().encode('%PDF-fake'),
     ...overrides,
   };

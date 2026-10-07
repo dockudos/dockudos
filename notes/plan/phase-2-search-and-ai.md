@@ -49,8 +49,8 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] P2.27 Decide palette UX: separate mode or default for natural-language queries (ai.md open question).
 
 ### 2G. MCP and embeddable assistant
-- [ ] P2.28 MCP server with `search_docs`, `get_page`, `list_pages`; route handler `/mcp` and standalone process.
-- [ ] P2.29 Embeddable widget (script + React component) and documented `/api/ask` usage with API key; context hints.
+- [x] P2.28 MCP server with `search_docs`, `get_page`, `list_pages`; route handler `/mcp` and standalone process.
+- [x] P2.29 Embeddable widget (script + React component) and documented `/api/ask` usage with API key; context hints.
 
 ### 2H. Evaluation and docs
 - [ ] P2.30 Evaluation set on `apps/example`: questions, expected pages, unanswerable questions, navigation targets.
@@ -59,14 +59,14 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 
 ## Acceptance criteria
 
-- [ ] With **no** LLM key: keyword search, palette, `llms.txt`, Markdown twins and MCP search/get tools all work.
+- [x] With **no** LLM key: keyword search, palette, `llms.txt`, Markdown twins and MCP search/get tools all work.
 - [ ] With a key: asking about any documented topic streams an answer whose every citation resolves to a real page and anchor.
 - [x] An out-of-scope or unanswerable question is declined and suggests related pages.
 - [ ] A natural-language navigation request jumps to the correct page and heading for every case in the eval set.
 - [ ] Citation validity is 100% on the eval set; retrieval hit rate, refusal accuracy and navigation accuracy are recorded and tracked per commit.
 - [ ] Palette search latency under 100 ms on a 1,000-page generated corpus (done: `search-benchmark.spec.ts`); first AI token under 2 s with the reference provider.
 - [x] No API key appears in client bundles, `docs.json` or build output (verified by a bundle scan).
-- [ ] An MCP-capable coding tool connects and retrieves a page from the example site.
+- [x] An MCP-capable coding tool connects and retrieves a page from the example site.
 - [x] Rate limits and size caps return clear errors, not crashes.
 
 ## Tests
@@ -92,8 +92,8 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] Ask flow with mocked LLM: streamed text, clickable numbered sources.
 - [x] AI navigation lands on the heading and shows the reason.
 - [x] `curl -H "Accept: text/markdown"` returns the Markdown twin.
-- [ ] MCP client smoke test: list tools, call `search_docs` and `get_page`.
-- [ ] Widget embedded in a plain HTML page can ask a question.
+- [x] MCP client smoke test: list tools, call `search_docs` and `get_page`.
+- [x] Widget embedded in a plain HTML page can ask a question.
 
 ### Non-functional
 - [x] Benchmark: search latency on 1,000 pages tracked in CI.

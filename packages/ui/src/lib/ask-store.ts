@@ -1,4 +1,9 @@
-import { type AskEvent, type AskSource, readSse } from '@dockudos/core';
+import {
+  type AskContext,
+  type AskEvent,
+  type AskSource,
+  readSse,
+} from '@dockudos/core';
 
 export interface AskTurn {
   id: string;
@@ -39,6 +44,8 @@ export interface AskStore {
   subscribe(listener: () => void): () => void;
   /** Ask a question. Resolves when the answer is complete, stopped or failed; never rejects. */
   ask(question: string): Promise<void>;
+  /** Tell the assistant where the reader is, for the questions that follow. `undefined` clears it. */
+  setContext(context: AskContext | undefined): void;
   /** Stop the answer being written. */
   stop(): void;
   /** Forget the conversation. */
@@ -79,6 +86,7 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
   const doFetch = options.fetch ?? ((url, init) => globalThis.fetch(url, init));
 
   let state: AskState = { turns: [], busy: false };
+  let context: AskContext | undefined;
   let controller: AbortController | undefined;
   let counter = 0;
   const listeners = new Set<() => void>();
@@ -181,7 +189,11 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
         const response = await doFetch(endpoint, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ question: text, history }),
+          body: JSON.stringify({
+            question: text,
+            history,
+            ...(context && { context }),
+          }),
           signal,
         });
         if (!response.ok) {
@@ -231,6 +243,9 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
         set({ ...state, busy: false });
         persist();
       }
+    },
+    setContext(next) {
+      context = next && (next.path || next.hint) ? next : undefined;
     },
     stop() {
       controller?.abort();

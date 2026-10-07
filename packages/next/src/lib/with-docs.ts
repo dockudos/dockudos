@@ -89,6 +89,23 @@ export function withDocs(
         return { beforeFiles: mine, afterFiles: own, fallback: [] };
       return { ...own, beforeFiles: [...mine, ...(own.beforeFiles ?? [])] };
     },
+    // Only your own site and the origins in `ai.allowedOrigins` may show the embeddable assistant in a frame.
+    async headers() {
+      const own = (await nextConfig.headers?.()) ?? [];
+      const ancestors = ["'self'", ...config.ai.allowedOrigins].join(' ');
+      return [
+        ...own,
+        {
+          source: '/embed',
+          headers: [
+            {
+              key: 'Content-Security-Policy',
+              value: `frame-ancestors ${ancestors}`,
+            },
+          ],
+        },
+      ];
+    },
     async redirects() {
       const own = (await nextConfig.redirects?.()) ?? [];
       if (config.redirects.length === 0) return own;

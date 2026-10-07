@@ -29,3 +29,5 @@ export * from './lib/embed-index.ts';
 export * from './lib/rate-limit.ts';
 export * from './lib/ask.ts';
 export * from './lib/navigate.ts';
+export * from './lib/mcp.ts';
+export * from './lib/embed.ts';

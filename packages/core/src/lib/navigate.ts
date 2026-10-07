@@ -1,6 +1,11 @@
 import type { EmbeddingProvider, LLMProvider } from './ai-provider.ts';
 import type { ContentIndex } from './content-index.ts';
-import { AskError } from './ask.ts';
+import {
+  type AskContext,
+  AskError,
+  contextBoost,
+  parseContext,
+} from './ask.ts';
 import type { KeywordSearch } from './keyword-search.ts';
 import {
   type RetrievedChunk,
@@ -13,6 +18,7 @@ export interface NavigateRequest {
   query: string;
   locale?: string;
   version?: string;
+  context?: AskContext;
 }
 
 /** A place in the docs a reader can be sent to. */
@@ -161,6 +167,7 @@ export async function navigate(
     limit: 6,
     embeddings: deps.embeddings,
     filter: deps.filter?.(request),
+    boost: contextBoost(request.context),
     signal,
   });
   const minCoverage = deps.minCoverage ?? 0.5;
@@ -266,5 +273,11 @@ export function validateNavigate(
     typeof v === 'string' && v ? v.slice(0, 32) : undefined;
   const locale = tag(body['locale']);
   const version = tag(body['version']);
-  return { query, ...(locale && { locale }), ...(version && { version }) };
+  const context = parseContext(body['context']);
+  return {
+    query,
+    ...(locale && { locale }),
+    ...(version && { version }),
+    ...(context && { context }),
+  };
 }

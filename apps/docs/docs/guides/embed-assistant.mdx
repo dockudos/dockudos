@@ -1,0 +1,101 @@
+---
+icon: message-circle
+title: Embed the assistant
+description: Put the docs assistant inside your own product, with a script, a React component or the API.
+---
+
+Your readers are often in your product, not on your docs. The embeddable assistant answers their questions there, from your
+docs, with the same sources and safeguards as [Ask the docs](./ask-the-docs.mdx).
+
+First, allow your product to use it. List its origin in `docs.json`; nothing else is let in from another origin:
+
+```json title="docs.json"
+{
+  "ai": {
+    "enabled": true,
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "allowedOrigins": ["https://app.acme.com"]
+  }
+}
+```
+
+## A script tag
+
+```html
+<script
+  src="https://docs.acme.com/dockudos-widget.js"
+  async
+  data-hint="Billing settings"
+></script>
+```
+
+This adds an **Ask AI** button to the page. Opening it shows your docs' own assistant in a frame, so it has your colors and your
+branding. There is no key in the page: the frame talks to your docs server. Nothing is loaded until it is opened.
+
+| Attribute       | Does                                                         |
+| --------------- | ------------------------------------------------------------ |
+| `data-label`    | The button text. Default "Ask AI".                           |
+| `data-position` | `right` (default) or `left`.                                 |
+| `data-color`    | The button color, as hex.                                    |
+| `data-hint`     | What the reader is doing, in a few words. See context below. |
+| `data-path`     | A docs page the reader is about, such as `/guides/billing`.  |
+
+For a single-page app, control it from code:
+
+```js
+Dockudos.setContext({ hint: 'Invoice 4012', path: '/guides/billing' });
+Dockudos.open();
+```
+
+The script is served by `src/app/dockudos-widget.js/route.ts` and the frame by `src/app/embed/page.tsx`; `dockudos init` creates both.
+
+## A React component
+
+```tsx
+import { DocsAssistant } from '@dockudos/ui';
+
+export function Help({ screen }: { screen: string }) {
+  return (
+    <DocsAssistant siteUrl="https://docs.acme.com" context={{ hint: screen }} />
+  );
+}
+```
+
+It needs none of dockudos' styles, so it works in any React app. Changing `context` updates the open assistant.
+
+## Context
+
+A hint about where the reader is makes answers better: sections on the same page and sections whose heading shares words with
+the hint are preferred, and the assistant is told where the reader is. It never replaces the question or the docs: it is a hint, and
+the model is told to treat it as data like any other text.
+
+## The API, with your own interface
+
+`POST /api/ask` is the same route the palette uses. From a browser on a listed origin it works directly (the route answers the CORS
+preflight); from a server, send an API key:
+
+```bash
+curl https://docs.acme.com/api/ask \
+  -H "Authorization: Bearer $DOCKUDOS_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "question": "How do I rotate a key?", "context": { "hint": "API keys" } }'
+```
+
+Keys are set in the environment of the docs server, never in `docs.json`:
+
+```bash title=".env.local"
+DOCKUDOS_API_KEYS=key-for-the-web-app,key-for-the-support-tool
+```
+
+A key gets its own budget, six times a visitor's `ratePerMinute`, counted for that key whatever the address. A wrong key is refused with `401`.
+A browser on an origin that is not listed is refused with `403`, key or not, so a key put in a page does not open the door to the world.
+Use `/api/navigate` the same way to find the right section for a request.
+
+The answer is a stream of server-sent events (see [the route](./ask-the-docs.mdx#the-route)). To build the interface yourself, `AskView`
+and `createAskStore` from `@dockudos/ui` do the reading for you.
+
+## Who can frame it
+
+`/embed` is served with `Content-Security-Policy: frame-ancestors 'self'` plus the origins in `ai.allowedOrigins`. Any other site that tries
+to frame it sees an empty frame.

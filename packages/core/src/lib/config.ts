@@ -192,6 +192,20 @@ const aiSchema = z
       .string()
       .startsWith('/', 'must start with "/"')
       .default('/api/navigate'),
+    /**
+     * Other sites, besides this one, that may call the assistant from a browser or frame it with the embeddable
+     * widget: origins such as `https://app.acme.com`. Nothing else is let in from another origin.
+     */
+    allowedOrigins: z
+      .array(
+        z
+          .string()
+          .regex(
+            /^https?:\/\/[^/\s?#]+$/,
+            'must be an origin like https://app.example.com (no path)',
+          ),
+      )
+      .default([]),
     /** Offer "Take me there" in the palette: type what you want, and be taken to the right section. */
     navigation: z.boolean().default(true),
     /** Address of the provider's API, for compatible servers. Not a secret. */

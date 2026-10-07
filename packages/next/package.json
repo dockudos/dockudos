@@ -81,6 +81,18 @@
       "types": "./dist/llms.d.ts",
       "import": "./dist/llms.js",
       "default": "./dist/llms.js"
+    },
+    "./mcp": {
+      "@dockudos/source": "./src/mcp.ts",
+      "types": "./dist/mcp.d.ts",
+      "import": "./dist/mcp.js",
+      "default": "./dist/mcp.js"
+    },
+    "./widget": {
+      "@dockudos/source": "./src/widget.ts",
+      "types": "./dist/widget.d.ts",
+      "import": "./dist/widget.js",
+      "default": "./dist/widget.js"
     }
   },
   "files": [

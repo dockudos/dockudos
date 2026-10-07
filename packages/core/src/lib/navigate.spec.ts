@@ -319,3 +319,18 @@ describe('cleanReason / parseChoice / searchConfidence', () => {
     expect(searchConfidence([c('/a', 2, 1), c('/a', 1.9, 1)])).toBe('high');
   });
 });
+
+describe('navigate with context', () => {
+  it('uses where the reader is to choose between equally good places', async () => {
+    const r = await navigate(deps(), {
+      query: 'notification settings',
+      context: { path: '/guides/org' },
+    });
+    expect(r?.url).toBe('/guides/org#notifications');
+    const other = await navigate(deps(), {
+      query: 'notification settings',
+      context: { path: '/guides/team' },
+    });
+    expect(other?.url).toBe('/guides/team#notifications');
+  });
+});

@@ -255,6 +255,7 @@
         "enabled": false,
         "endpoint": "/api/ask",
         "navigateEndpoint": "/api/navigate",
+        "allowedOrigins": [],
         "navigation": true,
         "limits": {
           "maxQuestionLength": 500,
@@ -289,6 +290,14 @@
           "type": "string",
           "format": "starts_with",
           "pattern": "^\\/.*"
+        },
+        "allowedOrigins": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^https?:\\/\\/[^/\\s?#]+$"
+          }
         },
         "navigation": {
           "default": true,

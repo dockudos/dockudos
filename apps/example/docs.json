@@ -83,6 +83,7 @@
     "baseUrl": "http://127.0.0.1:4399/v1",
     "limits": {
       "ratePerMinute": 30
-    }
+    },
+    "allowedOrigins": ["http://127.0.0.1:4390"]
   }
 }

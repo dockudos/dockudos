@@ -11,7 +11,6 @@ import {
   resolveVisibility,
   findAccessRule,
   flattenSidebar,
-  parseFrontmatter,
   extractLinks,
   resolveDocLink,
   extractToc,
@@ -27,6 +26,7 @@ import {
   loadConfig,
   loadIconPacks,
   readIndexFile,
+  readPageMarkdown,
 } from '@dockudos/core/node';
 import type { Metadata } from 'next';
 import { readFile } from 'node:fs/promises';
@@ -163,24 +163,7 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
         dir,
         config.urlPrefix,
       )),
-    markdown: async (page) => {
-      const read = (file: string) => readFile(join(dir, file), 'utf8');
-      const expanded = await expandIncludes(await read(page.file), {
-        file: page.file,
-        read,
-      });
-      const { body } = parseFrontmatter(
-        resolveVisibility(expanded, 'agents'),
-        page.file,
-      );
-      const head = [
-        `# ${page.title}`,
-        page.description && `> ${page.description}`,
-      ]
-        .filter(Boolean)
-        .join('\n\n');
-      return `${head}\n\n${body.trim()}\n`;
-    },
+    markdown: (page) => readPageMarkdown(dir, page),
     book: async () => {
       const ordered = [
         ...nav.tabs.flatMap((t) => flattenSidebar(t.sidebar)),

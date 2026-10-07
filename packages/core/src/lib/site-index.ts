@@ -35,6 +35,22 @@ export async function readPageBody(
     .body;
 }
 
+/**
+ * A page as plain Markdown: title and description, then the content with `<include>`s expanded and frontmatter
+ * removed, `<Visibility for="agents">` blocks kept and `for="humans"` blocks dropped. For "copy page", `llms.txt`,
+ * Markdown twins and AI tools.
+ */
+export async function readPageMarkdown(
+  docsDir: string,
+  page: Pick<Page, 'file' | 'title' | 'description'>,
+): Promise<string> {
+  const body = await readPageBody(docsDir, page, 'agents');
+  const head = [`# ${page.title}`, page.description && `> ${page.description}`]
+    .filter(Boolean)
+    .join('\n\n');
+  return `${head}\n\n${body.trim()}\n`;
+}
+
 export interface SiteIndexOptions {
   /** Project root, where `docs.json` lives. */
   root: string;
