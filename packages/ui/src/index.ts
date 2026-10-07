@@ -80,3 +80,4 @@ export * from './components/panel.tsx';
 export * from './components/icons-context.tsx';
 export * from './components/render-icon.tsx';
 export * from './lib/icon-pack.ts';
+export * from './hooks/use-search.ts';

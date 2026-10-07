@@ -139,6 +139,30 @@ const actionsSchema = z.strictObject({
     .optional(),
 });
 
+const searchSchema = z
+  .strictObject({
+    /**
+     * Where searches are answered. `builtin`: the index is downloaded once and searched in the browser.
+     * `server`: each search asks `endpoint`, handled by your app (fine for very large sites). `custom`:
+     * each search asks a service of yours at `endpoint`, which must answer `{ "hits": [...] }`.
+     */
+    backend: z.enum(['builtin', 'server', 'custom']).default('builtin'),
+    /**
+     * The search route. Default `/api/search`; the built-in index is served at `<endpoint>/index`.
+     * Required for `custom`, where it can be any URL.
+     */
+    endpoint: z
+      .string()
+      .regex(/^(\/|https?:\/\/)/, 'must start with "/" or "http(s)://"')
+      .optional(),
+    /** Most results the palette shows. */
+    limit: z.number().int().min(1).max(50).default(10),
+  })
+  .refine((v) => v.backend !== 'custom' || v.endpoint, {
+    message: 'is required when backend is "custom"',
+    path: ['endpoint'],
+  });
+
 const accessRuleSchema = z.strictObject({
   /**
    * Which URL paths the rule covers: `/print` (that page), `/team/*` (one level), `/team/**` (the
@@ -208,6 +232,8 @@ export const docsConfigSchema = z.strictObject({
   seo: seoSchema.default(() => seoSchema.parse({})),
   kudos: kudosSchema.default(() => kudosSchema.parse({})),
   actions: actionsSchema.default(() => actionsSchema.parse({})),
+  /** Search: where it runs and how many results it shows. */
+  search: searchSchema.default(() => searchSchema.parse({})),
   /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
   shortcuts: z.boolean().default(true),
   /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */

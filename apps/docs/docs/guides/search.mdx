@@ -1,0 +1,106 @@
+---
+icon: search
+title: Search
+description: Full-text search in the command palette, with no service to sign up for.
+---
+
+Press <Shortcut keys="mod+k" /> or <Kbd>/</Kbd> on any page. Type, and the palette searches every section of
+every page and shows where your words were found. <Kbd>Enter</Kbd> opens that section, not just the page.
+
+Nothing to set up: `dockudos init` creates the route that serves the search, and `dockudos build` builds the
+index. With no query, the palette lists your pages.
+
+## What it understands
+
+- **Exact names.** `createAccessProxy` and `ERR_INVALID_KEY` are found by the whole name, or by a part of it (`access`, `invalid`).
+- **Headings and titles count more** than body text, and a query that is exactly a heading puts that section first.
+- **Word forms.** `rotating keys` finds "Rotate a key".
+- **Typos.** `authentcation` finds Authentication; swapped letters count as one typo.
+- **The word you are typing.** `billi` already finds Billing.
+- **Questions.** Filler words (`how do I`) are dropped.
+
+Hidden pages and pages behind an [access rule](./protecting-pages.mdx) are not in the index, so they are never
+found, and never reach the browser.
+
+## The content index
+
+`dockudos build` splits every public page at its headings into chunks of about 1,200 characters and writes them to
+`.dockudos/index.json`. Each chunk keeps its page, its heading path and the id of its heading, so a result can link to the exact section.
+Chunk ids are a hash of the page path, heading path and text, so a change to one section changes only that section's chunks.
+The next build reuses every page that did not change.
+
+`next dev` builds the index on demand, so new pages are searchable straight away.
+
+## Where the search runs
+
+`search.backend` in `docs.json` chooses:
+
+| Backend   | How it works                                                                                                                      | Use it when                                 |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `builtin` | The browser downloads the index from `/api/search/index` the first time you search (cached and revalidated) and searches locally. | Almost always. Typing is instant.           |
+| `server`  | Each search asks `/api/search?q=…` and your server answers.                                                                       | A very large site where the index is heavy. |
+| `custom`  | Each search asks the service at `search.endpoint`, which answers `{ "hits": [...] }`.                                             | You run your own search service.            |
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "search": { "backend": "server", "limit": 8 }
+}
+```
+
+A search service answers `GET <endpoint>?q=<query>&limit=<n>` with hits shaped like this:
+
+```ts
+interface SearchHit {
+  id: string;
+  path: string; // "/guides/auth"
+  title: string; // the page title
+  headingPath: string[]; // ["API keys"]
+  anchor: string; // "api-keys"; empty for the start of a page
+  url: string; // "/guides/auth#api-keys"
+  snippet: { text: string; ranges: [number, number][] }; // ranges to highlight
+  score: number;
+}
+```
+
+### Your own backend in code
+
+Hosted engines (Algolia, Meilisearch, Typesense, Orama Cloud) are not built in yet; a `SearchBackend` is one function,
+so you can adapt one in a few lines. Give it to `DocsRoot` from a client component:
+
+```tsx title="src/app/search-root.tsx"
+'use client';
+import { DocsRoot } from '@dockudos/next/client';
+import type { SearchBackend } from '@dockudos/core';
+
+const backend: SearchBackend = {
+  id: 'mine',
+  async search(query, { limit = 10 } = {}) {
+    const res = await fetch(
+      `https://search.example.com?q=${encodeURIComponent(query)}&n=${limit}`,
+    );
+    return toHits(await res.json()); // map your results to SearchHit[]
+  },
+};
+
+export function SearchRoot({ children }: { children: React.ReactNode }) {
+  return <DocsRoot searchBackend={backend}>{children}</DocsRoot>;
+}
+```
+
+## The routes
+
+`src/app/api/[...dockudos]/route.ts` serves:
+
+| Route                          | Answers                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/search?q=…&limit=…`  | `{ hits }`. A query longer than 300 characters is refused with a 400.                                                                                  |
+| `GET /api/search/index`        | The content index of the public pages, without vectors. Cached, with an `ETag`.                                                                        |
+| `GET /api/page?path=/guides/x` | `{ path, title, description, headings, markdown }`: the whole page, for tools. A page behind an access rule needs the same credentials as its own URL. |
+
+Routes you add yourself, such as `/api/kudos`, win over this one.
+
+## Size and speed
+
+The index holds the text of your pages, so it grows with your content. It is downloaded once, on the first search, and cached. The engine answers in a few milliseconds on a 1,000-page site; a test in CI keeps it under 100 ms.
+If your index is too heavy for browsers, use the `server` backend.

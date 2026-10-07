@@ -44,19 +44,20 @@ description: What init creates, and which files you edit.
   </Tree.Folder>
 </Tree>
 
-| Path                                  | What it is                                                    |
-| ------------------------------------- | ------------------------------------------------------------- |
-| `docs/`                               | Your content, as MDX.                                         |
-| `docs.json`                           | Site config and navigation.                                   |
-| `public/`                             | Static files, served from `/`.                                |
-| `next.config.mjs`                     | Wraps your Next.js config with `withDocs()`.                  |
-| `mdx-components.tsx`                  | The components available in MDX.                              |
-| `src/proxy.ts`                        | Applies the `access` rules. Does nothing until you add some.  |
-| `src/app/layout.tsx`                  | Styles, theme script and the router link.                     |
-| `src/app/[[...slug]]/page.tsx`        | Renders any page from `docs/`.                                |
-| `src/app/print/page.tsx`              | Every page in one document, for `dockudos pdf`.               |
-| `src/app/api/kudos/route.ts`          | Receives page feedback.                                       |
-| `src/app/sitemap.xml/route.ts`, `src/app/robots.txt/route.ts` | The sitemap and robots.txt.                   |
+| Path                                                          | What it is                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------ |
+| `docs/`                                                       | Your content, as MDX.                                        |
+| `docs.json`                                                   | Site config and navigation.                                  |
+| `public/`                                                     | Static files, served from `/`.                               |
+| `next.config.mjs`                                             | Wraps your Next.js config with `withDocs()`.                 |
+| `mdx-components.tsx`                                          | The components available in MDX.                             |
+| `src/proxy.ts`                                                | Applies the `access` rules. Does nothing until you add some. |
+| `src/app/layout.tsx`                                          | Styles, theme script and the router link.                    |
+| `src/app/[[...slug]]/page.tsx`                                | Renders any page from `docs/`.                               |
+| `src/app/print/page.tsx`                                      | Every page in one document, for `dockudos pdf`.              |
+| `src/app/api/kudos/route.ts`                                  | Receives page feedback.                                      |
+| `src/app/api/[...dockudos]/route.ts`                          | Search, the search index and page text for tools.            |
+| `src/app/sitemap.xml/route.ts`, `src/app/robots.txt/route.ts` | The sitemap and robots.txt.                                  |
 
 You normally edit `docs/`, `docs.json` and `public/`. The files in `src/app/` are small and yours to
 change, but they are the glue between your content and the packages, so read them before you do.

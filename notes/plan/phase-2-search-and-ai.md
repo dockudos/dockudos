@@ -16,11 +16,12 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] P2.5 Incremental rebuild: reuse unchanged pages and chunks from a cache.
 
 ### 2B. Keyword search
-- [ ] P2.6 Keyword engine (BM25-style) with heading/title boost; runs in the browser from the index.
-- [ ] P2.7 Search client abstraction and `SearchBackend` interface.
-- [ ] P2.8 Command palette (Cmd+K / Ctrl+K): results with title, heading path, snippet; keyboard navigation; a11y.
-- [ ] P2.9 Page content endpoint `/api/page` returning full text by path.
-- [ ] P2.10 `search` config key; backend adapters: Algolia, Meilisearch, Typesense, Orama Cloud, FlexSearch, custom (ship built-in first, add the rest in order of demand).
+- [x] P2.6 Keyword engine (BM25-style) with heading/title boost; runs in the browser from the index.
+- [x] P2.7 Search client abstraction and `SearchBackend` interface.
+- [x] P2.8 Command palette (Cmd+K / Ctrl+K): results with title, heading path, snippet; keyboard navigation; a11y.
+- [x] P2.9 Page content endpoint `/api/page` returning full text by path.
+- [x] P2.10 `search` config key with the `builtin`, `server` and `custom` (endpoint, or a `SearchBackend` in code) backends.
+- [ ] P2.10b Hosted adapters: Algolia, Meilisearch, Typesense, Orama Cloud, FlexSearch. Deliberately deferred: add in order of demand; the `SearchBackend` interface is the extension point.
 
 ### 2C. Machine-readable outputs
 - [ ] P2.11 `llms.txt` and `llms-full.txt` generated at build.
@@ -63,7 +64,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [ ] An out-of-scope or unanswerable question is declined and suggests related pages.
 - [ ] A natural-language navigation request jumps to the correct page and heading for every case in the eval set.
 - [ ] Citation validity is 100% on the eval set; retrieval hit rate, refusal accuracy and navigation accuracy are recorded and tracked per commit.
-- [ ] Palette search latency under 100 ms on a 1,000-page generated corpus; first AI token under 2 s with the reference provider.
+- [ ] Palette search latency under 100 ms on a 1,000-page generated corpus (done: `search-benchmark.spec.ts`); first AI token under 2 s with the reference provider.
 - [ ] No API key appears in client bundles, `docs.json` or build output (verified by a bundle scan).
 - [ ] An MCP-capable coding tool connects and retrieves a page from the example site.
 - [ ] Rate limits and size caps return clear errors, not crashes.
@@ -73,7 +74,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 ### Unit
 - [x] Chunker: size cap, heading path, anchors, stable ids, content change alters only affected chunks.
 - [x] Extractor on fixtures with code blocks, tables, MDX components.
-- [ ] Keyword engine: exact API names, error codes, typos, ranking with heading boost.
+- [x] Keyword engine: exact API names, error codes, typos, ranking with heading boost.
 - [ ] RRF fusion with known rankings; keyword-only fallback.
 - [ ] Embedding cache: hit, miss, invalidation by content hash.
 - [ ] Citation validator: valid, invalid, missing ids.
@@ -87,7 +88,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [ ] Navigation accuracy over labeled targets, with and without an LLM.
 
 ### Integration / E2E (Playwright)
-- [ ] Cmd+K opens the palette; typing returns results; Enter navigates.
+- [x] Cmd+K opens the palette; typing returns results; Enter navigates.
 - [ ] Ask flow with mocked LLM: streamed text, clickable numbered sources.
 - [ ] AI navigation lands on the heading and shows the reason.
 - [ ] `curl -H "Accept: text/markdown"` returns the Markdown twin.
@@ -95,6 +96,6 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [ ] Widget embedded in a plain HTML page can ask a question.
 
 ### Non-functional
-- [ ] Benchmark: search latency on 1,000 pages tracked in CI.
+- [x] Benchmark: search latency on 1,000 pages tracked in CI.
 - [ ] Bundle scan: assert no secrets and a size budget for the palette chunk.
 - [ ] Optional live-provider eval job (manual or nightly), not blocking PRs.

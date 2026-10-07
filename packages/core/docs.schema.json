@@ -225,6 +225,31 @@
       },
       "additionalProperties": false
     },
+    "search": {
+      "default": {
+        "backend": "builtin",
+        "limit": 10
+      },
+      "type": "object",
+      "properties": {
+        "backend": {
+          "default": "builtin",
+          "type": "string",
+          "enum": ["builtin", "server", "custom"]
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^(\\/|https?:\\/\\/)"
+        },
+        "limit": {
+          "default": 10,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "additionalProperties": false
+    },
     "shortcuts": {
       "default": true,
       "type": "boolean"

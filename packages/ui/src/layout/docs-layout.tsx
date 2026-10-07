@@ -28,7 +28,9 @@ import { TutorialHeader } from './tutorial-header.tsx';
 
 export interface DocsLayoutProps {
   config: Pick<DocsConfig, 'name' | 'logo' | 'theme'> &
-    Partial<Pick<DocsConfig, 'kudos' | 'actions' | 'shortcuts' | 'seo'>>;
+    Partial<
+      Pick<DocsConfig, 'kudos' | 'actions' | 'shortcuts' | 'seo' | 'search'>
+    >;
   nav: Navigation;
   page: Page;
   toc: readonly TocEntry[];
@@ -105,7 +107,10 @@ export function DocsLayout({
                 next={nextLink}
                 home={nav.tabs.map(first).find(Boolean)}
               />
-              <CommandPalette entries={paletteEntries(nav)} />
+              <CommandPalette
+                entries={paletteEntries(nav)}
+                search={config.search}
+              />
               <ShortcutsDialog />
             </>
           )}

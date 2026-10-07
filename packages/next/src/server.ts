@@ -1,4 +1,5 @@
 import {
+  type ContentIndex,
   type DocsConfig,
   type Navigation,
   type Page,
@@ -20,10 +21,12 @@ import {
   type TocEntry,
 } from '@dockudos/core';
 import {
+  buildSiteIndex,
   discoverPages,
   lastModified,
   loadConfig,
   loadIconPacks,
+  readIndexFile,
 } from '@dockudos/core/node';
 import type { Metadata } from 'next';
 import { readFile } from 'node:fs/promises';
@@ -61,6 +64,12 @@ export interface Site {
    * frontmatter removed. For "copy page", `llms.txt`-style exports and AI assistants.
    */
   markdown(page: Page): Promise<string>;
+  /**
+   * The content index of the public pages (not hidden, not behind an access rule): search, the assistant,
+   * `llms.txt` and the MCP server all read it. In production it is the file `dockudos build` wrote,
+   * else it is built from the files, reusing what did not change since the last call.
+   */
+  index(): Promise<ContentIndex>;
   /** Is a page covered by an `access` rule? Protected pages stay out of the sitemap, graph and the public book. */
   isProtected(page: Page): boolean;
   /** Your icons, read from the SVG packs in docs.json and cleaned. Pass to `DocsRoot` as `icons`. */
@@ -73,6 +82,8 @@ export interface PageGraph {
 }
 
 const cache = new Map<string, Promise<Site>>();
+/** The last index built for each project, so a rebuild in development only re-reads changed pages. */
+const lastIndex = new Map<string, ContentIndex>();
 
 /**
  * Load the site. In production the result is cached for the process; in
@@ -107,7 +118,27 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
     unlisted: built.unlisted.filter((p) => !isProtected(p.path)),
   };
   const icons = await loadIconPacks(root, config);
+  let index: Promise<ContentIndex> | undefined;
   const site: Site = {
+    index: () =>
+      (index ??= (async () => {
+        if (process.env.NODE_ENV === 'production') {
+          const built = await readIndexFile(root);
+          if (built) return built;
+        }
+        const { index: fresh } = await buildSiteIndex({
+          root,
+          docsDir: dir,
+          config,
+          tree,
+          previous: lastIndex.get(root),
+        });
+        lastIndex.set(root, fresh);
+        return fresh;
+      })()).catch((error: unknown) => {
+        index = undefined;
+        throw error;
+      }),
     icons,
     root,
     config,

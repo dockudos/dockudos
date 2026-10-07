@@ -36,7 +36,8 @@ dockudos build [next build options]
 
 1. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
 2. Checks every link, anchor and image. Any error stops here.
-3. Runs `next build`.
+3. Builds the [search index](../guides/search.mdx#the-content-index) into `.dockudos/index.json`, reusing pages that did not change.
+4. Runs `next build`.
 
 Exits with the status of `next build`, or 1 when a check fails, with the reason printed.
 

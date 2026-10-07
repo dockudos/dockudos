@@ -23,6 +23,7 @@ describe('parseConfig', () => {
       theme: { mode: 'system', layout: 'docs' },
       seo: { noindex: false },
       kudos: { enabled: false, endpoint: '/api/kudos' },
+      search: { backend: 'builtin', limit: 10 },
       actions: {
         copyPage: false,
         assistants: false,
@@ -354,6 +355,43 @@ describe('docs.schema.json', () => {
     const file = new URL('../../docs.schema.json', import.meta.url);
     expect(JSON.parse(await readFile(file, 'utf8'))).toEqual(
       docsConfigJsonSchema(),
+    );
+  });
+});
+
+describe('parseConfig: search', () => {
+  it('defaults to the built-in engine', () => {
+    expect(parseConfig({ name: 'A' }).search).toEqual({
+      backend: 'builtin',
+      limit: 10,
+    });
+  });
+
+  it('accepts a server route or a custom endpoint', () => {
+    expect(
+      parseConfig({
+        name: 'A',
+        search: { backend: 'custom', endpoint: 'https://s.example.com/q' },
+      }).search.endpoint,
+    ).toBe('https://s.example.com/q');
+    expect(
+      parseConfig({ name: 'A', search: { backend: 'server', limit: 5 } }).search
+        .limit,
+    ).toBe(5);
+  });
+
+  it('requires an endpoint for custom and rejects bad values', () => {
+    expect(messageOf({ name: 'A', search: { backend: 'custom' } })).toContain(
+      'search.endpoint: is required',
+    );
+    expect(messageOf({ name: 'A', search: { backend: 'algolia' } })).toContain(
+      'search.backend',
+    );
+    expect(messageOf({ name: 'A', search: { endpoint: 'api/s' } })).toContain(
+      'search.endpoint',
+    );
+    expect(messageOf({ name: 'A', search: { limit: 0 } })).toContain(
+      'search.limit',
     );
   });
 });

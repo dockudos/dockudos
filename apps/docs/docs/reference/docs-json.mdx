@@ -213,6 +213,32 @@ A group is `{ group: string, pages: Item[], tutorial?: boolean }`, and an item i
 
 See [Kudos](../components/kudos.mdx).
 
+## search
+
+<TypeTable
+  type={{
+    backend: {
+      type: '"builtin" | "server" | "custom"',
+      default: '"builtin"',
+      description:
+        'Where searches run: in the browser from the downloaded index, on your server, or on a service of yours.',
+    },
+    endpoint: {
+      type: 'string',
+      default: '"/api/search"',
+      description:
+        'The search route. The built-in index is served at <endpoint>/index. Required for custom, where it can be any http(s) URL.',
+    },
+    limit: {
+      type: 'number',
+      default: '10',
+      description: 'Most results the palette shows (1 to 50).',
+    },
+  }}
+/>
+
+See [Search](../guides/search.mdx).
+
 ## actions
 
 <TypeTable

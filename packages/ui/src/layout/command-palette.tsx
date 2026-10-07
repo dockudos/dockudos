@@ -1,9 +1,11 @@
 'use client';
 
+import type { SearchHit, Snippet } from '@dockudos/core';
 import { Search } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import {
   type KeyboardEvent,
+  type ReactNode,
   useEffect,
   useId,
   useMemo,
@@ -12,6 +14,11 @@ import {
 } from 'react';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';
+import {
+  type SearchSettings,
+  useSearch,
+  useSearchClient,
+} from '../hooks/use-search.ts';
 import { renderIcon } from '../components/render-icon.tsx';
 import { useNavigate } from '../provider.tsx';
 
@@ -73,14 +80,45 @@ export function PaletteButton() {
   );
 }
 
+/** One line of the results: a page from the navigation, or a section found by full-text search. */
+type Row =
+  | { kind: 'page'; key: string; entry: PaletteEntry }
+  | { kind: 'hit'; key: string; hit: SearchHit };
+
+/** Text with the matched words marked. */
+function Highlighted({ snippet }: { snippet: Snippet }) {
+  const parts: ReactNode[] = [];
+  let at = 0;
+  snippet.ranges.forEach(([start, end], i) => {
+    if (start < at) return;
+    if (start > at) parts.push(snippet.text.slice(at, start));
+    parts.push(
+      <mark
+        key={i}
+        className="rounded-sm bg-primary/20 font-medium text-foreground"
+      >
+        {snippet.text.slice(start, end)}
+      </mark>,
+    );
+    at = end;
+  });
+  if (at < snippet.text.length) parts.push(snippet.text.slice(at));
+  return <>{parts}</>;
+}
+
 /**
- * Jump to any page by typing part of its title. Opens with Cmd or Ctrl + K, or `/`. Arrow keys
- * choose, Enter goes there, Esc closes. Keeps the last query out of the way: it starts empty.
+ * Find anything in the docs. Opens with Cmd or Ctrl + K, or `/`. Without a query it lists the pages;
+ * as you type it searches every section of every page and shows where the words were found. Arrow keys
+ * choose, Enter goes there (to the section, not just the page), Esc closes.
+ *
+ * `search` is the `search` key of docs.json. Without it the palette only matches page titles.
  */
 export function CommandPalette({
   entries,
+  search,
 }: {
   entries: readonly PaletteEntry[];
+  search?: SearchSettings;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -88,6 +126,15 @@ export function CommandPalette({
   const navigate = useNavigate();
   const listId = useId();
   const list = useRef<HTMLUListElement>(null);
+  const client = useSearchClient(search);
+  // Hits know the page's title but not its icon or section; the navigation does.
+  const byPath = useMemo(
+    () => new Map(entries.map((e) => [e.path, e])),
+    [entries],
+  );
+  const found = useSearch(client, open ? query : '', {
+    limit: search?.limit,
+  });
 
   useHotkey('mod+k', () => setOpen((o) => !o), {
     description: 'Search pages (also /)',
@@ -102,7 +149,7 @@ export function CommandPalette({
     return () => window.removeEventListener(OPEN_EVENT, show);
   }, []);
 
-  const results = useMemo(
+  const pageRows = useMemo(
     () =>
       entries
         .map((entry, index) => ({
@@ -115,28 +162,50 @@ export function CommandPalette({
           query ? b.score - a.score || a.index - b.index : a.index - b.index,
         )
         .slice(0, 50)
-        .map((r) => r.entry),
+        .map(
+          ({ entry }): Row => ({
+            kind: 'page',
+            key: `page:${entry.path}`,
+            entry,
+          }),
+        ),
     [entries, query],
   );
 
-  useEffect(() => setActive(0), [query, open]);
+  const searching = !!client && query.trim() !== '';
+  // Results of full-text search, then pages whose title matches but that have no text to find.
+  const rows = useMemo((): Row[] => {
+    if (!searching || found.status === 'error') return pageRows;
+    const hits = found.hits.map(
+      (hit): Row => ({ kind: 'hit', key: `hit:${hit.id}`, hit }),
+    );
+    const covered = new Set(found.hits.map((h) => h.path));
+    return [
+      ...hits,
+      ...pageRows.filter(
+        (r) => r.kind === 'page' && !covered.has(r.entry.path),
+      ),
+    ];
+  }, [searching, found, pageRows]);
+
+  useEffect(() => setActive(0), [query, open, found.query]);
   useEffect(() => {
     list.current
       ?.querySelector('[aria-selected="true"]')
       ?.scrollIntoView?.({ block: 'nearest' });
-  }, [active, results]);
+  }, [active, rows]);
 
-  const go = (entry: PaletteEntry | undefined) => {
-    if (!entry) return;
+  const go = (row: Row | undefined) => {
+    if (!row) return;
     setOpen(false);
     setQuery('');
-    navigate(entry.path);
+    navigate(row.kind === 'hit' ? row.hit.url : row.entry.path);
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActive((a) => Math.min(a + 1, results.length - 1));
+      setActive((a) => Math.min(a + 1, rows.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActive((a) => Math.max(a - 1, 0));
@@ -145,12 +214,21 @@ export function CommandPalette({
       setActive(0);
     } else if (e.key === 'End') {
       e.preventDefault();
-      setActive(Math.max(results.length - 1, 0));
+      setActive(Math.max(rows.length - 1, 0));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      go(results[active]);
+      go(rows[active]);
     }
   };
+
+  const waiting = searching && found.status === 'loading' && rows.length === 0;
+  const status = waiting
+    ? 'Searching…'
+    : searching && found.status === 'error'
+      ? 'Full-text search is unavailable. Showing matching page titles.'
+      : query.trim()
+        ? `${rows.length} ${rows.length === 1 ? 'result' : 'results'}`
+        : '';
 
   return (
     <Dialog.Root
@@ -178,11 +256,11 @@ export function CommandPalette({
               aria-expanded="true"
               aria-controls={listId}
               aria-activedescendant={
-                results[active] ? `${listId}-${active}` : undefined
+                rows[active] ? `${listId}-${active}` : undefined
               }
               aria-autocomplete="list"
               aria-label="Search pages"
-              placeholder="Search pages…"
+              placeholder={client ? 'Search the docs…' : 'Search pages…'}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
@@ -193,50 +271,84 @@ export function CommandPalette({
             ref={list}
             id={listId}
             role="listbox"
-            aria-label="Pages"
+            aria-label="Results"
             className="m-0 max-h-[50vh] list-none overflow-y-auto p-2"
           >
-            {results.map((entry, i) => (
+            {rows.map((row, i) => (
               <li
-                key={entry.path}
+                key={row.key}
                 id={`${listId}-${i}`}
                 role="option"
                 aria-selected={i === active}
                 onMouseMove={() => setActive(i)}
-                onClick={() => go(entry)}
+                onClick={() => go(row)}
                 className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
               >
-                {entry.icon && (
-                  <span className="text-muted-foreground">
-                    {renderIcon(entry.icon, 16)}
-                  </span>
-                )}
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">
-                    {entry.title}
-                  </span>
-                  {entry.description && (
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {entry.description}
+                {row.kind === 'page' ? (
+                  <>
+                    {row.entry.icon && (
+                      <span className="text-muted-foreground">
+                        {renderIcon(row.entry.icon, 16)}
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">
+                        {row.entry.title}
+                      </span>
+                      {row.entry.description && (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {row.entry.description}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
-                {entry.group && (
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {entry.group}
-                  </span>
+                    {row.entry.group && (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {row.entry.group}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {byPath.get(row.hit.path)?.icon && (
+                      <span className="text-muted-foreground">
+                        {renderIcon(byPath.get(row.hit.path)?.icon, 16)}
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">
+                        {row.hit.title}
+                        {row.hit.headingPath.length > 0 && (
+                          <span className="font-normal text-muted-foreground">
+                            {' › '}
+                            {row.hit.headingPath.join(' › ')}
+                          </span>
+                        )}
+                      </span>
+                      <span className="line-clamp-2 text-xs text-muted-foreground">
+                        <Highlighted snippet={row.hit.snippet} />
+                      </span>
+                    </span>
+                    {byPath.get(row.hit.path)?.group && (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {byPath.get(row.hit.path)?.group}
+                      </span>
+                    )}
+                  </>
                 )}
               </li>
             ))}
-            {results.length === 0 && (
+            {rows.length === 0 && !waiting && (
               <li
                 role="presentation"
                 className="px-3 py-6 text-center text-sm text-muted-foreground"
               >
-                No pages match “{query}”.
+                {client ? 'No results for' : 'No pages match'} “{query}”.
               </li>
             )}
           </ul>
+          <div role="status" className="sr-only">
+            {status}
+          </div>
           <div
             className="flex gap-4 border-t px-4 py-2 text-xs text-muted-foreground"
             aria-hidden="true"

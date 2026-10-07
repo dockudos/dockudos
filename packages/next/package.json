@@ -69,6 +69,12 @@
       "types": "./dist/access.d.ts",
       "import": "./dist/access.js",
       "default": "./dist/access.js"
+    },
+    "./api": {
+      "@dockudos/source": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "default": "./dist/api.js"
     }
   },
   "files": [

@@ -1,6 +1,6 @@
 'use client';
 
-import type { SvgIcon } from '@dockudos/core';
+import type { SearchBackend, SvgIcon } from '@dockudos/core';
 import { DocsProvider, type IconComponent, type LinkProps } from '@dockudos/ui';
 import NextLink from 'next/link.js';
 import { useRouter } from 'next/navigation.js';
@@ -14,6 +14,7 @@ const Link = NextLink as unknown as ComponentType<LinkProps>;
 export function DocsRoot({
   icons,
   iconComponents,
+  searchBackend,
   children,
 }: {
   /** Your SVG icon packs: `site.icons`. */
@@ -23,6 +24,8 @@ export function DocsRoot({
    * component, so use `DocsRoot` from a small client component of your own when you need this.
    */
   iconComponents?: Record<string, IconComponent>;
+  /** Your own search backend, in place of the one `search` in docs.json selects. Only from a client component. */
+  searchBackend?: SearchBackend;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -33,6 +36,7 @@ export function DocsRoot({
       navigate={navigate}
       icons={icons}
       iconComponents={iconComponents}
+      searchBackend={searchBackend}
     >
       {children}
     </DocsProvider>

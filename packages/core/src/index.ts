@@ -17,3 +17,5 @@ export * from './lib/hash.ts';
 export * from './lib/extract.ts';
 export * from './lib/chunk.ts';
 export * from './lib/content-index.ts';
+export * from './lib/keyword-search.ts';
+export * from './lib/search-backend.ts';
