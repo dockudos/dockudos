@@ -6,6 +6,8 @@ export default defineConfig(() => ({
   test: {
     name: '@dockudos/next',
     watch: false,
+    // The first Shiki highlight loads grammars and themes.
+    testTimeout: 30_000,
     globals: true,
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],

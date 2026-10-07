@@ -8,8 +8,8 @@ export default [
       '@nx/dependency-checks': [
         'error',
         {
-          // loaded by @next/mdx at runtime, not imported by our code
-          ignoredDependencies: ['@mdx-js/loader'],
+          // loaded at runtime (by @next/mdx, or from katex.css), not imported by our code
+          ignoredDependencies: ['@mdx-js/loader', 'katex'],
           ignoredFiles: [
             '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
             '{projectRoot}/vitest.config.{js,ts,mjs,mts}',

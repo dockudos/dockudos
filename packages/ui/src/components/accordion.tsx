@@ -13,8 +13,14 @@ export interface AccordionsProps {
 }
 
 /** Group of collapsible items. Arrow keys move between headers, Enter and Space toggle. */
-export function Accordions({ multiple = false, children, className }: AccordionsProps) {
-  const common = { className: cn('my-5 divide-y rounded-lg border', className) };
+export function Accordions({
+  multiple = false,
+  children,
+  className,
+}: AccordionsProps) {
+  const common = {
+    className: cn('my-5 divide-y rounded-lg border', className),
+  };
   return multiple ? (
     <Primitive.Root type="multiple" {...common}>
       {children}

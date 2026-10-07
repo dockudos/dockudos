@@ -6,6 +6,8 @@ type Plugin = string | [string, Record<string, unknown>];
 export interface MdxPipelineOptions {
   /** Absolute path of the docs folder. */
   docsDir: string;
+  /** Absolute path of the project's `public` folder. */
+  publicDir: string;
 }
 
 const require = createRequire(import.meta.url);
@@ -20,7 +22,7 @@ const own = (name: string) =>
  * `node_modules` cannot see our dependencies. Paths also keep the options
  * serializable, which Turbopack needs.
  */
-export function mdxPipeline({ docsDir }: MdxPipelineOptions): {
+export function mdxPipeline({ docsDir, publicDir }: MdxPipelineOptions): {
   remarkPlugins: Plugin[];
   rehypePlugins: Plugin[];
 } {
@@ -29,13 +31,20 @@ export function mdxPipeline({ docsDir }: MdxPipelineOptions): {
       require.resolve('remark-frontmatter'),
       require.resolve('remark-gfm'),
       require.resolve('remark-directive'),
+      // `$5 and $10` is prose, not math, so inline math is written `$$x$$`.
+      [require.resolve('remark-math'), { singleDollarTextMath: false }],
       [own('remark-include'), { docsDir }],
       own('remark-admonitions'),
+      own('remark-code'),
       [own('remark-links'), { docsDir }],
+      [own('remark-images'), { publicDir }],
+      [own('remark-math-styles'), { css: '@dockudos/next/katex.css' }],
     ],
     rehypePlugins: [
       require.resolve('rehype-slug'),
       [require.resolve('rehype-autolink-headings'), { behavior: 'wrap' }],
+      require.resolve('rehype-katex'),
+      own('rehype-code'),
     ],
   };
 }

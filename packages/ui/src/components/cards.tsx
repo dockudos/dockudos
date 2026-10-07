@@ -4,7 +4,13 @@ import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { useLink } from '../provider.tsx';
 
-export function Cards({ children, columns = 2 }: { children: ReactNode; columns?: 1 | 2 | 3 }) {
+export function Cards({
+  children,
+  columns = 2,
+}: {
+  children: ReactNode;
+  columns?: 1 | 2 | 3;
+}) {
   return (
     <div
       className={cn(
@@ -34,16 +40,26 @@ export function Card({ title, href, icon, children }: CardProps) {
     <>
       {icon && <div className="mb-2 text-primary [&_svg]:size-5">{icon}</div>}
       <h3 className="m-0 text-base font-semibold text-foreground">{title}</h3>
-      {children && <div className="mt-1 text-sm text-muted-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0">{children}</div>}
+      {children && (
+        <div className="mt-1 text-sm text-muted-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+          {children}
+        </div>
+      )}
     </>
   );
   const className = cn(
     'block rounded-lg border bg-card p-4 text-card-foreground no-underline',
-    href && 'transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+    href &&
+      'transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
   );
   if (!href) return <div className={className}>{body}</div>;
   return external ? (
-    <a href={href} className={className} target="_blank" rel="noreferrer noopener">
+    <a
+      href={href}
+      className={className}
+      target="_blank"
+      rel="noreferrer noopener"
+    >
       {body}
     </a>
   ) : (

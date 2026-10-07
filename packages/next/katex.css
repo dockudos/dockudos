@@ -1,0 +1,2 @@
+/* Loaded only on pages that contain math. Re-exports KaTeX's stylesheet so it resolves from this package. */
+@import 'katex/dist/katex.min.css';

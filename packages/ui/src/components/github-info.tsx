@@ -11,7 +11,10 @@ interface RepoData {
   forks_count: number;
 }
 
-async function fetchRepo(owner: string, repo: string): Promise<RepoData | undefined> {
+async function fetchRepo(
+  owner: string,
+  repo: string,
+): Promise<RepoData | undefined> {
   try {
     const token = process.env['GITHUB_TOKEN'];
     const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
@@ -46,7 +49,11 @@ export async function GithubInfo({ owner, repo }: GithubInfoProps) {
         {owner}/{repo}
         <span className="sr-only"> on GitHub (opens in a new tab)</span>
       </span>
-      {data?.description && <span className="mt-1 block text-sm text-muted-foreground">{data.description}</span>}
+      {data?.description && (
+        <span className="mt-1 block text-sm text-muted-foreground">
+          {data.description}
+        </span>
+      )}
       {data && (
         <span className="mt-3 flex gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">

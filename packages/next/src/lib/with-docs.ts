@@ -37,7 +37,10 @@ export function withDocs(
 
   const withMdx = createMDX({
     extension: /\.mdx?$/,
-    options: mdxPipeline({ docsDir: absoluteDocsDir }),
+    options: mdxPipeline({
+      docsDir: absoluteDocsDir,
+      publicDir: resolve(root, 'public'),
+    }),
   });
 
   return withMdx({

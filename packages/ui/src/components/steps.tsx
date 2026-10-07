@@ -5,7 +5,13 @@ export function Steps({ children }: { children: ReactNode }) {
   return <ol className="dk-steps">{children}</ol>;
 }
 
-export function Step({ title, children }: { title?: string; children?: ReactNode }) {
+export function Step({
+  title,
+  children,
+}: {
+  title?: string;
+  children?: ReactNode;
+}) {
   return (
     <li className="dk-step">
       {title && <h3 className="dk-step-title">{title}</h3>}

@@ -1,8 +1,20 @@
-import { Info, Lightbulb, OctagonAlert, StickyNote, TriangleAlert } from 'lucide-react';
+import {
+  Info,
+  Lightbulb,
+  OctagonAlert,
+  StickyNote,
+  TriangleAlert,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 
-export const CALLOUT_TYPES = ['note', 'info', 'tip', 'warning', 'danger'] as const;
+export const CALLOUT_TYPES = [
+  'note',
+  'info',
+  'tip',
+  'warning',
+  'danger',
+] as const;
 export type CalloutType = (typeof CALLOUT_TYPES)[number];
 
 const ICONS = {
@@ -30,7 +42,12 @@ export interface CalloutProps {
 }
 
 /** A highlighted aside. Written in MDX as `<Callout type="warning">` or `:::warning[Title]`. */
-export function Callout({ type = 'note', title, children, className }: CalloutProps) {
+export function Callout({
+  type = 'note',
+  title,
+  children,
+  className,
+}: CalloutProps) {
   const kind: CalloutType = CALLOUT_TYPES.includes(type) ? type : 'note';
   const Icon = ICONS[kind];
   return (
@@ -44,9 +61,14 @@ export function Callout({ type = 'note', title, children, className }: CalloutPr
       )}
       style={{ '--c': `var(--dk-callout-${kind})` } as React.CSSProperties}
     >
-      <Icon className="mt-0.5 size-4 shrink-0 text-[var(--c)]" aria-hidden="true" />
+      <Icon
+        className="mt-0.5 size-4 shrink-0 text-[var(--c)]"
+        aria-hidden="true"
+      />
       <div className="min-w-0 flex-1 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
-        <p className="m-0 mb-1 font-semibold text-foreground">{title ?? LABELS[kind]}</p>
+        <p className="m-0 mb-1 font-semibold text-foreground">
+          {title ?? LABELS[kind]}
+        </p>
         <div className="[&>*]:my-0 [&>*+*]:mt-2">{children}</div>
       </div>
     </div>

@@ -8,3 +8,4 @@ export * from './lib/include.ts';
 export * from './lib/seo.ts';
 export * from './lib/links.ts';
 export * from './lib/theme.ts';
+export * from './lib/package-manager.ts';

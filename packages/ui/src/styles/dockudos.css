@@ -1,5 +1,6 @@
 /* Entry point of the published stylesheet (`@dockudos/ui/styles.css`). */
 @import './globals.css';
+@import './twoslash.css' layer(components);
 
 /* In the components layer so Tailwind utilities, and the site's own unlayered CSS, win. */
 @layer components {
@@ -502,6 +503,122 @@
   }
   .dk-step-body > :last-child {
     margin-bottom: 0;
+  }
+
+  /* ------------------------------------------------------------------ code */
+  .dk-code {
+    position: relative;
+    margin: 1.25rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--muted) 55%, transparent);
+    overflow: hidden;
+  }
+  .dk-code-title {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-code-body {
+    position: relative;
+  }
+  .dk-pre {
+    margin: 0;
+    padding: 1rem 0;
+    overflow-x: auto;
+    background: transparent !important;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+  .dk-pre code {
+    display: grid;
+    min-width: max-content;
+    background: none;
+    padding: 0;
+    font-size: inherit;
+  }
+  .dk-pre .line {
+    display: inline-block;
+    min-height: 1.4em;
+    padding: 0 1rem;
+    width: 100%;
+  }
+  .dk-pre.shiki,
+  .dk-pre.shiki span {
+    color: var(--shiki-light);
+  }
+  .dark .dk-pre.shiki,
+  .dark .dk-pre.shiki span {
+    color: var(--shiki-dark);
+  }
+  .dk-pre .highlighted {
+    background: color-mix(in oklch, var(--primary) 14%, transparent);
+    box-shadow: inset 2px 0 0 var(--primary);
+  }
+  .dk-pre .diff.add {
+    background: color-mix(in oklch, var(--dk-callout-tip) 16%, transparent);
+  }
+  .dk-pre .diff.remove {
+    background: color-mix(in oklch, var(--dk-callout-danger) 16%, transparent);
+    opacity: 0.75;
+  }
+  .dk-pre.has-focused .line:not(.focused) {
+    opacity: 0.45;
+    filter: blur(0.5px);
+    transition:
+      opacity 0.2s,
+      filter 0.2s;
+  }
+  .dk-pre.has-focused:hover .line:not(.focused),
+  .dk-pre.has-focused:focus-within .line:not(.focused) {
+    opacity: 1;
+    filter: none;
+  }
+  .dk-pre[data-line-numbers] code {
+    counter-reset: dk-line;
+  }
+  .dk-pre[data-line-numbers] .line::before {
+    counter-increment: dk-line;
+    content: counter(dk-line);
+    display: inline-block;
+    width: 1.5rem;
+    margin-right: 1rem;
+    text-align: right;
+    color: var(--muted-foreground);
+    opacity: 0.7;
+  }
+  .dk-code:has(.twoslash),
+  .dk-pre.twoslash {
+    /* Twoslash popups are positioned inside the block and would be clipped. */
+    overflow: visible;
+  }
+  .dk-copy {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .dk-code:hover .dk-copy,
+  .dk-copy:focus-visible,
+  .dk-code:focus-within .dk-copy {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .dk-copy {
+      opacity: 1;
+    }
+  }
+  .dk-code-group .dk-code,
+  .dk-tabs .dk-code {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+  .dk-tabs [role='tabpanel']:has(> .dk-code:only-child) {
+    padding: 0 !important;
   }
 
   /* ---------------------------------------------------------------- layouts */

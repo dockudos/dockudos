@@ -19,7 +19,8 @@
             "index",
             "guides/hello",
             "guides/features",
-            "guides/components"
+            "guides/components",
+            "guides/code"
           ]
         }
       ]

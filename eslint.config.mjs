@@ -8,6 +8,11 @@ export default [
     ignores: ['**/dist', '**/out-tsc', '**/vitest.config.*.timestamp*'],
   },
   {
+    // Tests assert on fixtures they just built, so `!` is clearer than guards.
+    files: ['**/*.spec.ts', '**/*.spec.tsx'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
+  },
+  {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       '@nx/enforce-module-boundaries': [

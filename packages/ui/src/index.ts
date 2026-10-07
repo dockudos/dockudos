@@ -25,3 +25,7 @@ export * from './components/type-table.tsx';
 export * from './components/graph-view.tsx';
 export * from './components/zoomable-image.tsx';
 export * from './layout/tab-links.ts';
+export * from './components/tabs-root.tsx';
+export * from './components/code-block.tsx';
+export * from './components/copy-button.tsx';
+export * from './components/mermaid.tsx';

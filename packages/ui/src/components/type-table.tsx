@@ -17,15 +17,24 @@ export function TypeTable({ type }: { type: Record<string, TypeField> }) {
         <caption className="sr-only">Type reference</caption>
         <thead className="bg-muted/50">
           <tr>
-            <th scope="col" className="px-3 py-2 font-medium">Name</th>
-            <th scope="col" className="px-3 py-2 font-medium">Type</th>
-            <th scope="col" className="px-3 py-2 font-medium">Default</th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Name
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Type
+            </th>
+            <th scope="col" className="px-3 py-2 font-medium">
+              Default
+            </th>
           </tr>
         </thead>
         <tbody>
           {rows.map(([name, field]) => (
             <tr key={name} className="border-t align-top">
-              <th scope="row" className="px-3 py-2 font-mono text-[0.8125rem] font-medium">
+              <th
+                scope="row"
+                className="px-3 py-2 font-mono text-[0.8125rem] font-medium"
+              >
                 {name}
                 {field.required && (
                   <span className="text-destructive" title="Required">
@@ -35,11 +44,23 @@ export function TypeTable({ type }: { type: Record<string, TypeField> }) {
                 )}
               </th>
               <td className="px-3 py-2">
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem]">{field.type}</code>
-                {field.description && <div className="mt-1.5 text-muted-foreground">{field.description}</div>}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem]">
+                  {field.type}
+                </code>
+                {field.description && (
+                  <div className="mt-1.5 text-muted-foreground">
+                    {field.description}
+                  </div>
+                )}
               </td>
               <td className="px-3 py-2">
-                {field.default ? <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem]">{field.default}</code> : <span aria-label="none">&mdash;</span>}
+                {field.default ? (
+                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem]">
+                    {field.default}
+                  </code>
+                ) : (
+                  <span aria-label="none">&mdash;</span>
+                )}
               </td>
             </tr>
           ))}
