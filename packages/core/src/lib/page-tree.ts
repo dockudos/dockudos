@@ -7,6 +7,22 @@ export interface Page {
   /** Source file relative to the docs folder, with forward slashes. */
   file: string;
   title: string;
+  description?: string;
+  icon?: string;
+  /** Routable but left out of generated navigation. */
+  hidden: boolean;
+  /** Shorter label for navigation; falls back to `title`. */
+  sidebarTitle?: string;
+}
+
+/** A discovered file plus whatever metadata was read from it. */
+export interface PageSource {
+  file: string;
+  title?: string;
+  description?: string;
+  icon?: string;
+  hidden?: boolean;
+  sidebarTitle?: string;
 }
 
 export interface Folder {
@@ -31,14 +47,23 @@ export interface PageTree {
 const DOC_EXT = /\.mdx?$/;
 
 /** Build a page tree from file paths relative to the docs folder. Non-markdown files are ignored. */
-export function buildPageTree(files: readonly string[]): PageTree {
+export function buildPageTree(
+  sources: readonly (string | PageSource)[],
+): PageTree {
   const root: Folder = { type: 'folder', name: '', path: '/', children: [] };
 
-  for (const raw of [...files].sort(compare)) {
-    const file = raw.replaceAll('\\', '/').replace(/^\.?\//, '');
+  const entries = sources
+    .map((s) => (typeof s === 'string' ? { file: s } : s))
+    .map((s) => ({
+      ...s,
+      file: s.file.replaceAll('\\', '/').replace(/^\.?\//, ''),
+    }))
+    .sort((a, b) => compare(a.file, b.file));
+
+  for (const { file, ...meta } of entries) {
     if (!DOC_EXT.test(file)) continue;
 
-    const segments = file.replace(DOC_EXT, '').split('/');
+    const segments = file.replace(DOC_EXT, '').split('/').map(toUrlSegment);
     const leaf = segments.pop() as string;
     let folder = root;
     for (const name of segments) {
@@ -52,8 +77,14 @@ export function buildPageTree(files: readonly string[]): PageTree {
       path: '/' + slug.join('/'),
       slug,
       file,
-      title: titleFromSlug(isIndex ? (segments.at(-1) ?? 'Home') : leaf),
+      title:
+        meta.title ??
+        titleFromSlug(isIndex ? (segments.at(-1) ?? 'Home') : leaf),
+      hidden: meta.hidden ?? false,
     };
+    if (meta.description) page.description = meta.description;
+    if (meta.icon) page.icon = meta.icon;
+    if (meta.sidebarTitle) page.sidebarTitle = meta.sidebarTitle;
 
     if (isIndex) folder.index = page;
     else folder.children.push(page);
@@ -106,7 +137,16 @@ function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function titleFromSlug(segment: string): string {
+export function titleFromSlug(segment: string): string {
   const words = segment.replace(/[-_]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** Make one path segment safe for a URL: collapse whitespace, drop characters that break URLs. */
+export function toUrlSegment(segment: string): string {
+  return segment
+    .normalize('NFC')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[#?%\\]/g, '');
 }

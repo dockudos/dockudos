@@ -42,3 +42,47 @@ describe('discoverPages', () => {
     expect(tree.pages.map((p) => p.path)).toEqual(['/', '/guides/auth']);
   });
 });
+
+describe('discoverPages: frontmatter', () => {
+  it('uses frontmatter, then the first heading, then the file name for the title', async () => {
+    await writeFile(
+      join(dir, 'a.mdx'),
+      '---\ntitle: From FM\ndescription: d\nicon: star\nhidden: true\n---\n# H',
+    );
+    await writeFile(join(dir, 'b.mdx'), '# From heading');
+    await writeFile(join(dir, 'my-page.mdx'), 'no heading');
+    const tree = await discoverPages(dir);
+    const byFile = Object.fromEntries(tree.pages.map((p) => [p.file, p]));
+    expect(byFile['a.mdx']).toMatchObject({
+      title: 'From FM',
+      description: 'd',
+      icon: 'star',
+      hidden: true,
+    });
+    expect(byFile['b.mdx']?.title).toBe('From heading');
+    expect(byFile['my-page.mdx']?.title).toBe('My page');
+  });
+
+  it('reports every bad file at once', async () => {
+    await writeFile(join(dir, 'a.mdx'), '---\nhidden: 1\n---\n');
+    await writeFile(join(dir, 'b.mdx'), '---\ntitle: ""\n---\n');
+    await expect(discoverPages(dir)).rejects.toThrow(/a\.mdx[\s\S]*b\.mdx/);
+  });
+
+  it('skips dot folders and node_modules', async () => {
+    await mkdir(join(dir, '.git'));
+    await mkdir(join(dir, 'node_modules'));
+    await writeFile(join(dir, '.git', 'x.mdx'), '');
+    await writeFile(join(dir, 'node_modules', 'y.mdx'), '');
+    await writeFile(join(dir, 'z.mdx'), '');
+    expect((await discoverPages(dir)).pages.map((p) => p.file)).toEqual([
+      'z.mdx',
+    ]);
+  });
+
+  it('fails clearly when the docs folder is missing', async () => {
+    await expect(discoverPages(join(dir, 'nope'))).rejects.toThrow(
+      /Docs folder not found/,
+    );
+  });
+});

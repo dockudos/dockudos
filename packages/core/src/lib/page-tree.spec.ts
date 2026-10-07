@@ -73,3 +73,51 @@ describe('buildPageTree', () => {
     });
   });
 });
+
+describe('buildPageTree: metadata and URLs', () => {
+  it('carries metadata from page sources', () => {
+    const tree = buildPageTree([
+      {
+        file: 'a.mdx',
+        title: 'Alpha',
+        description: 'd',
+        icon: 'x',
+        hidden: true,
+        sidebarTitle: 'A',
+      },
+    ]);
+    expect(tree.pages[0]).toMatchObject({
+      title: 'Alpha',
+      description: 'd',
+      icon: 'x',
+      hidden: true,
+      sidebarTitle: 'A',
+    });
+  });
+
+  it('defaults hidden to false', () => {
+    expect(buildPageTree(['a.mdx']).pages[0]?.hidden).toBe(false);
+  });
+
+  it('makes special characters URL-safe', () => {
+    const tree = buildPageTree([
+      'My Guide/What is #1?.mdx',
+      'Windows\\path.mdx',
+    ]);
+    expect(tree.pages.map((p) => p.path)).toEqual([
+      '/My-Guide/What-is-1',
+      '/Windows/path',
+    ]);
+  });
+
+  it('keeps hidden pages routable', () => {
+    const tree = buildPageTree([{ file: 'secret.mdx', hidden: true }]);
+    expect(tree.pages.map((p) => p.path)).toEqual(['/secret']);
+  });
+
+  it('uses the folder name as the title of a folder index', () => {
+    expect(buildPageTree(['api-reference/index.mdx']).pages[0]?.title).toBe(
+      'Api reference',
+    );
+  });
+});
