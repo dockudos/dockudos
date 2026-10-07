@@ -6,10 +6,14 @@ import {
   buildNavigation,
   buildRobots,
   buildSitemap,
+  expandIncludes,
+  extractToc,
   pageSeo,
+  type TocEntry,
 } from '@dockudos/core';
 import { discoverPages, lastModified, loadConfig } from '@dockudos/core/node';
 import type { Metadata } from 'next';
+import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 export interface SiteOptions {
@@ -28,6 +32,8 @@ export interface Site {
   find(slug?: readonly string[]): Page | undefined;
   /** When the page's source file last changed (Git, else file system). */
   lastModified(page: Page): Promise<Date>;
+  /** Headings of the page (h2 to h4), with `<include>`s expanded, matching the ids in the rendered page. */
+  toc(page: Page): Promise<TocEntry[]>;
 }
 
 const cache = new Map<string, Promise<Site>>();
@@ -63,6 +69,14 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       tree.pages.find((p) => p.slug.join('/') === slug.join('/')),
     lastModified: async (page) =>
       (await lastModified(join(dir, page.file))).date,
+    toc: async (page) => {
+      const read = (file: string) => readFile(join(dir, file), 'utf8');
+      const source = await expandIncludes(await read(page.file), {
+        file: page.file,
+        read,
+      });
+      return extractToc(source);
+    },
   };
 }
 

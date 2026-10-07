@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const LAYOUTS = [
+export const LAYOUTS = [
   'docs',
   'notebook',
   'spacious',

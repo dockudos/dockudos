@@ -1,3 +1,5 @@
+import type { LayoutName } from './config.ts';
+
 export interface Page {
   type: 'page';
   /** URL path, e.g. `/guides/auth`. The index page of a folder takes the folder's path. */
@@ -13,6 +15,8 @@ export interface Page {
   hidden: boolean;
   /** Shorter label for navigation; falls back to `title`. */
   sidebarTitle?: string;
+  /** Per-page override of `theme.layout`. */
+  layout?: LayoutName;
 }
 
 /** A discovered file plus whatever metadata was read from it. */
@@ -23,6 +27,7 @@ export interface PageSource {
   icon?: string;
   hidden?: boolean;
   sidebarTitle?: string;
+  layout?: LayoutName;
 }
 
 export interface Folder {
@@ -85,6 +90,7 @@ export function buildPageTree(
     if (meta.description) page.description = meta.description;
     if (meta.icon) page.icon = meta.icon;
     if (meta.sidebarTitle) page.sidebarTitle = meta.sidebarTitle;
+    if (meta.layout) page.layout = meta.layout;
 
     if (isIndex) folder.index = page;
     else folder.children.push(page);

@@ -1,5 +1,6 @@
 import { parse } from 'yaml';
 import { z } from 'zod';
+import { LAYOUTS } from './config.ts';
 
 /** Known frontmatter keys. Unknown keys are kept so pages can carry custom metadata. */
 export const frontmatterSchema = z.looseObject({
@@ -8,6 +9,8 @@ export const frontmatterSchema = z.looseObject({
   icon: z.string().min(1).optional(),
   /** Hidden pages are routable but left out of generated navigation. */
   hidden: z.boolean().default(false),
+  /** Overrides `theme.layout` for this page. */
+  layout: z.enum(LAYOUTS).optional(),
   /** Shorter label for the sidebar. */
   sidebarTitle: z.string().min(1).optional(),
 });

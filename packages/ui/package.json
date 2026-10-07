@@ -29,7 +29,8 @@
       "import": "./dist/lib/*.js",
       "default": "./dist/lib/*.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./styles.css": "./dist/styles.css"
   },
   "files": [
     "dist",
@@ -37,6 +38,7 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
+    "@dockudos/core": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.52.0",
@@ -50,7 +52,24 @@
   "nx": {
     "tags": [
       "scope:ui"
-    ]
+    ],
+    "targets": {
+      "build-css": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "node scripts/build-css.mjs",
+          "cwd": "{projectRoot}"
+        },
+        "inputs": [
+          "{projectRoot}/src/**/*",
+          "{projectRoot}/scripts/build-css.mjs"
+        ],
+        "outputs": [
+          "{projectRoot}/dist/styles.css"
+        ],
+        "cache": true
+      }
+    }
   },
   "publishConfig": {
     "access": "public"

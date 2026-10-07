@@ -104,3 +104,12 @@ describe('loadConfigSync', () => {
     expect(() => loadConfigSync(dir)).toThrow(/name:/);
   });
 });
+
+describe('discoverPages: layout', () => {
+  it('reads a per-page layout and rejects unknown ones', async () => {
+    await writeFile(join(dir, 'a.mdx'), '---\nlayout: glass\n---\n');
+    expect((await discoverPages(dir)).pages[0]?.layout).toBe('glass');
+    await writeFile(join(dir, 'a.mdx'), '---\nlayout: wide\n---\n');
+    await expect(discoverPages(dir)).rejects.toThrow(/layout/);
+  });
+});

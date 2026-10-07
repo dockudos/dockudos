@@ -84,7 +84,7 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
       const text = await readFile(join(docsDir, file), 'utf8');
       try {
         const { data, body } = parseFrontmatter(text, file);
-        const { title, description, icon, hidden, sidebarTitle } = data;
+        const { title, description, icon, hidden, sidebarTitle, layout } = data;
         return {
           file,
           title: title ?? firstHeading(body),
@@ -92,6 +92,7 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
           icon,
           hidden,
           sidebarTitle,
+          layout,
         };
       } catch (e) {
         if (e instanceof FrontmatterError) errors.push(e);

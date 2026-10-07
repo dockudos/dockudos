@@ -141,3 +141,21 @@ it('uses git dates for committed files', async () => {
     '2020-02-02T00:00:00.000Z',
   );
 });
+
+describe('toc', () => {
+  it('lists headings with includes expanded', async () => {
+    await mkdir(join(root, 'docs', '_parts'));
+    await writeFile(join(root, 'docs', '_parts', 'p.mdx'), '## From include\n');
+    await writeFile(
+      join(root, 'docs', 'toc.mdx'),
+      '---\ntitle: T\n---\n# T\n## One\n\n<include>./_parts/p.mdx</include>\n\n### Two\n',
+    );
+    const site = await getSite({ root });
+    const toc = await site.toc(site.find(['toc']) as never);
+    expect(toc.map((t) => [t.id, t.depth])).toEqual([
+      ['one', 2],
+      ['from-include', 2],
+      ['two', 3],
+    ]);
+  });
+});
