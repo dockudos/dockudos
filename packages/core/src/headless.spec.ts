@@ -29,6 +29,19 @@ describe('headless core', () => {
     }
   });
 
+  it('keeps Node APIs out of everything index.ts exports (they live behind /node)', async () => {
+    const dir = join(import.meta.dirname);
+    const index = await readFile(join(dir, 'index.ts'), 'utf8');
+    const exported = [...index.matchAll(/from '\.\/(lib\/[\w-]+)\.ts'/g)].map(
+      (m) => `${m[1]}.ts`,
+    );
+    expect(exported.length).toBeGreaterThan(10);
+    for (const file of exported) {
+      const source = await readFile(join(dir, file), 'utf8');
+      expect(source, file).not.toMatch(/from\s+['"]node:/);
+    }
+  });
+
   it('drives a non-React frontend: renders a site as plain text', async () => {
     const core = await import('./index.ts');
     const config = core.parseConfig({

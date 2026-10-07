@@ -157,6 +157,34 @@ describe('parseConfig: full schema', () => {
   });
 });
 
+describe('parseConfig: theme values that reach CSS', () => {
+  it.each([
+    [
+      'theme.fonts.sans',
+      { theme: { fonts: { sans: 'x}</style><script>alert(1)</script>' } } },
+    ],
+    ['theme.fonts.mono', { theme: { fonts: { mono: 'a; b' } } }],
+    ['theme.radius', { theme: { radius: '1rem; } body { display: none' } }],
+  ])(
+    'rejects characters that could break out of a declaration in %s',
+    (key, patch) => {
+      expect(messageOf({ name: 'A', ...patch })).toContain(key);
+    },
+  );
+
+  it('still accepts ordinary font stacks and lengths', () => {
+    const { theme } = parseConfig({
+      name: 'A',
+      theme: {
+        fonts: { sans: "Inter, 'Helvetica Neue', system-ui, sans-serif" },
+        radius: 'calc(0.5rem + 2px)',
+      },
+    });
+    expect(theme.fonts?.sans).toContain('Helvetica Neue');
+    expect(theme.radius).toBe('calc(0.5rem + 2px)');
+  });
+});
+
 describe('parseConfig: urlPrefix', () => {
   it('accepts a mount point', () => {
     expect(parseConfig({ name: 'A', urlPrefix: '/docs' }).urlPrefix).toBe(

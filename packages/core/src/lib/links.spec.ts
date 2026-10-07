@@ -92,7 +92,7 @@ describe('extractLinks', () => {
     ].join('\n');
     expect(extractLinks(src)).toEqual([
       { href: './a.mdx#x', line: 3, kind: 'link' },
-      { href: '/img/logo.png', line: 3, kind: 'image' },
+      { href: '/img/logo.png', line: 3, kind: 'image', alt: 'logo' },
       { href: 'https://x.dev', line: 4, kind: 'link' },
     ]);
   });
@@ -106,7 +106,7 @@ describe('extractLinks', () => {
     expect(extractLinks(src)).toEqual([
       { href: './r.mdx', line: 1, kind: 'link' },
       { href: '/guides/x', line: 2, kind: 'link' },
-      { href: '/a.png', line: 3, kind: 'image' },
+      { href: '/a.png', line: 3, kind: 'image', alt: '', decorative: true },
     ]);
   });
 
@@ -118,6 +118,22 @@ describe('extractLinks', () => {
       'Use `[no](./nope2.mdx)` literally, but [yes](./yes.mdx).',
     ].join('\n');
     expect(extractLinks(src).map((l) => l.href)).toEqual(['./yes.mdx']);
+  });
+
+  it('reports alt text for images, and a missing alt attribute on <img>', () => {
+    const src = [
+      '![A logo](/a.png) ![](/b.png)',
+      '<img src="/c.png" /> <img src="/d.png" alt="" /> <img src="/e.png" alt="E" />',
+      '[link](/x)',
+    ].join('\n');
+    expect(extractLinks(src).map((l) => [l.href, l.alt])).toEqual([
+      ['/a.png', 'A logo'],
+      ['/b.png', ''],
+      ['/c.png', null],
+      ['/d.png', ''],
+      ['/e.png', 'E'],
+      ['/x', undefined],
+    ]);
   });
 
   it('skips fences indented inside JSX, as in <Step>', () => {

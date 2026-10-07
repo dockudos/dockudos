@@ -98,7 +98,19 @@ export async function checkLinks(
     const add = (line: number, href: string, message: string) =>
       problems.push({ file, line, href, message, severity: 'error' });
 
-    for (const { href, line } of extractLinks(source)) {
+    for (const { href, line, kind, alt, decorative } of extractLinks(source)) {
+      if (kind === 'image' && !decorative && (alt === null || alt === '')) {
+        problems.push({
+          file,
+          line,
+          href,
+          severity: 'warning',
+          message:
+            alt === null
+              ? 'image has no alt attribute; add alt="" if it is only decoration'
+              : 'image has no alt text; describe it, or use <img alt="" /> if it is only decoration',
+        });
+      }
       const link = resolveDocLink(file, href, { prefix: options.prefix });
 
       if (link.kind === 'external') {

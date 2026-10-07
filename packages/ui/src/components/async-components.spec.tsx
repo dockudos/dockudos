@@ -47,6 +47,13 @@ describe('GithubInfo', () => {
     vi.unstubAllEnvs();
   });
 
+  it.each([['../x', 'y'], ['a', 'b/../../c'], ['a b', 'c'], ['..', 'x'], ['a', '..']])('rejects %s/%s instead of building a URL from it', async (owner, repo) => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    await expect(GithubInfo({ owner, repo })).rejects.toThrow(/not a GitHub owner/);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['a rate-limit response', () => json({}, false)],
     [

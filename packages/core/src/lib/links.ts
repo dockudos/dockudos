@@ -57,6 +57,13 @@ export function resolveDocLink(
 
 export interface FoundLink {
   href: string;
+  /**
+   * For images: the alt text, `''` when written empty, or `null` when an `<img>` has no alt
+   * attribute at all. Absent for links.
+   */
+  alt?: string | null;
+  /** The author wrote `<img alt="" />`, saying the image is only decoration. */
+  decorative?: true;
   /** 1-based line in the file, counting any frontmatter. */
   line: number;
   kind: 'link' | 'image';
@@ -76,20 +83,39 @@ export function extractLinks(source: string): FoundLink[] {
     if (fence.inCode(raw)) continue;
 
     const line = raw.replace(/(`+)[^`]*?\1/g, (m) => ' '.repeat(m.length));
-    const add = (href: string | undefined, kind: FoundLink['kind']) => {
-      if (href) found.push({ href, line: i + 1, kind });
+    const add = (
+      href: string | undefined,
+      kind: FoundLink['kind'],
+      extra: Pick<FoundLink, 'alt' | 'decorative'> = {},
+    ) => {
+      if (href) found.push({ href, line: i + 1, kind, ...extra });
     };
 
     for (const m of line.matchAll(
-      /(!?)\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+(?:"[^"]*"|'[^']*'))?\s*\)/g,
+      /(!?)\[([^\]]*)\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+(?:"[^"]*"|'[^']*'))?\s*\)/g,
     )) {
-      add(m[2] ?? m[3], m[1] ? 'image' : 'link');
+      const isImage = m[1] === '!';
+      add(
+        m[3] ?? m[4],
+        isImage ? 'image' : 'link',
+        isImage ? { alt: m[2] ?? '' } : {},
+      );
     }
     add(/^\s{0,3}\[[^\]]+\]:\s*(\S+)/.exec(line)?.[1], 'link');
-    for (const m of line.matchAll(
-      /<(\w+)[^>]*?\s(href|src)=(?:"([^"]*)"|'([^']*)')/g,
-    )) {
-      add(m[3] ?? m[4], m[2] === 'src' ? 'image' : 'link');
+
+    for (const m of line.matchAll(/<(\w+)\b[^>]*?>/g)) {
+      const tag = m[0];
+      const attr = /\s(href|src)=(?:"([^"]*)"|'([^']*)')/.exec(tag);
+      if (!attr) continue;
+      const isImage = attr[1] === 'src';
+      const extra: Pick<FoundLink, 'alt' | 'decorative'> = {};
+      if (isImage && m[1] === 'img') {
+        const altAttr = /\salt=(?:"([^"]*)"|'([^']*)')/.exec(tag);
+        extra.alt = altAttr ? (altAttr[1] ?? altAttr[2] ?? '') : null;
+        // An explicit `alt=""` is the author saying the image is decoration.
+        if (extra.alt === '') extra.decorative = true;
+      }
+      add(attr[2] ?? attr[3], isImage ? 'image' : 'link', extra);
     }
   }
   return found;

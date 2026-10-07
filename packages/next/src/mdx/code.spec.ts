@@ -184,6 +184,12 @@ describe('images', () => {
     expect(out).not.toContain('import ');
   });
 
+  it('does not read files outside public/', async () => {
+    await writeFile(join(dir, 'secret.png'), PNG);
+    const out = await compileMdx('![x](/../secret.png)', plugins());
+    expect(out).not.toContain('width=');
+  });
+
   it('survives a corrupt public image', async () => {
     await writeFile(join(dir, 'public', 'bad.png'), 'not an image');
     await expect(compileMdx('![x](/bad.png)', plugins())).resolves.toContain(

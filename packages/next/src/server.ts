@@ -71,6 +71,8 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
   const dir = join(root, docsDir);
   const config = await loadConfig(root);
   const tree = await discoverPages(dir, { prefix: config.urlPrefix });
+  // Every page renders the graph, so build it once per site, not once per page.
+  let graph: Promise<PageGraph> | undefined;
   return {
     root,
     config,
@@ -88,7 +90,7 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       });
       return extractToc(source);
     },
-    graph: () => buildGraph(tree, dir, config.urlPrefix),
+    graph: () => (graph ??= buildGraph(tree, dir, config.urlPrefix)),
   };
 }
 

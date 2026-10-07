@@ -70,18 +70,21 @@
           "properties": {
             "sans": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "^[^<>{};\\\\]+$"
             },
             "mono": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "^[^<>{};\\\\]+$"
             }
           },
           "additionalProperties": false
         },
         "radius": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "^[^<>{};\\\\]+$"
         },
         "css": {
           "type": "string",

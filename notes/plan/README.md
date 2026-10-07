@@ -7,7 +7,7 @@ Phase-by-phase plan derived from [development.md](../development.md), [features.
 | # | File | Goal | Status |
 | --- | --- | --- | --- |
 | 0 | [phase-0-foundation.md](./phase-0-foundation.md) | Workspace, tooling, CI, one MDX page rendering end to end | [ ] 3 items left: P0.2b, P0.11 first CI run, P0.20b commit |
-| 1 | [phase-1-core-library.md](./phase-1-core-library.md) | `npx dockudos init` gives a polished docs site in minutes (MVP) | [ ] |
+| 1 | [phase-1-core-library.md](./phase-1-core-library.md) | `npx dockudos init` gives a polished docs site in minutes (MVP) | [ ] 2 items left, both waiting on the owner: P1.30b publish to npm, and the "install from real npm" acceptance check |
 | 2 | [phase-2-search-and-ai.md](./phase-2-search-and-ai.md) | Visitors can find or ask for anything; AI tools can read the docs | [ ] |
 | 3 | [phase-3-api-docs.md](./phase-3-api-docs.md) | A spec becomes an interactive API reference | [ ] |
 | 4 | [phase-4-content-at-scale.md](./phase-4-content-at-scale.md) | Versions, languages, private docs, export | [ ] |
@@ -35,7 +35,7 @@ Sequencing (from development.md): ship Phase 1 and publish to npm, then Phase 2 
 
 These apply to every phase; each phase file lists the concrete items.
 
-- [ ] **Accessibility:** keyboard navigation, focus states, axe checks on `apps/example` in light and dark mode.
+- [x] **Accessibility:** keyboard navigation, focus states, axe checks on `apps/example` in light and dark mode. *Phase 1: 22 axe runs, keyboard e2e for tabs, accordion, tooltip, drawer, sidebar and skip link. Keep adding as components arrive.*
 - [ ] **Security:** secrets only from env vars, rate limits on AI endpoints, retrieved text treated as untrusted data.
 - [ ] **Performance:** budgets from architecture.md section 10 tracked in CI once measurable.
 - [ ] **Docs:** `apps/docs` (built with dockudos) is updated alongside every feature.

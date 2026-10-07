@@ -202,6 +202,13 @@ describe('graph', () => {
   });
 });
 
+describe('graph caching', () => {
+  it('is built once per site, however many pages ask for it', async () => {
+    const site = await getSite({ root });
+    expect(site.graph()).toBe(site.graph());
+  });
+});
+
 describe('urlPrefix', () => {
   it('mounts pages under the prefix, finds them by relative slug, and builds canonical URLs with it', async () => {
     await config({ urlPrefix: '/docs', seo: { siteUrl: 'https://acme.dev' } });

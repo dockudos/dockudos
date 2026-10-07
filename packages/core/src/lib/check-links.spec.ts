@@ -107,6 +107,22 @@ describe('checkLinks: prefix', () => {
   });
 });
 
+describe('checkLinks: image alt text', () => {
+  it('warns, without failing, about images with no alt text', async () => {
+    await put(
+      'index.mdx',
+      '![](/logo.svg)\n![Logo](/logo.svg)\n<img src="/logo.svg" />\n<img src="/logo.svg" alt="" />',
+    );
+    const problems = await run();
+    expect(problems.map((p) => [p.line, p.severity])).toEqual([
+      [1, 'warning'],
+      [3, 'warning'],
+    ]);
+    expect(problems[0]!.message).toContain('no alt text');
+    expect(problems[1]!.message).toContain('no alt attribute');
+  });
+});
+
 describe('checkLinks: external', () => {
   const response = (status: number) => ({ status }) as Response;
 

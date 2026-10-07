@@ -35,7 +35,7 @@ saved choice before the first paint, so there is no flash of the wrong scheme.
 
 ## Fonts and radius
 
-`fonts.sans` and `fonts.mono` are CSS `font-family` values. dockudos does not load font files; load
+`fonts.sans` and `fonts.mono` are CSS `font-family` values. Values may not contain `<`, `>`, `{`, `}`, `;` or `\`, so they cannot break out of the declaration they are written into. dockudos does not load font files; load
 them yourself (with `next/font`, for example) and name the family here. `radius` is a CSS length that
 scales every rounded corner.
 

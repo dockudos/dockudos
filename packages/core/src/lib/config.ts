@@ -62,6 +62,12 @@ const logoSchema = z.union([
   }),
 ]);
 
+/** A value that ends up inside a CSS declaration, so it must not be able to close it or the style tag. */
+const cssValue = z
+  .string()
+  .min(1)
+  .regex(/^[^<>{};\\]+$/, 'must not contain < > { } ; or \\');
+
 const themeSchema = z.strictObject({
   /** Brand color; the palette is derived from it. */
   primary: hexColor.optional(),
@@ -69,11 +75,11 @@ const themeSchema = z.strictObject({
   layout: z.enum(LAYOUTS).default('docs'),
   fonts: z
     .strictObject({
-      sans: z.string().min(1).optional(),
-      mono: z.string().min(1).optional(),
+      sans: cssValue.optional(),
+      mono: cssValue.optional(),
     })
     .optional(),
-  radius: z.string().min(1).optional(),
+  radius: cssValue.optional(),
   /** Path to a CSS file loaded after the theme, relative to the project root. */
   css: z.string().min(1).optional(),
 });

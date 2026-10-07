@@ -2,20 +2,21 @@
 
 An AI-native documentation platform you can fully self-host. dockudos turns a folder of MDX files into a documentation site built on Next.js, with search, cited AI answers, AI navigation, `llms.txt` and an MCP server planned as core features.
 
-> **Status: early development (Phase 0 done).** One MDX page renders end to end. The design lives in [`notes/`](./notes) and the build plan in [`notes/plan/`](./notes/plan).
+> **Status: Phase 1 (core library) is implemented; the first npm release is pending.** `npx dockudos init` creates a styled docs site. Search, the AI assistant and API reference pages are planned for later phases. The design lives in [`notes/`](./notes) and the build plan in [`notes/plan/`](./notes/plan).
 
 ## Repository layout
 
-| Path            | What it is                                                                    |
-| --------------- | ----------------------------------------------------------------------------- |
-| `packages/core` | Headless: config schema, page tree. `@dockudos/core`, Node helpers in `/node` |
-| `packages/next` | `withDocs()` Next.js wrapper. `@dockudos/next`                                |
-| `packages/ui`   | React components and theme. `@dockudos/ui`                                    |
-| `packages/cli`  | `dockudos` CLI (stub for now). `@dockudos/cli`                                |
-| `apps/example`  | Minimal fixture site used for end-to-end tests                                |
-| `apps/web`      | Marketing site ([ADR 0007](./notes/adr/0007-apps-web-is-marketing-site.md))   |
-| `notes/`        | Design docs, [ADRs](./notes/adr) and the [build plan](./notes/plan)           |
-| `tools/`        | Repo guard scripts (module boundaries, published-package check)               |
+| Path            | What it is                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| `packages/core` | Headless: config schema, page tree, navigation, link checking. `@dockudos/core`, Node helpers in `/node` |
+| `packages/next` | `withDocs()`, MDX pipeline, site data and metadata. `@dockudos/next`                                     |
+| `packages/ui`   | Layouts, theme and components. `@dockudos/ui`                                                            |
+| `packages/cli`  | The `dockudos` CLI: `init`, `dev`, `build`, `broken-links`. `@dockudos/cli`                              |
+| `apps/docs`     | dockudos's own documentation, built with dockudos                                                        |
+| `apps/example`  | Fixture site for end-to-end, accessibility and visual tests                                              |
+| `apps/web`      | Marketing site ([ADR 0007](./notes/adr/0007-apps-web-is-marketing-site.md))                              |
+| `notes/`        | Design docs, [ADRs](./notes/adr) and the [build plan](./notes/plan)                                      |
+| `tools/`        | Repo guard scripts (module boundaries, published-package check)                                          |
 
 Dependency direction is enforced by lint: `core` ← `ui` ← `next`, and `cli` → `core`, `next` ([ADR 0005](./notes/adr/0005-package-layout.md)).
 
@@ -25,7 +26,8 @@ Requires Node 20.19+ and pnpm (see `packageManager` in `package.json`).
 
 ```sh
 pnpm install
-pnpm nx dev @dockudos/example      # http://localhost:3000, renders apps/example/docs/*.mdx
+pnpm nx dev @dockudos/docs         # http://localhost:3000, the dockudos documentation
+pnpm nx dev @dockudos/example      # the fixture site used by the tests
 ```
 
 ## Everyday commands
@@ -35,7 +37,9 @@ Always run tasks through Nx.
 ```sh
 pnpm nx run-many -t lint typecheck test build   # everything
 pnpm nx affected -t lint typecheck test build e2e
-pnpm nx e2e @dockudos/example                   # Playwright against the production build
+pnpm nx e2e @dockudos/example                   # Playwright against the production build (includes axe checks)
+pnpm nx e2e-visual @dockudos/example            # screenshot baselines; Linux fonts, run locally or in the Playwright image
+pnpm schema                                     # regenerate packages/core/docs.schema.json after changing the config schema
 pnpm nx graph                                   # project graph
 pnpm format                                     # Prettier
 pnpm check:boundaries                           # proves the module-boundary lint rule is live

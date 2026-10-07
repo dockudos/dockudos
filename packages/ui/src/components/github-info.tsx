@@ -36,7 +36,12 @@ const compact = new Intl.NumberFormat('en', { notation: 'compact' });
  * Repository card with stars and forks, fetched when the page is built. If
  * GitHub cannot be reached it still renders a working link, without numbers.
  */
+const NAME = /^[A-Za-z0-9_.-]+$/;
+
 export async function GithubInfo({ owner, repo }: GithubInfoProps) {
+  if (!NAME.test(owner) || !NAME.test(repo) || owner === '..' || repo === '..') {
+    throw new Error(`<GithubInfo>: "${owner}/${repo}" is not a GitHub owner and repository name`);
+  }
   const data = await fetchRepo(owner, repo);
   return (
     <a

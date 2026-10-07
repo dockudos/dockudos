@@ -47,6 +47,13 @@ describe('expandIncludes', () => {
     expect(await run({ 'index.mdx': src, 's.mdx': 'x' })).toBe(src);
   });
 
+  it('cannot climb out of the docs folder', async () => {
+    const err = await run({
+      'index.mdx': '<include>../../../etc/passwd</include>',
+    }).catch((e) => e);
+    expect(err.message).toContain('included file not found: etc/passwd');
+  });
+
   it('names file and line for a missing file', async () => {
     const err = await run({
       'index.mdx': 'a\nb\n<include>./gone.mdx</include>',

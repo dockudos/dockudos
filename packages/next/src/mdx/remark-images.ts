@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { imageSize } from 'image-size';
 import type { Image, Root } from 'mdast';
 import type { Plugin } from 'unified';
@@ -54,7 +54,9 @@ const remarkImages: Plugin<[RemarkImagesOptions], Root> =
 
       if (url.startsWith('/') && !url.startsWith('//')) {
         const file = join(publicDir, url.split(/[?#]/)[0] as string);
-        if (!existsSync(file)) return;
+        // `/../secret.png` must not reach outside public/.
+        if (relative(publicDir, file).startsWith('..') || !existsSync(file))
+          return;
         try {
           const { width, height } = imageSize(readFileSync(file));
           if (width && height) {
