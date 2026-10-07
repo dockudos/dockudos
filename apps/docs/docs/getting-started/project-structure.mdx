@@ -4,26 +4,59 @@ title: Project structure
 description: What init creates, and which files you edit.
 ---
 
-```
-my-docs/
-├── docs/                    your content (MDX)
-│   ├── index.mdx
-│   ├── quickstart.mdx
-│   └── guides/writing.mdx
-├── docs.json                site config and navigation
-├── next.config.mjs          wraps your Next.js config with withDocs()
-├── mdx-components.tsx       the components available in MDX
-├── public/                  static files, served from /
-├── src/proxy.ts             applies the `access` rules (nothing, until you add some)
-├── src/app/
-│   ├── layout.tsx           styles, theme script and the router link
-│   ├── [[...slug]]/page.tsx renders any page from docs/
-│   ├── print/page.tsx       every page in one document, for `dockudos pdf`
-│   ├── api/kudos/route.ts   receives page feedback
-│   ├── sitemap.xml/route.ts
-│   └── robots.txt/route.ts
-└── package.json
-```
+<Tree>
+  <Tree.Folder name="my-docs" defaultOpen>
+    <Tree.Folder name="docs" defaultOpen>
+      <Tree.File name="index.mdx" />
+      <Tree.File name="quickstart.mdx" />
+      <Tree.Folder name="guides">
+        <Tree.File name="writing.mdx" />
+      </Tree.Folder>
+    </Tree.Folder>
+    <Tree.Folder name="public" />
+    <Tree.Folder name="src" defaultOpen>
+      <Tree.File name="proxy.ts" />
+      <Tree.Folder name="app" defaultOpen>
+        <Tree.File name="layout.tsx" />
+        <Tree.Folder name="[[...slug]]">
+          <Tree.File name="page.tsx" />
+        </Tree.Folder>
+        <Tree.Folder name="print">
+          <Tree.File name="page.tsx" />
+        </Tree.Folder>
+        <Tree.Folder name="api">
+          <Tree.Folder name="kudos">
+            <Tree.File name="route.ts" />
+          </Tree.Folder>
+        </Tree.Folder>
+        <Tree.Folder name="sitemap.xml">
+          <Tree.File name="route.ts" />
+        </Tree.Folder>
+        <Tree.Folder name="robots.txt">
+          <Tree.File name="route.ts" />
+        </Tree.Folder>
+      </Tree.Folder>
+    </Tree.Folder>
+    <Tree.File name="docs.json" />
+    <Tree.File name="next.config.mjs" />
+    <Tree.File name="mdx-components.tsx" />
+    <Tree.File name="package.json" />
+  </Tree.Folder>
+</Tree>
+
+| Path                                  | What it is                                                    |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `docs/`                               | Your content, as MDX.                                         |
+| `docs.json`                           | Site config and navigation.                                   |
+| `public/`                             | Static files, served from `/`.                                |
+| `next.config.mjs`                     | Wraps your Next.js config with `withDocs()`.                  |
+| `mdx-components.tsx`                  | The components available in MDX.                              |
+| `src/proxy.ts`                        | Applies the `access` rules. Does nothing until you add some.  |
+| `src/app/layout.tsx`                  | Styles, theme script and the router link.                     |
+| `src/app/[[...slug]]/page.tsx`        | Renders any page from `docs/`.                                |
+| `src/app/print/page.tsx`              | Every page in one document, for `dockudos pdf`.               |
+| `src/app/api/kudos/route.ts`          | Receives page feedback.                                       |
+| `src/app/sitemap.xml/route.ts`, `src/app/robots.txt/route.ts` | The sitemap and robots.txt.                   |
 
 You normally edit `docs/`, `docs.json` and `public/`. The files in `src/app/` are small and yours to
 change, but they are the glue between your content and the packages, so read them before you do.

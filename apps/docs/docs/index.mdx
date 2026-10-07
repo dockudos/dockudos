@@ -1,43 +1,68 @@
 ---
-icon: home
-title: dockudos
-description: Documentation sites for Next.js, from MDX files and one JSON config.
-layout: home
+icon: book-open
+title: Introduction
+description: What dockudos is, how a site is put together and where to go next.
 ---
 
-dockudos turns a folder of MDX files and a `docs.json` into a documentation site with navigation,
-table of contents, dark mode, syntax highlighting and a set of ready-made components. It runs inside
-a Next.js App Router project, so you keep the whole Next.js toolbox.
+dockudos builds a documentation site from a folder of MDX files and one `docs.json`. It runs inside
+a Next.js App Router project, so you keep the whole Next.js toolbox. This guide covers authoring,
+theming, components and the CLI.
+
+## How it works
+
+You write three kinds of files. dockudos does the rest.
+
+<Tree>
+  <Tree.Folder name="my-docs" defaultOpen>
+    <Tree.Folder name="docs" defaultOpen>
+      <Tree.File name="index.mdx" />
+      <Tree.File name="first-page.mdx" />
+    </Tree.Folder>
+    <Tree.File name="docs.json" />
+  </Tree.Folder>
+</Tree>
+
+- **Pages** are MDX files in `docs/`. The URL is the file path without the extension. The title and
+  description come from frontmatter.
+- **`docs.json`** holds the site name, theme, navigation and other settings. List pages in
+  `navigation`, or leave it empty and the sidebar follows your folders.
+- **Components** such as callouts, tabs and steps are available in every page without imports.
+
+See [Project structure](./getting-started/project-structure.mdx) for every file and folder.
+
+## What you get
+
+- **Navigation you control.** Tabs, groups and nested groups, or the folder layout as a fallback.
+- **A real theme.** One brand color generates a palette for light and dark mode that meets WCAG AA
+  contrast. Six layouts, switchable per site or per page.
+- **Components for docs.** Callouts, tabs, steps, cards, file trees, type tables, diagrams, math and
+  more. See the [component overview](./components/index.mdx).
+- **Feedback from readers.** A thumbs up or down and an optional comment under every page, read
+  with `dockudos kudos`. See [Kudos](./components/kudos.mdx).
+- **Checks that fail the build.** An invalid `docs.json` or a broken link stops `dockudos build`
+  and names the file and line.
+- **A headless core.** Config validation, the page tree, breadcrumbs and the table of contents work
+  without React. See [the headless core](./reference/headless-core.mdx).
+
+## Where to start
 
 <Cards columns={3}>
+  <Card title="Installation" href="/getting-started/installation">
+    Requirements, and a new site with `npx dockudos init`.
+  </Card>
   <Card title="Quickstart" href="/getting-started/quickstart">
-    A new site in a few minutes with `npx dockudos init`.
+    Add a page, put it in the sidebar and build.
   </Card>
   <Card title="Add to a Next.js app" href="/getting-started/existing-project">
     Mount the docs under `/docs` in an app you already have.
   </Card>
-  <Card title="docs.json reference" href="/reference/docs-json">
-    Every key, its type and its default.
-  </Card>
 </Cards>
 
-## What you get
-
-- **Content from files.** Pages are MDX in `docs/`. The URL comes from the file path; the title and
-  description from frontmatter.
-- **Navigation you control.** List pages in `docs.json`, or leave it empty and the sidebar follows
-  your folders.
-- **A real theme.** One brand color generates a palette for light and dark mode that meets WCAG AA
-  contrast. Six layouts, switchable per site or per page.
-- **Components for docs.** Callouts, tabs, steps, cards, file trees, type tables, diagrams, math and more.
-- **Feedback from readers.** A thumbs up or down and an optional comment under every page, read with `dockudos kudos`. See [Kudos](/components/kudos).
-- **Checks that fail the build.** An invalid `docs.json` or a broken link stops `dockudos build` and
-  tells you the file and line.
-- **A headless core.** Config validation, the page tree, breadcrumbs and the table of contents work
-  without React. See [the headless core](/reference/headless-core).
+Already have a site running? Go to [Writing content](./guides/writing-content.mdx), then
+[Navigation](./guides/navigation.mdx) and [Theming](./guides/theming.mdx). Every `docs.json` key is
+listed in the [reference](./reference/docs-json.mdx).
 
 <Callout type="info" title="Status">
-  dockudos is at version 0.x. The documentation covers what is built today:
-  authoring, theming, components and the CLI. Search, the AI assistant and API
-  reference pages are planned for later releases.
+  dockudos is at version 0.x. These docs cover what is built today: authoring, theming, components
+  and the CLI. Search, the AI assistant and API reference pages are planned for later releases.
 </Callout>
