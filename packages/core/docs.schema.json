@@ -321,6 +321,9 @@
           "type": "string",
           "minLength": 1
         },
+        "tutorial": {
+          "type": "boolean"
+        },
         "pages": {
           "type": "array",
           "items": {

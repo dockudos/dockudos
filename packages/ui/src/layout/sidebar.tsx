@@ -17,16 +17,21 @@ function Items({
   items,
   path,
   depth,
+  numbered = false,
 }: {
   items: readonly SidebarItem[];
   path: string;
   depth: number;
+  /** Number the pages: the steps of a tutorial. */
+  numbered?: boolean;
 }) {
   const Link = useLink();
+  let step = 0;
   return (
     <ul className="dk-nav-list">
       {items.map((item, i) => {
         if (item.type === 'page') {
+          step += 1;
           const active = item.page.path === path;
           return (
             <li key={item.page.path}>
@@ -35,7 +40,12 @@ function Items({
                 className="dk-nav-link"
                 aria-current={active ? 'page' : undefined}
               >
-                {item.page.icon && (
+                {numbered && (
+                  <span className="dk-nav-step" aria-hidden="true">
+                    {step}
+                  </span>
+                )}
+                {!numbered && item.page.icon && (
                   <span className="dk-nav-icon">
                     {renderIcon(item.page.icon, 15)}
                   </span>
@@ -73,7 +83,12 @@ function Items({
                   aria-hidden="true"
                 />
               </summary>
-              <Items items={item.items} path={path} depth={depth + 1} />
+              <Items
+                items={item.items}
+                path={path}
+                depth={depth + 1}
+                numbered={item.tutorial}
+              />
             </details>
           </li>
         );

@@ -7,6 +7,7 @@ import {
   buildRobots,
   buildSitemap,
   expandIncludes,
+  resolveVisibility,
   findAccessRule,
   flattenSidebar,
   parseFrontmatter,
@@ -122,7 +123,7 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
         file: page.file,
         read,
       });
-      return extractToc(source);
+      return extractToc(resolveVisibility(source, 'humans'));
     },
     isProtected: (page) => isProtected(page.path),
     graph: () =>
@@ -137,7 +138,10 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
         file: page.file,
         read,
       });
-      const { body } = parseFrontmatter(expanded, page.file);
+      const { body } = parseFrontmatter(
+        resolveVisibility(expanded, 'agents'),
+        page.file,
+      );
       const head = [
         `# ${page.title}`,
         page.description && `> ${page.description}`,

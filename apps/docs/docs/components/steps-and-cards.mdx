@@ -1,9 +1,12 @@
 ---
+icon: layout-grid
 title: Steps and Cards
-description: A numbered procedure, and a grid of links.
+description: A numbered procedure, and a grid of linked cards with icons.
 ---
 
 ## Steps
+
+`Steps` is a numbered procedure. Each `Step` has a title and a body, and the numbers are drawn for you.
 
 <Steps>
   <Step title="Install">Add the packages.</Step>
@@ -18,14 +21,53 @@ description: A numbered procedure, and a grid of links.
 </Steps>
 ```
 
-Steps render as an ordered list, so they are numbered for screen readers too. Any content, including
-code blocks, can go inside a step.
+Any content can go inside a step, including code blocks, images and callouts. Put a blank line between
+a step's opening tag and a code block so the block is parsed as code.
+
+### Icons in place of numbers
+
+An `icon` replaces the number of one step, for a procedure whose steps are not a count:
+
+<Steps>
+  <Step title="Download" icon="download">
+    Get the installer.
+  </Step>
+  <Step title="Done" icon="flag">
+    Nothing more to do.
+  </Step>
+</Steps>
+
+```mdx
+<Step title="Download" icon="download">
+  Get the installer.
+</Step>
+```
+
+### Step props
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      description: 'The step heading. A step without one shows only its body.',
+    },
+    icon: {
+      type: 'string | ReactNode',
+      description: 'Shown in place of the number: an icon name or an element.',
+    },
+  }}
+/>
+
+Steps render as an ordered list, so they are numbered for screen readers too. On paper each step is kept in one
+piece where it can be.
 
 ## Cards
 
+`Cards` is a grid; each `Card` has a title, optional text and an optional link.
+
 <Cards>
-  <Card title="Navigation" href="/guides/navigation">
-    A card with an internal link.
+  <Card title="Navigation" href="/guides/navigation" icon="compass">
+    A card with an internal link and an icon.
   </Card>
   <Card title="Next.js" href="https://nextjs.org">
     A card with an external link.
@@ -35,7 +77,7 @@ code blocks, can go inside a step.
 
 ```mdx
 <Cards columns={2}>
-  <Card title="Navigation" href="/guides/navigation">
+  <Card title="Navigation" href="/guides/navigation" icon="compass">
     Internal link.
   </Card>
   <Card title="Next.js" href="https://nextjs.org">
@@ -44,19 +86,103 @@ code blocks, can go inside a step.
 </Cards>
 ```
 
+With an `href` the whole card is a link, with a lift on hover and a visible focus ring. Internal links use the
+router, so navigation is instant; external links open in a new tab. A card without an `href` is a plain box.
+
+### Columns
+
+`columns` (or `cols`, the same prop under the name other tools use) is `1`, `2` or `3`. Wide screens use that many,
+tablets use two at most, and phones always use one.
+
+<Cards cols={3}>
+  <Card title="One">First.</Card>
+  <Card title="Two">Second.</Card>
+  <Card title="Three">Third.</Card>
+</Cards>
+
+```mdx
+<Cards cols={3}>
+  <Card title="One">…</Card>
+  <Card title="Two">…</Card>
+  <Card title="Three">…</Card>
+</Cards>
+```
+
+`CardGroup` is `Cards` under another name, for content written for other tools. For cards with a screenshot on top
+see [Tile](./tile-and-colors.mdx). For a layout that is not a grid of cards see [Columns](./layout-blocks.mdx).
+
+### Images, horizontal cards and arrows
+
+`img` puts a picture across the top of a card. `horizontal` puts the icon beside the text instead of above it. `arrow`
+shows a small arrow on a linked card; it is on by default for links to other sites.
+
+<Cards>
+  <Card
+    title="Horizontal"
+    icon="rocket"
+    horizontal
+    href="/getting-started/quickstart"
+    arrow
+  >
+    Icon on the side, with an arrow.
+  </Card>
+  <Card title="With a picture" img="/example.png">
+    The picture spans the top.
+  </Card>
+</Cards>
+
+```mdx
+<Card title="Horizontal" icon="rocket" horizontal href="/quickstart" arrow>
+  Icon on the side, with an arrow.
+</Card>
+<Card title="With a picture" img="/example.png">
+  The picture spans the top.
+</Card>
+```
+
+The picture is decorative (empty `alt`); say what matters in the title and text. For a card whose point is its
+preview, use [Tile](./tile-and-colors.mdx).
+
+### Card props
+
 <TypeTable
   type={{
-    columns: {
+    'Cards.columns': {
       type: '1 | 2 | 3',
       default: '2',
-      description: 'On Cards: columns on wide screens. One column on phones.',
+      description: 'Columns on wide screens.',
     },
-    title: { type: 'string', required: true, description: 'On Card.' },
-    href: {
+    'Cards.cols': {
+      type: '1 | 2 | 3',
+      description: 'The same as columns. If both are given, columns wins.',
+    },
+    'Card.title': {
+      type: 'string',
+      required: true,
+      description: 'The heading.',
+    },
+    'Card.href': {
       type: 'string',
       description:
-        'On Card: makes the whole card a link. External links open in a new tab.',
+        'Makes the whole card a link. A path, or a URL with a scheme (opens in a new tab).',
     },
-    icon: { type: 'ReactNode', description: 'On Card: shown above the title.' },
+    'Card.img': {
+      type: 'string',
+      description: 'The address of an image shown across the top.',
+    },
+    'Card.horizontal': {
+      type: 'boolean',
+      default: 'false',
+      description: 'Icon beside the text, not above.',
+    },
+    'Card.arrow': {
+      type: 'boolean',
+      default: 'true for external links',
+      description: 'A small arrow after the title of a linked card.',
+    },
+    'Card.icon': {
+      type: 'string | ReactNode',
+      description: 'Shown above the title: an icon name or an element.',
+    },
   }}
 />

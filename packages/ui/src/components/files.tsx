@@ -111,3 +111,9 @@ export function Folder({
     </li>
   );
 }
+
+/** `Files` under the name other tools use: `<Tree><Tree.Folder name="src"><Tree.File name="a.ts" /></Tree.Folder></Tree>`. */
+export const Tree = Object.assign(
+  ({ children }: { children: ReactNode }) => <Files>{children}</Files>,
+  { Folder, File },
+);

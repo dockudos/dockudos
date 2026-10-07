@@ -1,9 +1,15 @@
 ---
+icon: info
 title: Callout
-description: Draw attention to a note, tip or warning.
+description: Draw attention to a note, tip, check, warning or danger, with six types and shorthands.
 ---
 
-<Callout type="note">A plain note.</Callout>
+A callout is a highlighted aside. Use it for the one thing a reader must not miss; if every other
+paragraph is a callout, none of them are.
+
+## Types
+
+<Callout type="note">A plain note. This is the default type.</Callout>
 <Callout type="info" title="Good to know">
   Information the reader may not expect.
 </Callout>
@@ -16,41 +22,119 @@ description: Draw attention to a note, tip or warning.
 <Callout type="info" title="Good to know">
   Information the reader may not expect.
 </Callout>
+```
 
-:::warning[Careful]
-The same thing, written with colons.
+| Type      | Use it for                                              |
+| --------- | ------------------------------------------------------- |
+| `note`    | A side remark that is safe to skip.                     |
+| `info`    | Context the reader may not have.                        |
+| `tip`     | A faster or better way of doing the same thing.         |
+| `check`   | A success state, or "you should see this by now".       |
+| `warning` | Something that can go wrong, or a common mistake.       |
+| `danger`  | Data loss, security, or anything that cannot be undone. |
+
+## Markdown containers
+
+The same callouts can be written with colons, which reads better in long Markdown pages. The text in
+brackets is the title. Containers exist for `note`, `info`, `tip`, `warning` and `danger`; use `<Check>`
+for a check.
+
+```mdx
+:::tip[Shortcut]
+Press `?` to see every keyboard shortcut.
+:::
+
+:::warning
+No title: the type's name is used.
 :::
 ```
+
+:::tip[Shortcut]
+Press `?` to see every keyboard shortcut.
+:::
+
+:::warning
+No title: the type's name is used.
+:::
+
+## Shorthands
+
+`Note`, `Info`, `Tip`, `Check`, `Warning` and `Danger` are the same callouts under shorter names, so
+content written for other documentation tools works unchanged. They take every prop of `Callout`
+except `type`.
+
+<Tip>Shorter to write.</Tip>
+<Warning title="Careful">This deletes the project.</Warning>
+<Check icon="rocket" title="Launched">
+  Everything is set up.
+</Check>
+
+```mdx
+<Tip>Shorter to write.</Tip>
+<Warning title="Careful">This deletes the project.</Warning>
+<Check icon="rocket" title="Launched">
+  Everything is set up.
+</Check>
+```
+
+## Custom title and icon
+
+`title` replaces the default heading. `icon` replaces the icon with any [icon name](./icons.mdx) (built in, or
+from your own packs), or with an element:
+
+<Callout type="tip" icon="sparkles" title="Heads up">
+  Content can use **Markdown**, `code` and even other components.
+</Callout>
+
+```mdx
+<Callout type="tip" icon="sparkles" title="Heads up">
+  Content can use **Markdown**, `code` and even other components.
+</Callout>
+```
+
+## Props
 
 <TypeTable
   type={{
     type: {
-      type: '"note" | "info" | "tip" | "warning" | "danger"',
+      type: '"note" | "info" | "tip" | "check" | "warning" | "danger"',
       default: '"note"',
       description:
-        'Sets the color and the icon. An unknown value renders as note.',
+        'Sets the color and the icon. An unknown value renders as note instead of failing.',
     },
-    title: { type: 'string', description: 'Defaults to the name of the type.' },
+    title: {
+      type: 'string',
+      default: 'the type name',
+      description:
+        'The bold heading. Defaults to "Note", "Info", "Tip" and so on.',
+    },
     icon: {
       type: 'string | ReactNode',
       description:
         'Replaces the icon: a name from the icon list, or an element.',
     },
+    className: {
+      type: 'string',
+      description: 'Extra classes on the outer element.',
+    },
     children: {
       type: 'ReactNode',
-      description: 'Content. Markdown works inside.',
+      description: 'The content. Markdown works inside.',
     },
   }}
 />
 
-A callout is a `role="note"` region; its icon is decorative and hidden from screen readers.
+## Accessibility
 
-## Shorthands
+A callout is a `role="note"` region and its heading is real text. The icon is decorative and hidden
+from screen readers, so the meaning is always carried by the title and the words, never by color alone.
 
-`Note`, `Info`, `Tip`, `Check`, `Warning` and `Danger` are the same callouts under shorter names, so content written for
-other documentation tools works unchanged:
+## Printing
 
-```mdx
-<Warning>This deletes the project.</Warning>
-<Check title="Done">Everything is set up.</Check>
-```
+Callouts keep their colored border on paper and are not split across two pages where that can be avoided.
+
+## Theming
+
+The colors are CSS variables: `--dk-callout-note`, `--dk-callout-info`, `--dk-callout-tip`,
+`--dk-callout-warning` and `--dk-callout-danger`. `check` shares the green of `tip`. Override them in your CSS to
+match a brand; see [Theming](../guides/theming.mdx). [Badge](./badges-and-keys.mdx) uses the same palette.

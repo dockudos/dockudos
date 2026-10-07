@@ -1,0 +1,42 @@
+---
+icon: keyboard
+title: Shortcut
+description: Show a keyboard shortcut in the reader's own keys, ⌘ on a Mac and Ctrl elsewhere.
+---
+
+`Shortcut` shows a key combination as keycaps and adapts to the reader's platform. The same page reads <Shortcut keys="mod+k" />
+whether the reader is on a Mac or on Windows.
+
+```mdx
+Open search with <Shortcut keys="mod+k" />.
+Go home with <Shortcut keys="g h" />.
+```
+
+| You write          | Mac shown                      | Elsewhere shown                |
+| ------------------ | ------------------------------ | ------------------------------ |
+| `mod+k`            | <Kbd>⌘</Kbd> <Kbd>K</Kbd>      | <Kbd>Ctrl</Kbd> <Kbd>K</Kbd>   |
+| `shift+/`          | <Kbd>⇧</Kbd> <Kbd>/</Kbd>      | <Kbd>Shift</Kbd> <Kbd>/</Kbd>  |
+| `g h` (a sequence) | <Kbd>G</Kbd> then <Kbd>H</Kbd> | <Kbd>G</Kbd> then <Kbd>H</Kbd> |
+
+A string with spaces is a sequence, pressed one after another, and is drawn with "then" between the steps. `mod` means
+Cmd on a Mac and Ctrl elsewhere; `ctrl`, `cmd`, `alt` and `shift` mean exactly those keys.
+
+The platform is read after the page loads, so the server's markup and the first render always agree. Until then, and
+for readers with scripting off, the Ctrl form is shown.
+
+## Showing versus registering
+
+`Shortcut` only _shows_ keys. It does not make anything happen. To react to a key press, register it with the
+`useHotkey` hook; it uses the same key format, and adds the shortcut to the <Kbd>?</Kbd> dialog if you give it a description.
+See [Keyboard shortcuts](../guides/keyboard-shortcuts.mdx) and [React hooks](../guides/hooks.mdx).
+
+<TypeTable
+  type={{
+    keys: {
+      type: 'string',
+      required: true,
+      description:
+        'A chord or sequence in the format useHotkey takes: `mod+k`, `?`, `g h`.',
+    },
+  }}
+/>

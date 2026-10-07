@@ -1,9 +1,12 @@
 ---
+icon: copy
 title: CopyText, Hero and LinkButton
-description: A copyable snippet, and a landing-page banner.
+description: A snippet readers can copy with one click, and a landing-page banner with buttons.
 ---
 
 ## CopyText
+
+Inline code with a copy button, for a command, a URL or an ID the reader will paste.
 
 Install it with <CopyText>npm install dockudos</CopyText> and open <CopyText value="http://localhost:3000">localhost:3000</CopyText>.
 
@@ -13,9 +16,28 @@ Install it with <CopyText>npm install dockudos</CopyText>.
 <CopyText value="the real value">shown text</CopyText>
 ```
 
-The button copies the text (or `value`) and announces "Copied to clipboard". It is left off printed pages.
+The button copies the shown text, or `value` if you give one, so you can show a shortened version and copy the whole.
+It turns into a tick, and announces "Copied to clipboard" or "Copy failed" to screen readers. It is left off printed
+pages, where the text stays. For several lines, use a [code block](./code-block.mdx), which has its own copy button.
 
-## Hero and LinkButton
+<TypeTable
+  type={{
+    value: {
+      type: 'string',
+      default: 'the shown text',
+      description: 'What is copied, if it differs from what is shown.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The text shown, in code style.',
+    },
+  }}
+/>
+
+## Hero
+
+A landing-page banner with an optional small label (the eyebrow), a headline, a sentence and buttons.
 
 <Hero eyebrow="New" title="Docs that ship" description="Write MDX. Get a site.">
   <LinkButton href="/getting-started/quickstart">Get started</LinkButton>
@@ -33,5 +55,52 @@ The button copies the text (or `value`) and announces "Copied to clipboard". It 
 </Hero>
 ```
 
-Use a `Hero` at the top of a page with `layout: home`. Internal `LinkButton`s use the router; links to
-other sites open in a new tab. The page's own title is still the single `h1`; the hero headline is an `h2`.
+Use a `Hero` at the top of a page with `layout: home`; see [Layouts](../guides/layouts.mdx). The page's own title is
+still the single `h1`; the hero headline is an `h2`, so the outline stays correct.
+
+<TypeTable
+  type={{
+    eyebrow: {
+      type: 'string',
+      description:
+        'A small label above the title: a version, "New", a category.',
+    },
+    title: { type: 'string', required: true, description: 'The headline.' },
+    description: {
+      type: 'string',
+      description: 'One sentence under the headline.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'The calls to action: LinkButtons.',
+    },
+  }}
+/>
+
+## LinkButton
+
+A link that looks like a button. It is a real link, so it can be opened in a new tab and read as a link by assistive
+technology. Use it inside a `Hero`, or anywhere else a call to action belongs.
+
+Internal paths use the router. Links to other sites open in a new tab, and are announced as such.
+
+<LinkButton href="/getting-started/quickstart">Primary</LinkButton>
+<LinkButton href="/getting-started/quickstart" variant="secondary">
+  Secondary
+</LinkButton>
+
+<TypeTable
+  type={{
+    href: {
+      type: 'string',
+      required: true,
+      description: 'A path, or a URL with a scheme (opens in a new tab).',
+    },
+    variant: {
+      type: '"primary" | "secondary"',
+      default: '"primary"',
+      description: 'A filled button, or an outlined one.',
+    },
+    children: { type: 'ReactNode', required: true, description: 'The label.' },
+  }}
+/>

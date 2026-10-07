@@ -1,0 +1,46 @@
+---
+icon: gauge
+title: Stats
+description: A row of key numbers, such as uptime, limits or benchmark results.
+---
+
+<Stats>
+  <Stat label="Uptime" value="99.99%" description="Last 90 days" />
+  <Stat label="Median build" value="2.3 s" description="For 200 pages" />
+  <Stat label="Dependencies" value="0" />
+</Stats>
+
+```mdx
+<Stats cols={3}>
+  <Stat label="Uptime" value="99.99%" description="Last 90 days" />
+  <Stat label="Median build" value="2.3 s" description="For 200 pages" />
+  <Stat label="Dependencies" value="0" />
+</Stats>
+```
+
+Stats are a description list, so a screen reader hears each label with its value. `value` is text, not a number: write
+it exactly as it should be read, with its unit. Cards stack on a phone.
+
+<TypeTable
+  type={{
+    'Stats.cols': {
+      type: '2 | 3 | 4',
+      default: '3',
+      description: 'Columns on wide screens.',
+    },
+    'Stat.label': {
+      type: 'string',
+      required: true,
+      description: 'What is measured.',
+    },
+    'Stat.value': {
+      type: 'string',
+      required: true,
+      description: 'The number, with its unit.',
+    },
+    'Stat.description': {
+      type: 'string',
+      description: 'A line of context under the value.',
+    },
+  }}
+/>

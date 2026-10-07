@@ -8,6 +8,7 @@ import {
   findTab,
   flattenSidebar,
   prevNext,
+  tutorialOf,
 } from '@dockudos/core';
 import type { ReactNode } from 'react';
 import { type GraphData, PageDataProvider } from '../docs-context.tsx';
@@ -23,6 +24,7 @@ import { tabLinks } from './tab-links.ts';
 import { Breadcrumb, PrevNext } from './page-nav.tsx';
 import { Sidebar } from './sidebar.tsx';
 import { Toc } from './toc.tsx';
+import { TutorialHeader } from './tutorial-header.tsx';
 
 export interface DocsLayoutProps {
   config: Pick<DocsConfig, 'name' | 'logo' | 'theme'> &
@@ -64,6 +66,7 @@ export function DocsLayout({
     <Sidebar items={activeTab.sidebar} path={page.path} />
   ) : null;
   const { prev, next } = prevNext(nav, page.path);
+  const tutorial = tutorialOf(nav, page.path);
   const first = (tab: (typeof nav.tabs)[number]) =>
     flattenSidebar(tab.sidebar)[0]?.path;
   const shortcuts = config.shortcuts !== false;
@@ -108,6 +111,16 @@ export function DocsLayout({
           )}
           <article className="dk-article">
             <Breadcrumb crumbs={breadcrumb(nav, page.path)} />
+            {tutorial && (
+              <TutorialHeader
+                title={tutorial.title}
+                step={tutorial.step}
+                steps={tutorial.steps.map((p) => ({
+                  path: p.path,
+                  title: p.sidebarTitle ?? p.title,
+                }))}
+              />
+            )}
             <h1 className="dk-page-title">{page.title}</h1>
             {page.description && (
               <p className="dk-page-description">{page.description}</p>
@@ -141,6 +154,11 @@ export function DocsLayout({
                 {children}
               </PageDataProvider>
             </div>
+            {tutorial && tutorial.step === tutorial.steps.length && (
+              <p className="dk-tutorial-complete" role="status">
+                You have finished {tutorial.title}.
+              </p>
+            )}
             {(lastModified || shortcuts) && (
               <div className="dk-article-footer">
                 {lastModified ? (

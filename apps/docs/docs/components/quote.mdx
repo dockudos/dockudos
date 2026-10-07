@@ -1,0 +1,47 @@
+---
+icon: message-circle
+title: Quote
+description: A pull quote or testimonial with its author and a link to the source.
+---
+
+<Quote
+  author="Ada Lovelace"
+  source="Notes on the Analytical Engine"
+  href="https://en.wikipedia.org/wiki/Ada_Lovelace"
+>
+  The Engine might compose elaborate and scientific pieces of music of any
+  degree of complexity.
+</Quote>
+
+```mdx
+<Quote
+  author="Ada Lovelace"
+  source="Notes on the Analytical Engine"
+  href="https://example.com/notes"
+>
+  The Engine might compose elaborate and scientific pieces of music.
+</Quote>
+```
+
+It is a real `figure` with a `blockquote` and a `figcaption`, and `href` sets the quote's `cite`. With an `href` the credit
+is a link. Use it for testimonials, pull quotes from an article and sayings from a person; use a plain Markdown `>` quote for
+anything that is only text.
+
+<TypeTable
+  type={{
+    author: { type: 'string', description: 'Who said it.' },
+    source: {
+      type: 'string',
+      description: 'Their role, or where it was said: "CTO, Acme".',
+    },
+    href: {
+      type: 'string',
+      description: 'A link to the original. Makes the credit a link.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The quote. Markdown works inside.',
+    },
+  }}
+/>

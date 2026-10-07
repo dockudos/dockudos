@@ -1,7 +1,7 @@
 ---
+icon: panel-left
 title: Panel and examples
 description: Pin request and response examples beside the text.
-icon: panel-left
 ---
 
 On a wide screen a `Panel` sits in the right-hand column, in place of "On this page", and stays in view as you
@@ -64,3 +64,38 @@ Blank lines around the code blocks are what make them code blocks inside the com
 - `Panel` can hold anything, not just examples: a summary, a related-links box, a video.
 - Put one `Panel` per page. A page with a panel has no table of contents column.
 - Together with [`Endpoint` and `ParamField`](./api-blocks.mdx) this is enough to write an API reference by hand.
+
+## Props
+
+<TypeTable
+  type={{
+    'Panel.children': {
+      type: 'ReactNode',
+      required: true,
+      description: 'Anything. Usually a RequestExample and a ResponseExample.',
+    },
+    'RequestExample.children': {
+      type: 'ReactNode',
+      required: true,
+      description:
+        'Code blocks. Each becomes a language tab named by its title. Shown under a "Request" heading.',
+    },
+    'ResponseExample.children': {
+      type: 'ReactNode',
+      required: true,
+      description:
+        'Code blocks, in the same form. Shown under a "Response" heading.',
+    },
+  }}
+/>
+
+Neither example takes a `groupId`. They use fixed ones, `request-language` and `response-language`, so a reader who picks
+"Node" in the request sees the Node response too, on every page. Give your blocks the same titles throughout the site
+(`curl`, `Node`, `Python`) so the choice carries over.
+
+## Accessibility and printing
+
+A `Panel` is an `aside` labelled "Examples", and each example is a labelled section with a heading. On a phone, and on
+paper, the panel is not pinned: it stays in the text where you wrote it, and every language tab is printed.
+
+Use [CodeGroup](./code-block.mdx) directly for tabs of code that are not requests and responses.

@@ -1,0 +1,84 @@
+---
+icon: layers
+title: View
+description: Switchable content for different languages, frameworks or setups, chosen with one selector for the whole page.
+---
+
+`View` shows one version of some content at a time. Give each version a `title`; when a page has more than one title, a
+selector appears above the first view and the reader picks which one to see.
+
+<View title="JavaScript">
+
+Use `fetch` in the browser and in Node 18 and later:
+
+```js
+const res = await fetch('https://api.acme.dev/v1/ping');
+```
+
+</View>
+
+<View title="Python">
+
+Use `requests`:
+
+```python
+res = requests.get("https://api.acme.dev/v1/ping")
+```
+
+</View>
+
+````mdx
+<View title="JavaScript">
+
+Use `fetch`:
+
+```js
+const res = await fetch('https://api.acme.dev/v1/ping');
+```
+
+</View>
+
+<View title="Python">
+
+Use `requests`.
+
+</View>
+````
+
+Leave a blank line between the tags and Markdown, so it is read as Markdown.
+
+## How it behaves
+
+- The first view is shown, unless the reader chose another on this site before: the choice is remembered in the browser.
+- Views with the same `title` belong together. Put one `View` per title for each part of the page that differs, and use the
+  same titles everywhere: choosing "Python" switches every part at once.
+- Without scripting, and on paper, every view is shown, each labelled with its title, so nothing is hidden from
+  a printed page or from "Copy page".
+- The selector is a labelled native `select`, so it works with the keyboard and with screen readers.
+
+## View, Tabs or CodeGroup?
+
+| Use                           | When                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------- |
+| [Tabs](./tabs.mdx)            | A short set of alternatives next to each other, such as one step done on two systems. |
+| [CodeGroup](./code-block.mdx) | The same code in several languages.                                                   |
+| `View`                        | Whole sections of a page, with headings, that differ by language or setup.            |
+
+The headings inside a view are all in the page's table of contents. Keep them the same in each view where you can.
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      required: true,
+      description:
+        'Names the view. Each different title on the page is an option in the selector.',
+    },
+    icon: {
+      type: 'string | ReactNode',
+      description: 'An icon name or an element, kept with the view.',
+    },
+    children: { type: 'ReactNode', description: 'The content of the view.' },
+  }}
+/>
+````

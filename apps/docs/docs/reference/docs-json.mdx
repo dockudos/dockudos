@@ -1,4 +1,5 @@
 ---
+icon: file-json
 title: docs.json
 description: Every key of the site configuration.
 ---
@@ -126,8 +127,29 @@ A list of tabs. Each tab is one of:
   }}
 />
 
-A group is `{ group: string, pages: Item[] }`, and an item is a page id (string), a link
+A group is `{ group: string, pages: Item[], tutorial?: boolean }`, and an item is a page id (string), a link
 `{ title: string, href: string }` or another group. See [navigation](../guides/navigation.mdx).
+
+<TypeTable
+  type={{
+    group: {
+      type: 'string',
+      required: true,
+      description: 'The heading shown in the sidebar.',
+    },
+    pages: {
+      type: 'Item[]',
+      required: true,
+      description: 'Pages, links and nested groups.',
+    },
+    tutorial: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Make the group a tutorial: its pages become numbered steps, and each shows its progress. See [Tutorials](../guides/tutorials.mdx).',
+    },
+  }}
+/>
 
 ## redirects
 

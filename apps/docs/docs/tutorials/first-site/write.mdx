@@ -1,0 +1,77 @@
+---
+icon: pencil
+title: Write and organize pages
+description: Add a page, use components, and put it in the sidebar.
+---
+
+You will add a page, give it some components, and place it in the sidebar.
+
+## Add a page
+
+<Steps>
+  <Step title="Create the file">
+    Create `docs/first-page.mdx`:
+
+    ```mdx title="docs/first-page.mdx"
+    ---
+    title: My first page
+    description: One sentence that shows under the title.
+    ---
+
+    ## A heading
+
+    Some text, with a [link to the home page](./index.mdx).
+
+    <Callout type="tip">Components work without importing anything.</Callout>
+    ```
+
+  </Step>
+  <Step title="Open it">
+    Go to `http://localhost:3000/first-page`. The URL is the file's path without the extension.
+  </Step>
+</Steps>
+
+<Checkpoint>
+  You see "My first page", your heading, and a green tip box.
+</Checkpoint>
+
+## Put it in the sidebar
+
+A page that is not listed in `docs.json` can still be opened, but it is not in the sidebar. List it:
+
+```json title="docs.json" {7}
+{
+  "name": "My Docs",
+  "navigation": [
+    {
+      "tab": "Docs",
+      "groups": [
+        { "group": "Start", "pages": ["index", "quickstart", "first-page"] }
+      ]
+    }
+  ]
+}
+```
+
+<Checkpoint>
+  "My first page" now appears in the sidebar, under "Start".
+</Checkpoint>
+
+## Try it yourself
+
+Add a second group called "Guides" with a page of your own, and put it after "Start".
+
+<Hint>A group is `{ "group": "Name", "pages": ["file-without-extension"] }`.</Hint>
+
+<Solution>
+
+```json title="docs.json"
+{
+  "group": "Guides",
+  "pages": ["guides/my-guide"]
+}
+```
+
+Create `docs/guides/my-guide.mdx` with a `title`, and add the group after "Start".
+
+</Solution>

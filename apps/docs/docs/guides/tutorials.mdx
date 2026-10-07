@@ -1,0 +1,107 @@
+---
+icon: graduation-cap
+title: Tutorials
+description: Write step-by-step tutorials that readers follow in order, with numbered steps, progress and checkpoints.
+---
+
+A reference page answers a question; a tutorial teaches a skill by having the reader build something. dockudos treats a
+group of pages as a tutorial when you ask it to, and gives the reader what a tutorial needs: a clear order, a sense of
+progress, and places to check their work.
+
+## Make a group a tutorial
+
+Add `"tutorial": true` to a group in `docs.json`. Its pages are the steps, in the order you list them:
+
+```json title="docs.json" {4}
+{
+  "tab": "Tutorials",
+  "groups": [
+    {
+      "group": "Build your first docs site",
+      "tutorial": true,
+      "pages": [
+        "tutorials/first-site/create",
+        "tutorials/first-site/write",
+        "tutorials/first-site/ship"
+      ]
+    }
+  ]
+}
+```
+
+That is all the setup there is. Each page in the group now has:
+
+- **Numbers in the sidebar**: the steps are numbered 1, 2, 3.
+- **A progress header** above the title: "Tutorial · Build your first docs site", "Step 2 of 3", a progress bar and a row of
+  numbered links, one per step, so a reader can jump back. Steps the reader has opened before are ticked. This is
+  remembered in their browser, and nothing is sent anywhere.
+- **Previous and next links** at the bottom, as on every page, which walk through the steps in order.
+- **A closing message** on the last step: "You have finished …".
+
+A tutorial can be a group inside a larger tab, or a tab of its own. A group nested inside a tutorial group is part of the
+tutorial: its pages count as steps too.
+
+<Callout type="note">
+  Tutorials need a `navigation` in `docs.json`, because the order of the steps
+  is the order you list them in. A sidebar generated from folders has no way to
+  say that a folder is a tutorial.
+</Callout>
+
+## Write a step
+
+A good step does one thing, and ends with a way to tell it worked. Start the first page with a
+[`TutorialIntro`](../components/tutorial.mdx), use [`Steps`](../components/steps-and-cards.mdx) for the actions, and finish each page with a
+`Checkpoint`.
+
+````mdx title="docs/tutorials/first-site/create.mdx"
+---
+title: Create the site
+description: Generate a new docs site and see it running.
+---
+
+<TutorialIntro
+  time="10 minutes"
+  level="Beginner"
+  learn={['Create a site with `init`', 'Run the dev server']}
+  requires={['Node.js 20 or later', 'A terminal']}
+/>
+
+<Steps>
+  <Step title="Generate the project">
+    ```bash npx dockudos init my-docs ```
+  </Step>
+  <Step title="Start it">```bash cd my-docs && npm run dev ```</Step>
+</Steps>
+
+<Checkpoint>
+  Open http://localhost:3000. You should see the home page of "my-docs".
+</Checkpoint>
+````
+
+## Components for tutorials
+
+| Component                                           | Use it to                                                                 |
+| --------------------------------------------------- | ------------------------------------------------------------------------- |
+| [`TutorialIntro`](../components/tutorial.mdx)       | Say how long it takes, who it is for, what is learned and what is needed. |
+| [`Steps`](../components/steps-and-cards.mdx)        | Number the actions inside a page.                                         |
+| [`Checkpoint`](../components/tutorial.mdx)          | Say what the reader should see before they go on.                         |
+| [`Hint` and `Solution`](../components/tutorial.mdx) | Hide help until it is asked for, so readers can try first.                |
+| [`CodeGroup`](../components/code-block.mdx)         | Show a command or file for each operating system or language.             |
+| [`Files`](../components/files.mdx)                  | Show the project's shape after a step.                                    |
+| [`View`](../components/view.mdx)                    | Let the reader choose a language or framework once, for the whole page.   |
+| [`Callout`](../components/callout.mdx)              | Warn about a common mistake at the step where it happens.                 |
+
+## Tips
+
+- **Keep each step short.** A reader should be able to finish one in about five minutes, and stop there.
+- **Show the state after each step**, with a `Checkpoint`, a file tree or the expected output. A reader who is stuck can
+  then see how far they are from where they should be.
+- **Link back, not out.** Link to reference pages for the details, and keep the reader on the path.
+- **Test it from scratch.** Follow your own tutorial on a clean machine before publishing it.
+
+You can see a complete tutorial in [Build your first docs site](../tutorials/first-site/create.mdx).
+
+## Printing
+
+On paper every step prints in order. The progress header's row of links is left out, since links do nothing on paper, and
+`Hint` and `Solution` are opened.

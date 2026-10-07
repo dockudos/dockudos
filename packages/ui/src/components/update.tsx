@@ -8,6 +8,8 @@ export interface UpdateProps {
   date?: string;
   /** Short categories such as `Added`, `Fixed`, `Breaking`. */
   tags?: string[];
+  /** A line under the label, such as the release's name. */
+  description?: string;
   children?: ReactNode;
 }
 
@@ -17,7 +19,13 @@ const format = new Intl.DateTimeFormat('en', {
 });
 
 /** One entry of a changelog or release notes. Stack several; newest first. */
-export function Update({ label, date, tags, children }: UpdateProps) {
+export function Update({
+  label,
+  date,
+  tags,
+  description,
+  children,
+}: UpdateProps) {
   const parsed =
     date && /^\d{4}-\d{2}-\d{2}$/.test(date)
       ? new Date(`${date}T00:00:00Z`)
@@ -32,6 +40,7 @@ export function Update({ label, date, tags, children }: UpdateProps) {
           ) : (
             <span>{date}</span>
           ))}
+        {description && <p className="dk-update-description">{description}</p>}
         {tags && tags.length > 0 && (
           <div className="dk-update-tags">
             {tags.map((tag) => (

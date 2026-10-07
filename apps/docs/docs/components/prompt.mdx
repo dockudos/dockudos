@@ -1,0 +1,76 @@
+---
+icon: bot
+title: Prompt
+description: Show a ready-made prompt for an AI assistant, with buttons to copy it or open it in Cursor.
+---
+
+`Prompt` is a card for a prompt readers will paste into an AI tool: a code-review prompt, a "write a test" prompt, a
+migration helper. It shows what the prompt is for, offers one-click actions, and keeps the full text in the page.
+
+<Prompt
+  description="Ask an assistant to write clear documentation for a feature."
+  icon="sparkles"
+  actions={['copy', 'cursor']}
+>
+  {`You are a technical writing assistant. Write documentation that is clear, accurate and concise.
+
+- Use the second person ("you") and active verbs.
+- Start procedures with a goal-oriented heading.
+- Ask clarifying questions about the reader before you write.`}
+  </Prompt>
+
+```mdx
+<Prompt
+  description="Ask an assistant to write clear documentation for a feature."
+  icon="sparkles"
+  actions={['copy', 'cursor']}
+>
+  {`You are a technical writing assistant. Write documentation that is clear, accurate and concise.
+
+- Use the second person ("you") and active verbs.`}
+  </Prompt>
+```
+
+## Writing the prompt text
+
+Pass the prompt as a string in braces and backticks, as above, and that exact text is what gets copied, with its line breaks and
+bullets. If you write the body as ordinary Markdown instead, it renders as formatted text, and the copy button
+copies its plain text, without list markers.
+
+The text is part of the page, inside a "Show prompt" block, so readers can read it before using it, search finds it, and
+it is printed and included when the page is copied as Markdown.
+
+## Actions
+
+| Action   | What it does                                                                            |
+| -------- | --------------------------------------------------------------------------------------- |
+| `copy`   | Copies the prompt to the clipboard, and tells screen readers it did.                    |
+| `cursor` | Opens the prompt in [Cursor](https://cursor.com) in a new tab, through its prompt link. |
+
+The default is `['copy']`. Buttons are left off printed pages.
+
+<TypeTable
+  type={{
+    description: {
+      type: 'string',
+      required: true,
+      description: 'What the prompt is for. One or two sentences.',
+    },
+    children: {
+      type: 'string | ReactNode',
+      required: true,
+      description:
+        'The prompt. A string is copied exactly; elements are copied as their plain text.',
+    },
+    actions: {
+      type: '("copy" | "cursor")[]',
+      default: '["copy"]',
+      description: 'Which buttons to show.',
+    },
+    icon: {
+      type: 'string | ReactNode',
+      description: 'An icon name or an element, shown beside the description.',
+    },
+    className: { type: 'string', description: 'Extra classes on the card.' },
+  }}
+/>

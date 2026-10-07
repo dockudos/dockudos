@@ -1,0 +1,42 @@
+---
+icon: zap
+title: Build and ship
+description: Check your links, build the site and publish it.
+---
+
+## Check for broken links
+
+```bash
+npx dockudos broken-links
+```
+
+<Checkpoint>
+  The command reports no problems. If it lists a broken link, it names the file
+  and line, so you can fix it.
+</Checkpoint>
+
+## Build it
+
+```bash
+npm run build
+```
+
+The build turns your pages into a site and fails if a page has an error, so a mistake never reaches readers.
+
+<Checkpoint title="Before you publish">
+  The build ends without errors, and `npm run start` serves the same site you
+  saw in development.
+</Checkpoint>
+
+## Publish
+
+Your site is a Next.js app, so it can go anywhere Next.js can: Vercel, a container, or your own server.
+
+<Cards columns={2}>
+  <Card title="Customize it" href="/guides/theming" icon="sun">
+    Change the colors, logo and layout.
+  </Card>
+  <Card title="Protect pages" href="/guides/protecting-pages" icon="lock">
+    Keep some pages private.
+  </Card>
+</Cards>

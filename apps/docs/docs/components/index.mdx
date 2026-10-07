@@ -1,4 +1,5 @@
 ---
+icon: blocks
 title: Components
 description: What you can use in MDX without importing, and how to replace any of it.
 ---
@@ -7,49 +8,194 @@ Every component below is available in every MDX file. They work in light and dar
 interactive ones work from the keyboard.
 
 <Cards columns={3}>
-  <Card title="Callout" href="/components/callout">
-    Note, info, tip, warning, danger.
+  <Card title="Callout" href="/components/callout" icon="info">
+    Note, info, tip, check, warning, danger.
   </Card>
-  <Card title="Tabs" href="/components/tabs">
-    Tabbed content and code groups.
+  <Card title="Tabs" href="/components/tabs" icon="layout-grid">
+    Tabbed content that stays in step.
   </Card>
-  <Card title="Accordion" href="/components/accordion">
+  <Card title="Accordion" href="/components/accordion" icon="list">
     Collapsible sections.
   </Card>
-  <Card title="Steps and Cards" href="/components/steps-and-cards">
+  <Card title="Steps and Cards" href="/components/steps-and-cards" icon="list">
     A procedure; a grid of links.
   </Card>
-  <Card title="Tooltip and Banner" href="/components/tooltip-and-banner">
+  <Card
+    title="Tooltip and Banner"
+    href="/components/tooltip-and-banner"
+    icon="message-circle"
+  >
     Inline hints; an announcement strip.
   </Card>
-  <Card title="Files" href="/components/files">
+  <Card
+    title="Tile and Colors"
+    href="/components/tile-and-colors"
+    icon="palette"
+  >
+    Cards with a preview; a palette.
+  </Card>
+  <Card title="Files" href="/components/files" icon="folder">
     A file tree.
   </Card>
-  <Card title="Type tables" href="/components/type-tables">
+  <Card title="Badge and Kbd" href="/components/badges-and-keys" icon="tag">
+    Inline labels and keys.
+  </Card>
+  <Card title="Shortcut" href="/components/shortcut" icon="keyboard">
+    A shortcut in the reader's own keys.
+  </Card>
+  <Card
+    title="Columns, Frame, Expandable"
+    href="/components/layout-blocks"
+    icon="layout-dashboard"
+  >
+    Layout and optional detail.
+  </Card>
+  <Card
+    title="Code blocks and CodeGroup"
+    href="/components/code-block"
+    icon="code"
+  >
+    Highlighted code, as tabs.
+  </Card>
+  <Card title="Images" href="/components/image" icon="image">
+    Zoomable images.
+  </Card>
+  <Card title="Mermaid" href="/components/mermaid" icon="workflow">
+    Diagrams from text.
+  </Card>
+  <Card title="Video" href="/components/video" icon="video">
+    A file or an embed.
+  </Card>
+  <Card title="Icons" href="/components/icons" icon="sparkles">
+    Built in, SVG packs, React.
+  </Card>
+  <Card title="Type tables" href="/components/type-tables" icon="table">
     Props tables, written or generated.
   </Card>
-  <Card title="Page data" href="/components/page-data">
-    Inline table of contents; page graph.
+  <Card title="Page data" href="/components/page-data" icon="network">
+    Inline contents; page graph.
   </Card>
-  <Card title="Endpoint and ParamField" href="/components/api-blocks">
+  <Card title="GitHub info" href="/components/github-info" icon="git">
+    A repository card.
+  </Card>
+  <Card
+    title="Endpoint and ParamField"
+    href="/components/api-blocks"
+    icon="plug"
+  >
     Document an endpoint or function.
   </Card>
-  <Card title="Update" href="/components/update">
+  <Card
+    title="Panel and examples"
+    href="/components/panel-and-examples"
+    icon="panel-left"
+  >
+    Pin requests and responses.
+  </Card>
+  <Card title="Update" href="/components/update" icon="book-open">
     Changelog entries.
   </Card>
-  <Card title="CopyText, Hero" href="/components/copy-text-and-hero">
+  <Card
+    title="CopyText, Hero"
+    href="/components/copy-text-and-hero"
+    icon="copy"
+  >
     A copyable snippet; a landing banner.
   </Card>
-  <Card title="Kudos" href="/components/kudos">
-    Page feedback.
+  <Card title="ThemedImage" href="/components/themed-image" icon="sun">
+    Light and dark pictures.
   </Card>
-  <Card title="GitHub info" href="/components/github-info">
-    A repository card.
+  <Card
+    title="Since and Deprecated"
+    href="/components/version-labels"
+    icon="tag"
+  >
+    Version labels.
+  </Card>
+  <Card title="Quote" href="/components/quote" icon="message-circle">
+    A testimonial.
+  </Card>
+  <Card title="Stats" href="/components/stats" icon="gauge">
+    Key numbers.
+  </Card>
+  <Card title="Timeline" href="/components/timeline" icon="calendar">
+    A roadmap.
+  </Card>
+  <Card title="Download" href="/components/download" icon="download">
+    A file to save.
+  </Card>
+  <Card title="Checklist" href="/components/checklist" icon="check-circle">
+    Done and not done.
+  </Card>
+  <Card
+    title="Tutorial components"
+    href="/components/tutorial"
+    icon="graduation-cap"
+  >
+    Intro, checkpoints, hints.
+  </Card>
+  <Card title="Prompt" href="/components/prompt" icon="bot">
+    A prompt to copy or open in Cursor.
+  </Card>
+  <Card title="View" href="/components/view" icon="layers">
+    Switch content by language.
+  </Card>
+  <Card title="Visibility" href="/components/visibility" icon="eye">
+    Content for people or for agents.
+  </Card>
+  <Card title="Kudos" href="/components/kudos" icon="check-circle">
+    Page feedback.
   </Card>
 </Cards>
 
-Also built in: [code blocks](../guides/code-blocks.mdx) (with `CodeGroup`), `<Mermaid>` for
-[diagrams](../guides/diagrams-and-math.mdx), and zoomable [images](../guides/images.mdx).
+## Every name you can use
+
+All of these work in any MDX file without an import. A name listed under another is an alias of it.
+
+| Component                                                      | What it is                               | Page                                                      |
+| -------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| `Callout`, `Note`, `Info`, `Tip`, `Check`, `Warning`, `Danger` | A highlighted aside                      | [Callout](./callout.mdx)                                  |
+| `Tabs`, `Tab`                                                  | Tabbed content                           | [Tabs](./tabs.mdx)                                        |
+| `CodeGroup`, `pre`                                             | Code blocks, and code blocks as tabs     | [Code blocks and CodeGroup](./code-block.mdx)             |
+| `Accordions`, `AccordionGroup`, `Accordion`                    | Collapsible sections                     | [Accordion](./accordion.mdx)                              |
+| `Expandable`                                                   | One collapsible block                    | [Columns, Frame and Expandable](./layout-blocks.mdx)      |
+| `Steps`, `Step`                                                | A numbered procedure                     | [Steps and Cards](./steps-and-cards.mdx)                  |
+| `Cards`, `CardGroup`, `Card`                                   | A grid of cards and links                | [Steps and Cards](./steps-and-cards.mdx)                  |
+| `Tile`                                                         | A card with a preview                    | [Tile and Colors](./tile-and-colors.mdx)                  |
+| `Colors`                                                       | A copyable palette                       | [Tile and Colors](./tile-and-colors.mdx)                  |
+| `Columns`                                                      | Side-by-side content                     | [Columns, Frame and Expandable](./layout-blocks.mdx)      |
+| `Frame`                                                        | A framed image or diagram with a caption | [Columns, Frame and Expandable](./layout-blocks.mdx)      |
+| `Tooltip`                                                      | An inline hint                           | [Tooltip and Banner](./tooltip-and-banner.mdx)            |
+| `Banner`                                                       | An announcement strip                    | [Tooltip and Banner](./tooltip-and-banner.mdx)            |
+| `Files`, `Folder`, `File`, `Tree`                              | A file tree                              | [Files](./files.mdx)                                      |
+| `ThemedImage`                                                  | One picture in light and dark versions   | [ThemedImage](./themed-image.mdx)                         |
+| `Since`, `Deprecated`                                          | Inline version labels                    | [Since and Deprecated](./version-labels.mdx)              |
+| `Quote`                                                        | A pull quote or testimonial              | [Quote](./quote.mdx)                                      |
+| `Stats`, `Stat`                                                | A row of key numbers                     | [Stats](./stats.mdx)                                      |
+| `Timeline`, `TimelineItem`                                     | A dated sequence with statuses           | [Timeline](./timeline.mdx)                                |
+| `Download`                                                     | A link that saves a file                 | [Download](./download.mdx)                                |
+| `Checklist`, `ChecklistItem`                                   | Done and not-done items                  | [Checklist](./checklist.mdx)                              |
+| `TutorialIntro`, `Checkpoint`, `Hint`, `Solution`              | Pages that teach by doing                | [Tutorial components](./tutorial.mdx)                     |
+| `Prompt`                                                       | A prompt to copy or open in Cursor       | [Prompt](./prompt.mdx)                                    |
+| `View`                                                         | Switchable content by language or setup  | [View](./view.mdx)                                        |
+| `Visibility`                                                   | Content for people or for AI agents      | [Visibility](./visibility.mdx)                            |
+| `Badge`                                                        | A small inline label                     | [Badge and Kbd](./badges-and-keys.mdx)                    |
+| `Kbd`                                                          | A keyboard key                           | [Badge and Kbd](./badges-and-keys.mdx)                    |
+| `Shortcut`                                                     | A shortcut in the reader's own keys      | [Shortcut](./shortcut.mdx)                                |
+| `Icon`                                                         | An icon by name                          | [Icons](./icons.mdx)                                      |
+| `img`                                                          | A zoomable image                         | [Images](./image.mdx)                                     |
+| `Mermaid`                                                      | A diagram from text                      | [Mermaid](./mermaid.mdx)                                  |
+| `Video`                                                        | A video file or an embedded player       | [Video](./video.mdx)                                      |
+| `TypeTable`, `AutoTypeTable`                                   | A props table, written or generated      | [Type tables](./type-tables.mdx)                          |
+| `InlineToc`, `GraphView`                                       | The page's headings; the graph of pages  | [Page data](./page-data.mdx)                              |
+| `GithubInfo`                                                   | A repository card                        | [GitHub info](./github-info.mdx)                          |
+| `Endpoint`, `ParamField`, `ResponseField`                      | Document an API call, function or config | [Endpoint and ParamField](./api-blocks.mdx)               |
+| `Panel`, `RequestExample`, `ResponseExample`                   | Examples pinned beside the text          | [Panel and examples](./panel-and-examples.mdx)            |
+| `Update`                                                       | A changelog entry                        | [Update](./update.mdx)                                    |
+| `CopyText`                                                     | Inline code with a copy button           | [CopyText, Hero and LinkButton](./copy-text-and-hero.mdx) |
+| `Hero`, `LinkButton`                                           | A landing banner and its buttons         | [CopyText, Hero and LinkButton](./copy-text-and-hero.mdx) |
+
+`Kudos` (page feedback) is not an MDX component: it is added to every page by the layout. See [Kudos](./kudos.mdx).
 
 ## Motion
 

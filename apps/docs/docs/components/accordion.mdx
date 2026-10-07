@@ -1,7 +1,11 @@
 ---
+icon: list
 title: Accordion
-description: Collapsible sections for FAQs and optional detail.
+description: Collapsible sections for FAQs and optional detail, one open at a time or several.
 ---
+
+An accordion is a stack of sections that each open and close. Use it for a list of related questions or for detail most readers
+can skip. For a single optional block use [Expandable](./layout-blocks.mdx).
 
 <Accordions>
   <Accordion title="What is dockudos?">
@@ -22,24 +26,120 @@ description: Collapsible sections for FAQs and optional detail.
 </Accordions>
 ```
 
-Enter and Space toggle a section; arrow keys, Home and End move between headers. Sections have
-`aria-expanded` and the content is a labelled region.
+By default opening one section closes the one that was open, and an open section can be closed again.
+
+## Several open at once
+
+<Accordions multiple>
+  <Accordion title="First">Open me.</Accordion>
+  <Accordion title="Second">And me, at the same time.</Accordion>
+</Accordions>
+
+```mdx
+<Accordions multiple>
+  <Accordion title="First">Open me.</Accordion>
+  <Accordion title="Second">And me, at the same time.</Accordion>
+</Accordions>
+```
+
+## Icons
+
+An `icon` is shown before the title. It is any [icon name](./icons.mdx), or an element:
+
+<Accordions>
+  <Accordion title="Security" icon="shield-check">
+    Content can hold Markdown, code and other components.
+  </Accordion>
+  <Accordion title="Billing" icon="credit-card">
+    Another section.
+  </Accordion>
+</Accordions>
+
+```mdx
+<Accordion title="Security" icon="shield-check">
+  …
+</Accordion>
+```
+
+## Open by default and descriptions
+
+`defaultOpen` starts a section open, and `description` adds a line of explanation under the title:
+
+<Accordions>
+  <Accordion title="Install" description="Takes a minute" defaultOpen>
+    This section was open when the page loaded.
+  </Accordion>
+  <Accordion title="Configure" description="Optional">
+    Another section.
+  </Accordion>
+</Accordions>
+
+```mdx
+<Accordion title="Install" description="Takes a minute" defaultOpen>
+  …
+</Accordion>
+```
+
+On a single-open `Accordions` only the first `defaultOpen` section starts open; add `multiple` to start several.
+
+## Content
+
+A section can hold anything, including code blocks, tables and [Steps](./steps-and-cards.mdx). Section content stays in
+the page when closed, so "Copy page" and printing include it.
+
+## AccordionGroup
+
+`AccordionGroup` is the same component as `Accordions`, under the name other tools use, so existing content works as
+it is.
+
+## Props
 
 <TypeTable
   type={{
-    multiple: {
+    'Accordions.multiple': {
       type: 'boolean',
       default: 'false',
-      description: 'On Accordions: allow more than one section open at once.',
+      description: 'Allow more than one section open at once.',
     },
-    title: {
+    'Accordions.className': {
+      type: 'string',
+      description: 'Extra classes on the outer element.',
+    },
+    'Accordion.title': {
       type: 'string',
       required: true,
-      description: 'On Accordion: the header text.',
+      description: 'The header text.',
     },
-    value: {
+    'Accordion.value': {
       type: 'string',
-      description: 'On Accordion: a stable id. Defaults to the title.',
+      default: 'the title',
+      description:
+        'A stable id. Give one if two sections share a title, or the title may change.',
+    },
+    'Accordion.description': {
+      type: 'string',
+      description: 'A line of explanation under the title.',
+    },
+    'Accordion.defaultOpen': {
+      type: 'boolean',
+      default: 'false',
+      description: 'Start the section open.',
+    },
+    'Accordion.icon': {
+      type: 'string | ReactNode',
+      description: 'Shown before the title: an icon name or an element.',
     },
   }}
 />
+
+## Keyboard and screen readers
+
+<Kbd>Enter</Kbd> and <Kbd>Space</Kbd> toggle a section. <Kbd>Up</Kbd> and
+<Kbd>Down</Kbd> move between headers, and <Kbd>Home</Kbd> and
+<Kbd>End</Kbd> jump to the first and last. Each header is a button with
+`aria-expanded`, and its content is a labelled region. Opening and closing
+animate, and do not when the visitor prefers reduced motion.
+
+## Printing
+
+Every section is opened on paper, so nothing printed is hidden.

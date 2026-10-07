@@ -5,6 +5,7 @@ export * from './lib/navigation.ts';
 export * from './lib/helpers.ts';
 export * from './lib/redirects.ts';
 export * from './lib/include.ts';
+export * from './lib/visibility.ts';
 export * from './lib/seo.ts';
 export * from './lib/links.ts';
 export * from './lib/theme.ts';

@@ -5,7 +5,13 @@ import { titleFromSlug } from './page-tree.ts';
 export type SidebarItem =
   | { type: 'page'; page: Page }
   | { type: 'link'; title: string; href: string }
-  | { type: 'group'; title: string; items: SidebarItem[] };
+  | {
+      type: 'group';
+      title: string;
+      /** The group is a tutorial: its pages are steps. */
+      tutorial?: boolean;
+      items: SidebarItem[];
+    };
 
 export interface NavTab {
   title: string;
@@ -73,6 +79,7 @@ export function buildNavigation(
     return {
       type: 'group',
       title: item.group,
+      ...(item.tutorial && { tutorial: true }),
       items: resolveAll(item.pages, `${where} > ${item.group}`),
     };
   };
@@ -86,6 +93,7 @@ export function buildNavigation(
       sidebar: tab.groups.map((g) => ({
         type: 'group' as const,
         title: g.group,
+        ...(g.tutorial && { tutorial: true }),
         items: resolveAll(g.pages, `${tab.tab} > ${g.group}`),
       })),
     };
@@ -135,4 +143,40 @@ export function findTab(nav: Navigation, path: string): NavTab | undefined {
   return nav.tabs.find((t) =>
     flattenSidebar(t.sidebar).some((p) => p.path === path),
   );
+}
+
+export interface TutorialPosition {
+  /** The tutorial group's title. */
+  title: string;
+  /** 1-based number of the current step. */
+  step: number;
+  /** Every step, in order. */
+  steps: Page[];
+}
+
+/** Where a page sits in a tutorial group (`tutorial: true` in docs.json), if it is in one. */
+export function tutorialOf(
+  nav: Navigation,
+  path: string,
+): TutorialPosition | undefined {
+  const search = (
+    items: readonly SidebarItem[],
+  ): TutorialPosition | undefined => {
+    for (const item of items) {
+      if (item.type !== 'group') continue;
+      if (item.tutorial) {
+        const steps = flattenSidebar(item.items);
+        const i = steps.findIndex((p) => p.path === path);
+        if (i !== -1) return { title: item.title, step: i + 1, steps };
+      }
+      const inner = search(item.items);
+      if (inner) return inner;
+    }
+    return undefined;
+  };
+  for (const tab of nav.tabs) {
+    const found = search(tab.sidebar);
+    if (found) return found;
+  }
+  return undefined;
 }

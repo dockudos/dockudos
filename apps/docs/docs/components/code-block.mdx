@@ -1,0 +1,139 @@
+---
+icon: code
+title: Code blocks and CodeGroup
+description: The code block component behind every fence, and CodeGroup, which turns several blocks into tabs.
+---
+
+Every fenced block in your Markdown is rendered by the `pre` component, which is the `CodeBlock` of `@dockudos/ui`.
+You almost never write it by hand; the [Code blocks guide](../guides/code-blocks.mdx) covers what goes in the fence
+(titles, highlighted lines, diffs, `package-install`, `ts-to-js`, Twoslash). This page is about the component itself.
+
+```ts title="hello.ts"
+export const hello = 'world';
+```
+
+## What it gives you
+
+- A frame with an optional title bar, taken from the fence's `title="…"`.
+- A **copy button**, a real button named "Copy code". It copies the block's text without the lines marked as removed
+  (`[!code --]`) and without Twoslash popups, and tells screen readers "Copied to clipboard" or "Copy failed".
+- Light and dark highlighting at once, so switching theme does not redraw anything.
+- A keyboard-focusable scroll area when a line is wider than the page, so a keyboard user can scroll it.
+
+On paper the copy button is left out and long lines wrap, instead of scrolling. Code always uses the light theme in print.
+
+A `<pre>` that did not come from a highlighted fence, such as one you write by hand or one inside a Twoslash popup, is
+left plain: no frame and no copy button.
+
+## Replace it
+
+Replace `pre` in `mdx-components.tsx` to change every code block. Wrap `CodeBlock` to keep what it does:
+
+```tsx title="mdx-components.tsx"
+import { defineMdxComponents } from '@dockudos/next/mdx-components';
+import { CodeBlock } from '@dockudos/ui';
+import type { ComponentProps } from 'react';
+
+const Pre = (props: ComponentProps<typeof CodeBlock>) => (
+  <div className="my-wrapper">
+    <CodeBlock {...props} />
+  </div>
+);
+
+export const useMDXComponents = (components) => ({
+  ...defineMdxComponents({ pre: Pre }),
+  ...components,
+});
+```
+
+## CodeGroup
+
+`CodeGroup` shows several code blocks as tabs, one per block. Each tab is named by its block's `title`; blocks without one
+are named "Tab 1", "Tab 2" and so on. Leave blank lines around the fences so they are parsed as code.
+
+<CodeGroup>
+
+```ts title="client.ts"
+import { connect } from './connect';
+```
+
+```js title="client.js"
+const { connect } = require('./connect');
+```
+
+</CodeGroup>
+
+````mdx
+<CodeGroup>
+
+```ts title="client.ts"
+import { connect } from './connect';
+```
+
+```js title="client.js"
+const { connect } = require('./connect');
+```
+
+</CodeGroup>
+````
+
+`CodeGroup` is [Tabs](./tabs.mdx) underneath, so it works from the keyboard in the same way, and every block is on the page
+when printed. Give several groups the same `groupId` and they switch together, and remember the reader's choice:
+
+<CodeGroup groupId="example-language">
+
+```bash title="curl"
+curl https://api.acme.dev/v1/ping
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/ping');
+```
+
+</CodeGroup>
+
+<CodeGroup groupId="example-language">
+
+```bash title="curl"
+curl -X DELETE https://api.acme.dev/v1/cache
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/cache', { method: 'DELETE' });
+```
+
+</CodeGroup>
+
+Choosing "Node" in either group switches the other. [RequestExample and ResponseExample](./panel-and-examples.mdx) are
+`CodeGroup`s with a fixed `groupId`, shared across a whole site.
+
+## Props
+
+<TypeTable
+  type={{
+    'CodeGroup.groupId': {
+      type: 'string',
+      description:
+        'Groups with the same id switch together and remember the choice.',
+    },
+    'CodeGroup.children': {
+      type: 'ReactNode',
+      required: true,
+      description: 'Code blocks. Each becomes a tab named by its title.',
+    },
+    'CodeBlock.data-title': {
+      type: 'string',
+      description:
+        'Set by `title="…"` on the fence. Shown in the title bar and used as the tab name in a CodeGroup.',
+    },
+    'CodeBlock.data-language': {
+      type: 'string',
+      description:
+        'Set for highlighted fences. A block without it is left plain.',
+    },
+    'CodeBlock.className': {
+      type: 'string',
+      description: 'Extra classes on the pre element.',
+    },
+  }}
+/>

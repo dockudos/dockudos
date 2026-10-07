@@ -1,9 +1,12 @@
 ---
+icon: layout-dashboard
 title: Columns, Frame and Expandable
-description: Side-by-side content, framed media, and optional detail.
+description: Side-by-side content, framed images and diagrams, and optional detail.
 ---
 
 ## Columns
+
+`Columns` lays content out side by side. Anything can be a column: cards, code blocks, plain Markdown.
 
 <Columns cols={2}>
   <Card title="Before">The old way.</Card>
@@ -18,9 +21,24 @@ description: Side-by-side content, framed media, and optional detail.
 </Columns>
 ```
 
-`cols` is 2, 3 or 4. Columns stack on phones. Anything can go in a column.
+`cols` is 2, 3 or 4, and defaults to 2. Columns stack into one on phones; four columns drop to two on a tablet.
+Each direct child is one column.
+
+<TypeTable
+  type={{
+    cols: {
+      type: '2 | 3 | 4',
+      default: '2',
+      description: 'Columns on wide screens.',
+    },
+  }}
+/>
+
+`Columns` has no borders of its own. To make a grid of linked boxes, use [Cards](./steps-and-cards.mdx).
 
 ## Frame
+
+`Frame` puts a border and an optional caption around an image, a video or a diagram.
 
 <Frame caption="A blue box, framed with a caption">
   <img src="/example.png" alt="A blue rectangle" width={120} height={60} />
@@ -30,7 +48,31 @@ description: Side-by-side content, framed media, and optional detail.
 <Frame caption="The dashboard">![The dashboard](./dashboard.png)</Frame>
 ```
 
+The content is centered and never wider than the frame. The caption is a real `figcaption`, so it is read with the image.
+Use a caption to say what the reader should notice; `alt` text still describes the image itself. Images inside a frame
+can still be zoomed, see [Images](../guides/images.mdx).
+
+<TypeTable
+  type={{
+    caption: {
+      type: 'string',
+      description: 'Shown under the content.',
+    },
+    hint: {
+      type: 'string',
+      description: 'A short note above the content, such as "Click to zoom".',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'An image, video, diagram or anything else.',
+    },
+  }}
+/>
+
 ## Expandable
+
+`Expandable` is one collapsible block, for optional detail such as nested properties of an API field.
 
 <Expandable title="Show the details">
   Optional content that most readers can skip. It is a native `details` element:
@@ -43,4 +85,17 @@ description: Side-by-side content, framed media, and optional detail.
 </Expandable>
 ```
 
-Use `Accordions` for a group of related questions, `Expandable` for a single optional block.
+Use [Accordion](./accordion.mdx) for a group of related questions and `Expandable` for a single optional block. It
+animates as it opens, unless the visitor prefers reduced motion, and is opened on paper.
+
+<TypeTable
+  type={{
+    title: { type: 'string', required: true, description: 'The summary line.' },
+    defaultOpen: {
+      type: 'boolean',
+      default: 'false',
+      description: 'Start open.',
+    },
+    children: { type: 'ReactNode', description: 'The hidden content.' },
+  }}
+/>

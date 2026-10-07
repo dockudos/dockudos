@@ -1,7 +1,10 @@
 ---
+icon: git
 title: GitHub info
-description: A repository card with stars and forks.
+description: A repository card with the description, stars and forks, fetched when the site is built.
 ---
+
+`GithubInfo` shows a repository as a card that links to it.
 
 <GithubInfo owner="vercel" repo="next.js" />
 
@@ -9,6 +12,40 @@ description: A repository card with stars and forks.
 <GithubInfo owner="vercel" repo="next.js" />
 ```
 
-The numbers are fetched from the GitHub API when the page is built. If GitHub cannot be reached, or
-the rate limit is hit, the card still works as a link, just without numbers. Set a `GITHUB_TOKEN`
-environment variable at build time to raise the rate limit.
+<TypeTable
+  type={{
+    owner: {
+      type: 'string',
+      required: true,
+      description:
+        'The user or organization: the `vercel` in `vercel/next.js`.',
+    },
+    repo: {
+      type: 'string',
+      required: true,
+      description: 'The repository name.',
+    },
+  }}
+/>
+
+## Where the numbers come from
+
+The description, star count and fork count are fetched from the GitHub API when the page is built (or, in dev, when it is
+rendered), and are not requested again in the visitor's browser. Counts are shortened, as in "128k". A request that takes
+more than five seconds is given up on.
+
+If GitHub cannot be reached, the repository does not exist, or the rate limit is hit, the card still works as a link; it
+just has no description or numbers. A deploy never fails because of GitHub.
+
+Unauthenticated requests are limited to 60 an hour per address. Set a `GITHUB_TOKEN` environment variable at build time to
+raise that; the token is only sent to `api.github.com`, and never reaches the browser. A read-only token with no scopes is enough.
+
+## Validation
+
+`owner` and `repo` may only contain letters, digits, `-`, `_` and `.`, and cannot be `..`. Anything else stops the build, with a
+message naming the card, so a typo cannot send a request somewhere unintended.
+
+## Accessibility and printing
+
+The whole card is one link, and says "on GitHub (opens in a new tab)" to screen readers. Stars and forks are announced with
+their units. On paper the link's address is shown after the text, as for any other link.

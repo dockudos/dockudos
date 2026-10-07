@@ -1,0 +1,132 @@
+---
+icon: graduation-cap
+title: Tutorial components
+description: TutorialIntro, Checkpoint, Hint and Solution, for pages that teach by doing.
+---
+
+These four components are for [tutorials](../guides/tutorials.mdx), though they work on any page.
+
+## TutorialIntro
+
+The top of a tutorial: how long it takes, who it is for, what the reader will learn, and what they need first.
+
+<TutorialIntro
+  time="15 minutes"
+  level="Beginner"
+  learn={['Create a docs site', 'Add and organize pages']}
+  requires={[
+    'Node.js 20 or later',
+    <>
+      A text editor, such as <a href="https://code.visualstudio.com">VS Code</a>
+    </>,
+  ]}
+>
+  In this tutorial you will build a small documentation site from nothing.
+</TutorialIntro>
+
+```mdx
+<TutorialIntro
+  time="15 minutes"
+  level="Beginner"
+  learn={['Create a docs site', 'Add and organize pages']}
+  requires={['Node.js 20 or later']}
+>
+  In this tutorial you will build a small documentation site from nothing.
+</TutorialIntro>
+```
+
+The text between the tags comes first. "What you will learn" and "Before you start" are real headings, so they appear in
+screen reader outlines; each list is a plain list. `requires` takes elements as well as text, so items can be links.
+
+<TypeTable
+  type={{
+    time: { type: 'string', description: 'How long it takes: `20 minutes`.' },
+    level: { type: 'string', description: 'Who it is for: `Beginner`.' },
+    learn: {
+      type: 'string[]',
+      description: 'What the reader will be able to do afterwards.',
+    },
+    requires: {
+      type: 'ReactNode[]',
+      description: 'What the reader needs first. Text or elements.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'An opening paragraph, shown first.',
+    },
+  }}
+/>
+
+## Checkpoint
+
+A place to stop and check: what the reader should see, run or find before moving on.
+
+<Checkpoint>
+  Run `npm run dev` and open `http://localhost:3000`. You should see your site's
+  home page.
+</Checkpoint>
+
+```mdx
+<Checkpoint>
+  Run `npm run dev` and open `http://localhost:3000`. You should see your site's
+  home page.
+</Checkpoint>
+
+<Checkpoint title="Before you go on">The build prints no errors.</Checkpoint>
+```
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      default: '"Check your work"',
+      description: 'The heading.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'What the reader should see.',
+    },
+  }}
+/>
+
+## Hint and Solution
+
+Both hide their content until the reader asks for it. Use a `Hint` to nudge, and a `Solution` for the answer, so the reader
+can try before looking.
+
+<Hint>Check that the file name ends in `.mdx`.</Hint>
+
+<Solution>
+
+```mdx title="docs/first-page.mdx"
+---
+title: My first page
+description: Shown under the title.
+---
+```
+
+</Solution>
+
+```mdx
+<Hint>Check that the file name ends in `.mdx`.</Hint>
+
+<Solution>
+
+The finished file…
+
+</Solution>
+```
+
+They are [Expandable](./layout-blocks.mdx) blocks, so they work without scripting, from the keyboard, and are opened on
+paper. Leave blank lines around Markdown inside them.
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      default: '"Hint" or "Solution"',
+      description: 'The summary line.',
+    },
+    children: { type: 'ReactNode', description: 'The hidden content.' },
+  }}
+/>

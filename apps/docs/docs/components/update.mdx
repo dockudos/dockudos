@@ -1,10 +1,16 @@
 ---
+icon: newspaper
 title: Update
-description: Changelog and release-note entries.
+description: Changelog and release-note entries with a version, a date and tags.
 ---
 
+`Update` is one entry of a changelog. Stack several, newest first, to make a changelog page or a "What's new" section.
+
 <Update label="1.2.0" date="2026-03-05" tags={['Added', 'Fixed']}>
-  - Added the kudos widget. - Fixed the sidebar scroll position on long pages.
+
+- Added the kudos widget.
+- Fixed the sidebar scroll position on long pages.
+
 </Update>
 
 <Update label="1.1.0" date="2026-02-10" tags={['Breaking']}>
@@ -13,10 +19,52 @@ description: Changelog and release-note entries.
 
 ```mdx
 <Update label="1.2.0" date="2026-03-05" tags={['Added', 'Fixed']}>
-  - Added the kudos widget.
+
+- Added the kudos widget.
+- Fixed the sidebar scroll position on long pages.
+
 </Update>
 ```
 
-Put the newest entry first. `date` is `YYYY-MM-DD`; it is shown as a long date and kept machine readable.
-A tag named `Breaking` is red, any other is blue. On wide screens the label and date stay in view beside
-a long entry.
+Leave a blank line after the opening tag and before the closing one when the body is a list, so it is read as Markdown.
+
+## Date and label
+
+`date` is `YYYY-MM-DD`. It is shown as a long date, such as "March 5, 2026", and kept machine readable in a `time` element, so
+it is the same for readers anywhere. A date that is not in that form is shown as you wrote it. `label` is free text: a version,
+or a name such as `March release`. Only `label` is required.
+
+## Tags
+
+A tag named `Breaking` (in any case) is red, any other is blue. Use a few consistent names: `Added`, `Changed`, `Fixed`,
+`Removed`, `Deprecated`, `Security`, `Breaking`.
+
+<TypeTable
+  type={{
+    label: {
+      type: 'string',
+      required: true,
+      description: 'The version or title of the release.',
+    },
+    date: {
+      type: 'string',
+      description: '`YYYY-MM-DD`.',
+    },
+    description: {
+      type: 'string',
+      description: 'A line under the label, such as the name of the release.',
+    },
+    tags: {
+      type: 'string[]',
+      description: 'Short categories, shown as badges.',
+    },
+    children: {
+      type: 'ReactNode',
+      description:
+        'The notes. Markdown works, including lists, code and images.',
+    },
+  }}
+/>
+
+On wide screens the label, date and tags stay in view beside a long entry as you scroll through it. Each entry is an `article`
+whose label is a heading, so readers using a screen reader can jump between releases.

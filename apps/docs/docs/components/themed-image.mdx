@@ -1,0 +1,51 @@
+---
+icon: sun
+title: ThemedImage
+description: One picture in a light and a dark version, so screenshots match the reader's theme.
+---
+
+A screenshot of a light interface looks wrong in dark mode. `ThemedImage` takes both versions and shows the one that
+matches the theme the reader is using. Switch the theme (press <Kbd>t</Kbd>) to see this one change:
+
+<ThemedImage
+  light="/logo-light.svg"
+  dark="/logo-dark.svg"
+  alt="The dockudos logo"
+  width={160}
+/>
+
+```mdx
+<ThemedImage
+  light="/dashboard-light.png"
+  dark="/dashboard-dark.png"
+  alt="The dashboard, with a sidebar and a chart"
+/>
+```
+
+- Both images are in the page, and the one that does not match the theme is hidden, so the swap is instant and there is
+  no flash when the page loads.
+- Both are [zoomable](./image.mdx) like any other image, and share one `alt` text.
+- Printed pages and PDFs always use the light image, because paper is always white.
+- Make the two images the same size, so the page does not shift when the theme changes.
+
+<TypeTable
+  type={{
+    light: {
+      type: 'string',
+      required: true,
+      description: 'The image for light mode, and for paper.',
+    },
+    dark: {
+      type: 'string',
+      required: true,
+      description: 'The image for dark mode.',
+    },
+    alt: {
+      type: 'string',
+      default: '""',
+      description: 'Describes the image. Empty marks it as decorative.',
+    },
+    width: { type: 'number', description: 'Width in pixels.' },
+    height: { type: 'number', description: 'Height in pixels.' },
+  }}
+/>

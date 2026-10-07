@@ -25,6 +25,8 @@ const linkSchema = z.strictObject({
 
 export interface NavGroup {
   group: string;
+  /** Treat the group as a tutorial: its pages are numbered steps with progress. */
+  tutorial?: boolean;
   pages: NavItem[];
 }
 
@@ -34,6 +36,8 @@ export type NavItem = string | { title: string; href: string } | NavGroup;
 const groupSchema: z.ZodType<NavGroup> = z.lazy(() =>
   z.strictObject({
     group: z.string().min(1),
+    /** Treat the group as a tutorial: its pages are numbered steps, with a progress bar on each. */
+    tutorial: z.boolean().optional(),
     pages: z.array(navItemSchema),
   }),
 );

@@ -22,27 +22,50 @@
           "group": "Writing",
           "pages": [
             "guides/writing-content",
-            "guides/navigation",
-            "guides/page-actions",
-            "guides/includes",
+            "guides/tutorials",
             "guides/code-blocks",
             "guides/diagrams-and-math",
-            "guides/images"
+            "guides/images",
+            "guides/includes"
           ]
         },
         {
-          "group": "Site",
+          "group": "Structure",
+          "pages": ["guides/navigation", "guides/layouts", "guides/redirects"]
+        },
+        {
+          "group": "Customize",
+          "pages": ["guides/theming", "guides/branding"]
+        },
+        {
+          "group": "Reader experience",
           "pages": [
             "guides/keyboard-shortcuts",
             "guides/hooks",
-            "guides/theming",
-            "guides/branding",
-            "guides/layouts",
-            "guides/redirects",
-            "guides/protecting-pages",
+            "guides/page-actions"
+          ]
+        },
+        {
+          "group": "Publish",
+          "pages": [
             "guides/seo",
             "guides/printing",
-            "guides/broken-links"
+            "guides/broken-links",
+            "guides/protecting-pages"
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Tutorials",
+      "groups": [
+        {
+          "group": "Build your first docs site",
+          "tutorial": true,
+          "pages": [
+            "tutorials/first-site/create",
+            "tutorials/first-site/write",
+            "tutorials/first-site/ship"
           ]
         }
       ]
@@ -51,29 +74,75 @@
       "tab": "Components",
       "groups": [
         {
-          "group": "Components",
+          "group": "Overview",
+          "pages": ["components/index"]
+        },
+        {
+          "group": "Text and structure",
           "pages": [
-            "components/index",
             "components/callout",
-            "components/icons",
             "components/tabs",
             "components/accordion",
             "components/steps-and-cards",
+            "components/layout-blocks",
             "components/tooltip-and-banner",
+            "components/quote",
+            "components/checklist",
+            "components/tutorial"
+          ]
+        },
+        {
+          "group": "Inline",
+          "pages": [
+            "components/badges-and-keys",
+            "components/shortcut",
+            "components/icons",
+            "components/copy-text-and-hero",
+            "components/version-labels",
+            "components/download"
+          ]
+        },
+        {
+          "group": "Code and media",
+          "pages": [
+            "components/code-block",
+            "components/mermaid",
+            "components/image",
+            "components/video",
+            "components/themed-image"
+          ]
+        },
+        {
+          "group": "Display",
+          "pages": [
             "components/tile-and-colors",
             "components/files",
-            "components/badges-and-keys",
-            "components/layout-blocks",
-            "components/video",
-            "components/type-tables",
-            "components/page-data",
             "components/github-info",
-            "components/api-blocks",
             "components/update",
-            "components/copy-text-and-hero",
-            "components/panel-and-examples",
-            "components/kudos"
+            "components/page-data",
+            "components/stats",
+            "components/timeline"
           ]
+        },
+        {
+          "group": "API reference",
+          "pages": [
+            "components/api-blocks",
+            "components/panel-and-examples",
+            "components/type-tables"
+          ]
+        },
+        {
+          "group": "AI and audiences",
+          "pages": [
+            "components/prompt",
+            "components/view",
+            "components/visibility"
+          ]
+        },
+        {
+          "group": "Feedback",
+          "pages": ["components/kudos"]
         }
       ]
     },

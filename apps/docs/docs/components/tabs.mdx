@@ -1,7 +1,11 @@
 ---
+icon: layers
 title: Tabs
-description: Tabbed content, and code blocks as tabs.
+description: Tabbed content, tab groups that stay in step, and code blocks as tabs.
 ---
+
+`Tabs` shows one panel at a time. Use it for alternatives the reader chooses between (an operating system, a
+language, a package manager), not for content every reader needs.
 
 <Tabs>
   <Tab value="JavaScript">Use `fetch()` in the browser and in Node 18+.</Tab>
@@ -16,13 +20,31 @@ description: Tabbed content, and code blocks as tabs.
 </Tabs>
 ```
 
-The tab labels come from the `value` of each `<Tab>`, in order. Arrow keys move between tabs, Home and
-End jump to the first and last, and the panel is reachable with Tab.
+The tab labels come from the `value` of each `<Tab>`, in order. A panel can hold anything: Markdown, code
+blocks, images, other components.
+
+## Choosing the first tab
+
+`defaultValue` picks the tab shown first. It must match a `value`:
+
+<Tabs defaultValue="Python">
+  <Tab value="JavaScript">JavaScript is not first here.</Tab>
+  <Tab value="Python">Python is open on load.</Tab>
+</Tabs>
+
+```mdx
+<Tabs defaultValue="Python">
+  <Tab value="JavaScript">…</Tab>
+  <Tab value="Python">…</Tab>
+</Tabs>
+```
 
 ## Keeping tabs in step
 
-Give related tab sets the same `groupId`. Choosing a tab in one switches all of them, and the choice
-is remembered on the next visit. The `package-install` code block uses `groupId="package-manager"`.
+Give related tab sets the same `groupId`. Choosing a tab in one switches every set on the page that has
+a tab of that name, and the choice is remembered in the browser for the next visit. The
+`package-install` code block uses `groupId="package-manager"`, which is why choosing pnpm once changes
+every install command.
 
 <Tabs groupId="os">
   <Tab value="macOS">Press Cmd+K.</Tab>
@@ -34,23 +56,72 @@ is remembered on the next visit. The `package-install` code block uses `groupId=
   <Tab value="Windows">Ctrl+Shift+P opens commands.</Tab>
 </Tabs>
 
+```mdx
+<Tabs groupId="os">
+  <Tab value="macOS">…</Tab>
+  <Tab value="Windows">…</Tab>
+</Tabs>
+```
+
+Use the same labels in every set of a group. A set that has no tab with the chosen name keeps its own
+selection. If storage is blocked the choice still syncs on the page but is forgotten on reload.
+
+## Explicit labels
+
+`items` lists the labels yourself. You rarely need it: it exists for wrappers that build tabs from data.
+
+```mdx
+<Tabs items={['One', 'Two']}>
+  <Tab value="One">…</Tab>
+  <Tab value="Two">…</Tab>
+</Tabs>
+```
+
+## Props
+
 <TypeTable
   type={{
-    items: {
+    'Tabs.items': {
       type: 'string[]',
       description:
-        'Labels, if you want them listed explicitly. Normally taken from the Tab children.',
+        'Labels, if you want them listed explicitly. Taken from the Tab children when omitted.',
     },
-    defaultValue: {
+    'Tabs.defaultValue': {
       type: 'string',
-      description: 'The tab shown first. Defaults to the first.',
+      default: 'the first tab',
+      description: 'The `value` of the tab shown first.',
     },
-    groupId: {
+    'Tabs.groupId': {
       type: 'string',
       description:
-        'Tabs sharing a groupId switch together and remember the choice.',
+        'Sets sharing a groupId switch together, and the choice is remembered.',
+    },
+    'Tabs.className': {
+      type: 'string',
+      description: 'Extra classes on the outer element.',
+    },
+    'Tab.value': {
+      type: 'string',
+      required: true,
+      description: 'The label shown on the tab, and its identity.',
     },
   }}
 />
 
-`<CodeGroup>` is the same idea for code blocks; see [code blocks](../guides/code-blocks.mdx).
+## Keyboard and screen readers
+
+<Kbd>Left</Kbd> and <Kbd>Right</Kbd> move between tabs, <Kbd>Home</Kbd> and
+<Kbd>End</Kbd> jump to the first and last, and
+<Kbd>Tab</Kbd> moves into the panel. The tab strip is a labelled `tablist`, each
+tab has `aria-selected`, and every panel is labelled by its tab. A strip that is
+too wide for a phone scrolls sideways.
+
+## Printing
+
+Every panel is in the page whether it is shown or not, so "Copy page" and a printed page or PDF include all
+of them. On paper the panels follow one another, each labelled with its tab name.
+
+## CodeGroup
+
+`<CodeGroup>` is the same idea for code blocks, with tabs named by each block's `title`. See
+[Code blocks and CodeGroup](./code-block.mdx).

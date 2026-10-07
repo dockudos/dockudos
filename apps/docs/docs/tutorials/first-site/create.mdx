@@ -1,0 +1,56 @@
+---
+icon: rocket
+title: Create the site
+description: Generate a new docs site and see it running in your browser.
+---
+
+<TutorialIntro
+  time="15 minutes in total"
+  level="Beginner"
+  learn={[
+    'Create a docs site with one command',
+    'Write and organize pages',
+    'Build the site for publishing',
+  ]}
+  requires={['Node.js 20 or later', 'A terminal and a text editor']}
+>
+  This tutorial builds a small documentation site, one step at a time. Each step
+  ends with a checkpoint, so you always know it worked.
+</TutorialIntro>
+
+## Generate the project
+
+<Steps>
+  <Step title="Run init">
+    ```bash npx dockudos init my-docs ``` It asks for a name and creates a
+    folder with everything the site needs.
+  </Step>
+  <Step title="Start the dev server">
+    ```bash cd my-docs npm install npm run dev ```
+  </Step>
+</Steps>
+
+<Checkpoint>
+  Open `http://localhost:3000`. You should see the home page of your new site,
+  with a sidebar and a search box.
+</Checkpoint>
+
+## What you have
+
+<Files>
+  <Folder name="my-docs" defaultOpen>
+    <Folder name="docs" defaultOpen>
+      <File name="index.mdx" />
+      <File name="quickstart.mdx" />
+    </Folder>
+    <File name="docs.json" />
+    <File name="package.json" />
+  </Folder>
+</Files>
+
+Your pages are the `.mdx` files in `docs/`. `docs.json` holds the site's name, theme and sidebar. You will use both in the
+next step.
+
+<Hint title="The port is already in use?">
+  Start the server on another port: `npm run dev -- --port 3001`.
+</Hint>

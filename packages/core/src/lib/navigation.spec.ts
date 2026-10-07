@@ -1,6 +1,7 @@
 import { type DocsConfig } from './config.ts';
 import {
   buildNavigation,
+  tutorialOf,
   flattenSidebar,
   NavigationError,
 } from './navigation.ts';
@@ -111,5 +112,39 @@ describe('buildNavigation: from folders', () => {
     const groups = nav.tabs[0]!.sidebar.filter((i) => i.type === 'group');
     expect(groups.map((g) => g.title)).toEqual(['Api', 'Guides']);
     expect(nav.unlisted).toEqual([]);
+  });
+});
+
+describe('tutorialOf', () => {
+  const nav = buildNavigation(
+    config([
+      {
+        tab: 'T',
+        groups: [
+          { group: 'Basics', pages: ['index'] },
+          {
+            group: 'Build it',
+            tutorial: true,
+            pages: ['start', 'guides/auth', 'api/users'],
+          },
+        ],
+      },
+    ]),
+    tree,
+  );
+
+  it('numbers the steps of a tutorial group', () => {
+    const at = tutorialOf(nav, '/guides/auth');
+    expect(at?.title).toBe('Build it');
+    expect(at?.step).toBe(2);
+    expect(at?.steps.map((p) => p.path)).toEqual([
+      '/start',
+      '/guides/auth',
+      '/api/users',
+    ]);
+  });
+
+  it('is undefined for a page outside a tutorial', () => {
+    expect(tutorialOf(nav, '/')).toBeUndefined();
   });
 });

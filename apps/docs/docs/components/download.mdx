@@ -1,0 +1,43 @@
+---
+icon: download
+title: Download
+description: A link that saves a file, showing its type and size.
+---
+
+Get <Download href="/example.png" size="12 KB">the example image</Download> or
+
+<Download href="/favicon.ico" filename="dockudos.ico">
+  the icon
+</Download>
+.
+
+```mdx
+Get <Download href="/files/guide.pdf" size="2.4 MB">the guide</Download>.
+```
+
+The label can be anything. The file's type is read from its name and shown with the size you give, as in "(PDF, 2.4 MB)",
+so readers know what they are getting before they click. Put files in `public/`, and link to them with a path that starts with `/`.
+
+`download` only works for files on your own site. Files on another site open as a normal link.
+
+<TypeTable
+  type={{
+    href: {
+      type: 'string',
+      required: true,
+      description: "The file's address.",
+    },
+    filename: {
+      type: 'string',
+      description: 'The name it is saved as. Defaults to its own name.',
+    },
+    size: {
+      type: 'string',
+      description: 'Written as it should be read: `2.4 MB`.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'The label. Defaults to the file name.',
+    },
+  }}
+/>

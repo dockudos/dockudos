@@ -1,0 +1,36 @@
+---
+icon: check-circle
+title: Checklist
+description: A list of things done and not yet done, for release checklists and requirements.
+---
+
+<Checklist>
+  <ChecklistItem checked>Tests pass</ChecklistItem>
+  <ChecklistItem checked>Changelog written</ChecklistItem>
+  <ChecklistItem>Docs updated</ChecklistItem>
+  <ChecklistItem>Tag the release</ChecklistItem>
+</Checklist>
+
+```mdx
+<Checklist>
+  <ChecklistItem checked>Tests pass</ChecklistItem>
+  <ChecklistItem>Docs updated</ChecklistItem>
+</Checklist>
+```
+
+A checklist is static: it shows a state, and it does not let the reader tick items. Each item says "Done" or "Not done" to
+screen readers, and the icon differs in shape as well as color. Items can hold links, code and more Markdown.
+
+<TypeTable
+  type={{
+    checked: {
+      type: 'boolean',
+      default: 'false',
+      description: 'On ChecklistItem. Done or satisfied.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'The text of the item.',
+    },
+  }}
+/>

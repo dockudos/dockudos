@@ -924,6 +924,11 @@
     font-size: 0.875rem;
     color: var(--muted-foreground);
   }
+  .dk-update-description {
+    margin: 0.25rem 0 0 !important;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
   .dk-update-label {
     margin: 0;
     font-size: 1.125rem;
@@ -949,6 +954,383 @@
       position: sticky;
       top: calc(var(--dk-navbar-h) + 1rem);
     }
+  }
+
+  .dk-prompt {
+    margin: 1.25rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    overflow: hidden;
+  }
+  .dk-prompt-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .dk-prompt-icon {
+    display: inline-flex;
+    color: var(--primary);
+  }
+  .dk-prompt-description {
+    flex: 1 1 14rem;
+    margin: 0 !important;
+    font-size: 0.875rem;
+  }
+  .dk-prompt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .dk-prompt-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  .dk-prompt-button:hover {
+    border-color: var(--primary);
+  }
+  .dk-prompt-button:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+  .dk-prompt-body {
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+  }
+  .dk-prompt-body > summary {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    color: var(--muted-foreground);
+  }
+  .dk-prompt-body > div {
+    padding: 0 1rem 0.75rem;
+  }
+
+  .dk-view-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 1rem 0 0.5rem;
+  }
+  .dk-view-bar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-view-bar select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--foreground);
+  }
+  .dk-view-icon {
+    display: none;
+  }
+
+  .dk-themed-dark {
+    display: none;
+  }
+  .dark .dk-themed-dark {
+    display: contents;
+  }
+  .dark .dk-themed-light {
+    display: none;
+  }
+
+  .dk-quote {
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--primary);
+  }
+  .dk-quote blockquote {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 1.0625rem;
+    font-style: italic;
+  }
+  .dk-quote blockquote > :first-child {
+    margin-top: 0;
+  }
+  .dk-quote blockquote > :last-child {
+    margin-bottom: 0;
+  }
+  .dk-quote figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+
+  .dk-stat {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .dk-stat dt {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-stat-value {
+    margin: 0.25rem 0 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .dk-stat-description {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .dk-timeline {
+    margin: 1.5rem 0;
+    padding: 0 0 0 1.25rem;
+    list-style: none;
+    border-left: 2px solid var(--border);
+  }
+  .dk-timeline-item {
+    position: relative;
+    margin: 0 0 1.5rem;
+    padding-left: 0.5rem;
+  }
+  .dk-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.25rem - 6px);
+    top: 0.45rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    border: 2px solid var(--primary);
+    background: var(--background);
+  }
+  .dk-timeline-item[data-status='done']::before {
+    background: var(--primary);
+  }
+  .dk-timeline-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dk-timeline-date {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-timeline-title {
+    margin: 0 !important;
+    font-size: 1rem;
+  }
+  .dk-timeline-body {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+  }
+  .dk-timeline-body > :first-child {
+    margin-top: 0;
+  }
+  .dk-timeline-body > :last-child {
+    margin-bottom: 0;
+  }
+
+  .dk-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .dk-download:hover {
+    border-color: var(--primary);
+  }
+  .dk-download:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+  .dk-download-meta {
+    font-weight: 400;
+    color: var(--muted-foreground);
+  }
+
+  .dk-checklist {
+    margin: 1.25rem 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dk-checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.375rem 0;
+  }
+  .dk-checklist-box {
+    display: inline-flex;
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--muted-foreground);
+  }
+  .dk-checklist-item[data-checked] .dk-checklist-box {
+    color: var(--dk-callout-tip);
+  }
+  .dk-checklist-item > div > :first-child {
+    margin-top: 0;
+  }
+  .dk-checklist-item > div > :last-child {
+    margin-bottom: 0;
+  }
+
+  .dk-nav-step {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .dk-tutorial {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .dk-tutorial p {
+    margin: 0;
+  }
+  .dk-tutorial-kicker {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .dk-tutorial-step {
+    margin-top: 0.125rem !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .dk-tutorial-done {
+    font-weight: 400;
+    color: var(--muted-foreground);
+  }
+  .dk-tutorial-bar {
+    height: 0.375rem;
+    margin-top: 0.5rem;
+    border-radius: 9999px;
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .dk-tutorial-bar > span {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s;
+  }
+  .dk-tutorial-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dk-tutorial-steps a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-decoration: none;
+    color: var(--foreground);
+  }
+  .dk-tutorial-steps a[aria-current='step'] {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .dk-tutorial-steps a[data-seen] {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .dk-tutorial-steps a:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+  .dk-tutorial-complete {
+    margin: 1.5rem 0 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--dk-callout-tip);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+  }
+  .dk-tutorial-intro {
+    margin: 1.25rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .dk-tutorial-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0 0 0.5rem !important;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-tutorial-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .dk-tutorial-intro .dk-tutorial-heading {
+    margin: 1rem 0 0.25rem;
+    font-size: 0.9375rem;
+    border: 0;
+  }
+  .dk-tutorial-intro ul {
+    margin: 0.25rem 0 0;
+  }
+  .dk-checkpoint {
+    margin: 1.5rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--dk-callout-tip);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--dk-callout-tip) 8%, transparent);
+    font-size: 0.875rem;
+  }
+  .dk-checkpoint-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.25rem !important;
+    font-weight: 600;
+    color: var(--dk-callout-tip);
+  }
+  .dk-checkpoint > div > :last-child {
+    margin-bottom: 0;
   }
 
   .dk-copytext {
@@ -1737,6 +2119,27 @@
     }
     .dk-tabs {
       overflow: visible !important;
+    }
+
+    /* Themed images: the light one, always. */
+    .dk-themed-dark {
+      display: none !important;
+    }
+    .dark .dk-themed-light {
+      display: contents !important;
+    }
+
+    /* Views: every one, each under its title. */
+    .dk-view {
+      display: block !important;
+    }
+    .dk-view::before {
+      content: attr(data-view);
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--muted-foreground);
     }
 
     /* A tooltip's text is not on screen until hovered; on paper it follows the term. */

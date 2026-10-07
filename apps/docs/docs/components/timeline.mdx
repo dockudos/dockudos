@@ -1,0 +1,43 @@
+---
+icon: calendar
+title: Timeline
+description: A dated sequence of events, such as a roadmap or a project history, with a status on each.
+---
+
+<Timeline>
+  <TimelineItem title="Core library" date="2026 Q1" status="done">
+    Pages, navigation and search.
+  </TimelineItem>
+  <TimelineItem title="API reference" date="2026 Q2" status="current">
+    Pages generated from an OpenAPI file.
+  </TimelineItem>
+  <TimelineItem title="Hosted version" date="2026 Q4" status="planned" />
+</Timeline>
+
+```mdx
+<Timeline>
+  <TimelineItem title="Core library" date="2026 Q1" status="done">
+    Pages, navigation and search.
+  </TimelineItem>
+  <TimelineItem title="API reference" date="2026 Q2" status="current" />
+</Timeline>
+```
+
+A timeline is an ordered list, in the order you write it. The status is a label written in words ("Done", "In progress",
+"Planned"), never only a color. For release notes use [Update](./update.mdx), which is meant for entries that
+read as a changelog.
+
+<TypeTable
+  type={{
+    title: { type: 'string', required: true, description: 'The event.' },
+    date: {
+      type: 'string',
+      description: 'When: `2026-03`, `Q3 2026`, `Next`. Shown as written.',
+    },
+    status: {
+      type: '"done" | "current" | "planned"',
+      description: 'Where it stands. Shown as a label.',
+    },
+    children: { type: 'ReactNode', description: 'Details.' },
+  }}
+/>

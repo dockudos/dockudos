@@ -1,21 +1,48 @@
 ---
+icon: megaphone
 title: Tooltip and Banner
-description: An inline hint, and an announcement strip.
+description: An inline hint for a term, and a dismissible announcement strip.
 ---
 
 ## Tooltip
 
-Hover or focus the word <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip> to see
-the hint.
+A tooltip explains a term without leaving the sentence. Hover or focus the word
+
+<Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip> to see the
+hint.
 
 ```mdx
 Hover <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip>.
 ```
 
-The term is focusable, so keyboard users get the hint on focus, and Escape closes it. Put essential
-information in the text, not only in a tooltip: touch screens have no hover.
+The term is underlined with dots so readers know it does something. It is focusable, so keyboard users get the hint on
+focus, and <Kbd>Esc</Kbd> closes it. The hint opens after a short delay and keeps clear of the edge of the screen.
+
+<Callout type="warning">
+  Put essential information in the text, not only in a tooltip. Touch screens
+  have no hover, and a tooltip is not included when someone prints the page.
+</Callout>
+
+<TypeTable
+  type={{
+    tip: {
+      type: 'string',
+      required: true,
+      description: 'The explanation. Plain text, kept short.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The term the hint belongs to.',
+    },
+  }}
+/>
+
+For a longer definition, link to a page or use an [Accordion](./accordion.mdx).
 
 ## Banner
+
+A banner is an announcement strip across the full width: a release, an event, a migration notice.
 
 <Banner id="docs-example-banner">
   dockudos 0.x is available. This banner can be dismissed.
@@ -25,6 +52,58 @@ information in the text, not only in a tooltip: touch screens have no hover.
 <Banner id="v1-launch">Version 1 is out.</Banner>
 ```
 
-With an `id` the banner has a dismiss button and stays dismissed for that visitor (it is stored in
-the browser). Without one it cannot be dismissed. `variant="rainbow"` gives it a gradient.
-A banner placed in a page shows in the page; to show one on every page, render it in your layout.
+### Dismissing
+
+With an `id` the banner has a dismiss button and stays dismissed for that visitor: the choice is stored in the browser
+under that id. Without an `id` it cannot be dismissed. Change the `id` when the message changes, such as
+`v2-launch`, and everyone sees the new banner even if they closed the old one.
+
+Dismissal is per browser. If storage is blocked the banner is still shown, and closing it lasts until the page reloads.
+
+### Gradient
+
+`variant="rainbow"` replaces the solid color with a soft gradient:
+
+<Banner variant="rainbow">A gentler look for a quiet announcement.</Banner>
+
+```mdx
+<Banner variant="rainbow">A gentler look for a quiet announcement.</Banner>
+```
+
+### On every page
+
+A banner placed in a page shows only in that page. To show one on every page, render the component from
+`@dockudos/ui` in your root layout, next to `DocsRoot`:
+
+```tsx title="src/app/layout.tsx"
+import { Banner } from '@dockudos/ui';
+
+// …
+<body>
+  <Banner id="v1-launch">Version 1 is out.</Banner>
+  <DocsRoot icons={site.icons}>{children}</DocsRoot>
+</body>;
+```
+
+<TypeTable
+  type={{
+    id: {
+      type: 'string',
+      description:
+        'Makes the banner dismissible and remembers the choice under this key.',
+    },
+    variant: {
+      type: '"default" | "rainbow"',
+      default: '"default"',
+      description: 'Solid primary color, or a gradient.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The message. Links work.',
+    },
+  }}
+/>
+
+A banner is a labelled "Announcement" region, and the dismiss button is a real button with a name. The dismiss button is left
+off printed pages.

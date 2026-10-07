@@ -47,7 +47,9 @@ export function useHotkey(
   }, [signature, enabled, description, group, allowInInputs]);
 }
 
+const NONE: readonly HotkeyEntry[] = [];
+
 /** Every registered shortcut that has a description. Re-renders when shortcuts come and go. */
 export function useRegisteredHotkeys(): readonly HotkeyEntry[] {
-  return useSyncExternalStore(hotkeys.subscribe, hotkeys.list, () => []);
+  return useSyncExternalStore(hotkeys.subscribe, hotkeys.list, () => NONE);
 }

@@ -1,10 +1,13 @@
 ---
-title: Tile and Colors
-description: Cards with a preview, and a palette that copies on click.
 icon: palette
+title: Tile and Colors
+description: Cards with a preview image for galleries, and a palette that copies on click.
 ---
 
 ## Tile
+
+A `Tile` is a card with a preview on top. Use it for templates, examples, themes and showcases. Put several in `Cards`
+to make a gallery.
 
 <Cards cols={3}>
   <Tile
@@ -33,10 +36,33 @@ icon: palette
 </Cards>
 ```
 
-The preview has a fixed 16:10 shape and crops the image to fill it. With an `href` the whole tile is a link; external
-links open in a new tab.
+The preview has a fixed 16:10 shape and crops the image to fill it, so tiles line up whatever size the images are.
+Anything can be the preview: an image, an SVG, a diagram or a [Mermaid](./mermaid.mdx) chart. With an `href` the whole
+tile is a link; internal links use the router and external links open in a new tab, which is announced to screen readers.
+
+Give the preview image `alt` text that describes it, or an empty `alt` if the title already says it all.
+
+<TypeTable
+  type={{
+    title: { type: 'string', required: true, description: 'The heading.' },
+    description: {
+      type: 'string',
+      description: 'One line under the title.',
+    },
+    href: {
+      type: 'string',
+      description: 'Makes the whole tile a link. A path, or a full URL.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'The preview, shown above the title.',
+    },
+  }}
+/>
 
 ## Colors
+
+`Colors` is a palette for brand and design-token pages. Click a swatch to copy its value.
 
 <Colors
   title="Brand"
@@ -52,4 +78,20 @@ links open in a new tab.
 <Colors title="Brand" items={[{ name: 'Primary', value: '#4f46e5' }]} />
 ```
 
-Click a swatch to copy its value. Any CSS color works. Each swatch names its color for screen readers.
+Any CSS color works: hex, `rgb()`, `oklch()`, or a variable such as `var(--primary)`. Without a `title` the palette has no
+caption. After a copy the swatch shows a tick and screen readers hear "Copied Primary".
+
+<TypeTable
+  type={{
+    items: {
+      type: '{ name: string; value: string }[]',
+      required: true,
+      description:
+        'The swatches, in order. `name` is the label and `value` is the color and what is copied.',
+    },
+    title: { type: 'string', description: 'A caption above the swatches.' },
+  }}
+/>
+
+Each swatch is a button named "Copy Primary, #4f46e5", so the color is available to anyone, not only those who can
+see it. Swatches print with their value written out.

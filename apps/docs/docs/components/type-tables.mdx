@@ -1,7 +1,11 @@
 ---
+icon: table
 title: Type tables
-description: Document props and options, written by hand or generated from TypeScript.
+description: Document props and options as a table, written by hand with TypeTable or generated from TypeScript with AutoTypeTable.
 ---
+
+Every props table in these docs is a type table. There are two ways to make one: write the rows yourself, or read them from your own
+TypeScript so the docs cannot drift from the code.
 
 ## TypeTable
 
@@ -29,11 +33,45 @@ description: Document props and options, written by hand or generated from TypeS
 />
 ```
 
-Each field takes `type` (shown as code), and optionally `description`, `default` and `required`.
+The object's keys are the rows, in order. Names can be anything, such as `Card.title` or `kudos.enabled`, to put the props of
+several components in one table. A required field has a red asterisk, which is also read out as "(required)". A field
+without a default shows a dash.
+
+The table scrolls sideways on a narrow screen, and has a caption and column headers for screen readers.
+
+<TypeTable
+  type={{
+    type: {
+      type: 'Record<string, TypeField>',
+      required: true,
+      description: 'The rows: field name to field description.',
+    },
+    'TypeField.type': {
+      type: 'string',
+      required: true,
+      description: 'The TypeScript type, shown as code.',
+    },
+    'TypeField.description': {
+      type: 'ReactNode',
+      description:
+        'Text under the type. Plain text or elements; Markdown is not parsed inside an attribute, so write links as elements.',
+    },
+    'TypeField.default': {
+      type: 'string',
+      description: 'Shown as code in the Default column.',
+    },
+    'TypeField.required': {
+      type: 'boolean',
+      description: 'Marks the name with an asterisk.',
+    },
+  }}
+/>
+
+A description can hold elements: `description: <>See <a href="/guides/theming">Theming</a>.</>`.
 
 ## AutoTypeTable
 
-Generate the table from your own TypeScript, so it cannot drift from the code:
+Generate the table from your own TypeScript:
 
 ```mdx
 <AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
@@ -41,6 +79,45 @@ Generate the table from your own TypeScript, so it cannot drift from the code:
 
 <AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
 
-`path` is relative to the project root. `name` is an interface or type alias. The table shows each
-property's type, whether it is required, its JSDoc description, and its `@default` tag. It runs when
-the page is built and needs `typescript` in your project.
+Each property of the interface or type alias becomes a row, with:
+
+- its **type**, as the compiler writes it;
+- **required** if the property is not optional (`?`);
+- its **description**, from the JSDoc comment above it;
+- its **default**, from a `@default` (or `@defaultValue`) tag in that comment.
+
+```ts title="src/example-types.ts"
+export interface ExampleOptions {
+  /** The name shown in the header. */
+  name: string;
+  /**
+   * How many results to show.
+   * @default 10
+   */
+  limit?: number;
+}
+```
+
+It runs when the page is built, and needs `typescript` in your project; without it the build says so. A name that is not
+in the file stops the build, so a rename in code cannot leave a stale table behind.
+
+<TypeTable
+  type={{
+    path: {
+      type: 'string',
+      required: true,
+      description: 'The TypeScript file, relative to the project root.',
+    },
+    name: {
+      type: 'string',
+      required: true,
+      description: 'An interface or type alias in that file.',
+    },
+  }}
+/>
+
+<Callout type="tip">
+  Use `AutoTypeTable` for options a reader will set, since they change with the
+  code. Use `TypeTable` for a few stable props, or when you want to explain more
+  than a type comment can hold.
+</Callout>

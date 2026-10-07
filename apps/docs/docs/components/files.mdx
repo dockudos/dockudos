@@ -1,7 +1,10 @@
 ---
+icon: folder
 title: Files
-description: Show a file tree.
+description: Show a file tree with folders that open and close, and your own icons.
 ---
+
+`Files` draws a project's structure. It is for showing the shape of a project; a code block is better for file contents.
 
 <Files>
   <Folder name="docs" defaultOpen>
@@ -26,7 +29,8 @@ description: Show a file tree.
 </Files>
 ```
 
-Folders open and close with Enter or Space. `defaultOpen` starts one open.
+Folders open and close with <Kbd>Enter</Kbd> or <Kbd>Space</Kbd>, and animate unless the visitor prefers reduced
+motion. A folder starts closed unless it has `defaultOpen`; folders can nest as deep as you need.
 
 ## Custom icons
 
@@ -58,23 +62,63 @@ Folders open and close with Enter or Space. `defaultOpen` starts one open.
 </Files>
 ```
 
-Icons are decorative: they are hidden from screen readers, and sized to 1rem.
+Icons are decorative: they are hidden from screen readers, and sized to 1rem. Unlike most `icon` props, these take an
+element and not a name; for a named [icon](./icons.mdx), write `icon={<Icon name="rocket" />}`.
+
+## Tree
+
+`Tree` is `Files` under the name other tools use, with `Tree.Folder` and `Tree.File` for `Folder` and `File`, so content written
+for them works as it is:
+
+<Tree>
+  <Tree.Folder name="src" defaultOpen>
+    <Tree.File name="index.ts" />
+  </Tree.Folder>
+</Tree>
+
+```mdx
+<Tree>
+  <Tree.Folder name="src" defaultOpen>
+    <Tree.File name="index.ts" />
+  </Tree.Folder>
+</Tree>
+```
+
+## Props
 
 <TypeTable
   type={{
-    icon: {
-      type: 'ReactNode',
-      description: 'On File and Folder. Replaces the default icon.',
+    'File.name': {
+      type: 'string',
+      required: true,
+      description: 'The file name, shown in monospace.',
     },
-    openIcon: {
+    'File.icon': {
       type: 'ReactNode',
-      description:
-        'On Folder. Shown while the folder is open. Defaults to icon.',
+      description: 'Replaces the default file icon.',
     },
-    defaultOpen: {
+    'Folder.name': {
+      type: 'string',
+      required: true,
+      description: 'The folder name.',
+    },
+    'Folder.defaultOpen': {
       type: 'boolean',
       default: 'false',
-      description: 'On Folder.',
+      description: 'Start the folder open.',
+    },
+    'Folder.icon': {
+      type: 'ReactNode',
+      description: 'Replaces the folder icon, open and closed.',
+    },
+    'Folder.openIcon': {
+      type: 'ReactNode',
+      description: 'Shown while the folder is open. Defaults to icon.',
     },
   }}
 />
+
+## Accessibility and printing
+
+The tree is a labelled `tree` with `treeitem` rows, and a folder reports whether it is expanded. On paper every folder is
+opened so the whole tree is shown.

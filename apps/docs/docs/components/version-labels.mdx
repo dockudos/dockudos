@@ -1,0 +1,55 @@
+---
+icon: tag
+title: Since and Deprecated
+description: Inline labels that say when something appeared and when it is on its way out.
+---
+
+Readers often need to know whether a feature exists in the version they run. `Since` and `Deprecated` say so, inline, next
+to the thing they describe.
+
+## Since
+
+The `compact` option <Since version="1.4" /> shortens the output.
+
+```mdx
+The `compact` option <Since version="1.4" /> shortens the output.
+```
+
+## Deprecated
+
+`legacyMode` <Deprecated since="2.0" replacedBy="mode: 'classic'" />
+
+`oldFetch` <Deprecated since="2.1">It will be removed in 3.0.</Deprecated>
+
+```mdx
+`legacyMode` <Deprecated since="2.0" replacedBy="mode: 'classic'" />
+
+`oldFetch` <Deprecated since="2.1">It will be removed in 3.0.</Deprecated>
+```
+
+Both are written out in words ("Since 1.4", "Deprecated in 2.0"), not only colored, and use the same colors as
+[Badge](./badges-and-keys.mdx): green for new, red for deprecated. They fit in a heading, a table cell or a
+[ParamField](./api-blocks.mdx).
+
+<TypeTable
+  type={{
+    'Since.version': {
+      type: 'string',
+      required: true,
+      description: 'The version that introduced it. Shown as written.',
+    },
+    'Deprecated.since': {
+      type: 'string',
+      description:
+        'The version that deprecated it. Adds "in 2.0" to the label.',
+    },
+    'Deprecated.replacedBy': {
+      type: 'string',
+      description: 'What to use instead. Shown as code, after the label.',
+    },
+    'Deprecated.children': {
+      type: 'ReactNode',
+      description: 'More explanation, shown after the label.',
+    },
+  }}
+/>

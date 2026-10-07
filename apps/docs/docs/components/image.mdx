@@ -1,0 +1,76 @@
+---
+icon: image
+title: Images
+description: The zoomable image used for every Markdown image, and how to replace or bypass it.
+---
+
+Every image written in Markdown is a `ZoomableImage`. It looks like a normal image, and a click, <Kbd>Enter</Kbd> or
+
+<Kbd>Space</Kbd> opens it full size in a dialog. <Kbd>Esc</Kbd> or the close
+button puts it away.
+
+![A blue rectangle that opens full size when clicked](/example.png)
+
+```mdx
+![A blue rectangle that opens full size when clicked](/example.png)
+```
+
+How sizes are found, and where to keep files, is in the [Images guide](../guides/images.mdx). This page is the component.
+
+## Behavior
+
+- The image is wrapped in a button named "Zoom image: _alt text_", or just "Zoom image" if the alt text is empty.
+- The full-size view is a modal dialog titled with the alt text; focus is moved into it and returned when it closes.
+- Images load lazily and decode off the main thread, so a long page opens quickly.
+- A `width` and `height` are written for you when the file is found, so the page does not jump while images load.
+- Zoom is for screens. On paper the image prints at its normal size.
+
+## Without zoom
+
+An HTML `<img>` written in MDX is the same component, because MDX looks up `img` by name for both forms. To stop images
+zooming, replace `img` with a plain element in `mdx-components.tsx`. Every image then loses the zoom, but keeps its
+size and lazy loading if you pass those along:
+
+```tsx title="mdx-components.tsx"
+import { defineMdxComponents } from '@dockudos/next/mdx-components';
+import type { MDXComponents } from 'mdx/types';
+
+export function useMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...defineMdxComponents({
+      // eslint-disable-next-line @next/next/no-img-element
+      img: (props) => <img loading="lazy" {...props} />,
+    }),
+    ...components,
+  };
+}
+```
+
+## Props
+
+It takes every attribute of an HTML `img`, plus a richer `src`.
+
+<TypeTable
+  type={{
+    src: {
+      type: 'string | { src: string; width?: number; height?: number }',
+      description:
+        'A URL, or the object a bundler produces when you import an image. The width and height of an imported image are used.',
+    },
+    alt: {
+      type: 'string',
+      default: '""',
+      description:
+        'Describes the image. An empty alt marks it as decorative. dockudos never makes alt text up.',
+    },
+    width: {
+      type: 'number | string',
+      description: 'Defaults to the size read from the file.',
+    },
+    height: {
+      type: 'number | string',
+      description: 'Defaults to the size read from the file.',
+    },
+    className: { type: 'string', description: 'Classes on the img.' },
+  }}
+/>

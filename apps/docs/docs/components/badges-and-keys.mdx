@@ -1,9 +1,12 @@
 ---
+icon: tag
 title: Badge and Kbd
-description: Small inline labels and keyboard keys.
+description: Small inline labels, and keyboard keys.
 ---
 
 ## Badge
+
+A badge is a small inline label for a status: new, beta, deprecated, a version.
 
 <Badge>Default</Badge> <Badge color="blue">Info</Badge>
 <Badge color="green">New</Badge> <Badge color="amber">Beta</Badge>
@@ -13,10 +16,28 @@ description: Small inline labels and keyboard keys.
 This API is <Badge color="amber">Beta</Badge>.
 ```
 
-Colors: `gray` (default), `blue`, `green`, `amber`, `red`. Color is never the only signal: put the
-meaning in the text.
+It sits in a line of text, a heading, a table cell or a card. The colors share the palette of
+[callouts](./callout.mdx): `gray` (the default), `blue`, `green`, `amber` and `red`. An unknown color renders as gray.
+Color is never the only signal: put the meaning in the text, as in "Deprecated".
+
+<TypeTable
+  type={{
+    color: {
+      type: '"gray" | "blue" | "green" | "amber" | "red"',
+      default: '"gray"',
+      description: 'The color of the label.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The text.',
+    },
+  }}
+/>
 
 ## Kbd
+
+`Kbd` shows a key as a keycap.
 
 Press <Kbd>Ctrl+K</Kbd> to search, or <Kbd>Esc</Kbd> to close.
 
@@ -25,4 +46,19 @@ Press <Kbd>Ctrl+K</Kbd>, or <Kbd>Esc</Kbd>.
 ```
 
 A `+` inside the text separates keys, so `Ctrl+K` shows two keys. To show a literal plus key, pass
-it as an expression: `<Kbd>{'+'}</Kbd>`.
+it as an expression: <Kbd>{'+'}</Kbd> is `<Kbd>{'+'}</Kbd>`. Write the key names as you want readers to see
+them; `Kbd` does not translate them.
+
+<TypeTable
+  type={{
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description:
+        'One key, or several joined with `+`. Strings are split on the plus.',
+    },
+  }}
+/>
+
+`Kbd` shows exactly what you write. To show a shortcut that reads `⌘ K` on a Mac and `Ctrl K` elsewhere, use
+[Shortcut](./shortcut.mdx).

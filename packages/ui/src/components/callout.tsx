@@ -70,7 +70,12 @@ export function Callout({
         'border-[color-mix(in_oklch,var(--c)_35%,transparent)] border-l-[var(--c)] bg-[color-mix(in_oklch,var(--c)_8%,transparent)]',
         className,
       )}
-      style={{ '--c': `var(--dk-callout-${kind})` } as React.CSSProperties}
+      // `check` has no color of its own: it shares the tip's green.
+      style={
+        {
+          '--c': `var(--dk-callout-${kind === 'check' ? 'tip' : kind})`,
+        } as React.CSSProperties
+      }
     >
       {custom ?? (
         <Icon

@@ -28,9 +28,25 @@ import {
 import { Card, CardGroup, Cards } from '../components/cards.tsx';
 import { Columns } from '../components/columns.tsx';
 import { Expandable } from '../components/expandable.tsx';
-import { File, Files, Folder } from '../components/files.tsx';
+import { File, Files, Folder, Tree } from '../components/files.tsx';
 import { CopyText } from '../components/copy-text.tsx';
 import { Endpoint } from '../components/endpoint.tsx';
+import { Prompt } from '../components/prompt.tsx';
+import { View } from '../components/view.tsx';
+import { Visibility } from '../components/visibility.tsx';
+import { Checklist, ChecklistItem } from '../components/checklist.tsx';
+import { Download } from '../components/download.tsx';
+import { Quote } from '../components/quote.tsx';
+import {
+  Checkpoint,
+  Hint,
+  Solution,
+  TutorialIntro,
+} from '../components/tutorial.tsx';
+import { Stat, Stats } from '../components/stats.tsx';
+import { ThemedImage } from '../components/themed-image.tsx';
+import { Timeline, TimelineItem } from '../components/timeline.tsx';
+import { Deprecated, Since } from '../components/version-labels.tsx';
 import { Frame } from '../components/frame.tsx';
 import { GithubInfo } from '../components/github-info.tsx';
 import { GraphView } from '../components/graph-view.tsx';
@@ -63,6 +79,25 @@ export const mdxComponents = {
   Files,
   File,
   Folder,
+  Tree,
+  Prompt,
+  TutorialIntro,
+  Checkpoint,
+  Hint,
+  Solution,
+  Checklist,
+  ChecklistItem,
+  Download,
+  Quote,
+  Stats,
+  Stat,
+  ThemedImage,
+  Timeline,
+  TimelineItem,
+  Since,
+  Deprecated,
+  View,
+  Visibility,
   GithubInfo,
   InlineToc,
   TypeTable,

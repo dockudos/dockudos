@@ -1,0 +1,62 @@
+---
+icon: eye
+title: Visibility
+description: Write for people and for AI agents on the same page, without keeping two versions.
+---
+
+`Visibility` shows content to one audience. The website is read by people; the Markdown version of the page (used by
+"Copy page", and by tools that fetch `/api/markdown`) is read by AI agents. Sometimes they need different words: a
+person is told to click a button, an agent is told which request to send.
+
+```mdx
+<Visibility for="humans">Click **Create key** in the dashboard.</Visibility>
+
+<Visibility for="agents">
+  Create a key with `POST /v1/keys` and a valid session token.
+</Visibility>
+```
+
+| `for`      | On the website | In the Markdown version |
+| ---------- | -------------- | ----------------------- |
+| `"humans"` | shown          | left out                |
+| `"agents"` | left out       | shown                   |
+
+Content outside a `Visibility` is in both. The page's table of contents, search entries and printed form follow the
+website: people's content only.
+
+<Visibility for="humans">
+  This sentence is written for people. It is on the website, and not in the
+  Markdown version of this page.
+</Visibility>
+
+<Visibility for="agents">
+  This sentence is written for agents. It is only in the Markdown version of
+  this page, which "Copy page" copies.
+</Visibility>
+
+## Writing it
+
+Put the opening and closing tags on lines of their own, as above, so the Markdown version can be produced without
+running the page. A blank line after the opening tag lets you write lists and headings inside. Blocks do not need to be paired.
+
+<Callout type="warning" title="Not a security feature">
+  Content for agents is public: anyone can open the Markdown version. To keep
+  something from some readers, use [page
+  protection](../guides/protecting-pages.mdx).
+</Callout>
+
+## Signed-in readers and groups
+
+Showing content by sign-in state or group needs dockudos to know who the reader is. It does not, because sites have no
+accounts, so `for` takes only `"humans"` and `"agents"`. Any other value stops the build with a message.
+
+<TypeTable
+  type={{
+    for: {
+      type: '"humans" | "agents"',
+      required: true,
+      description: 'Who the content is for. Write it as a plain string.',
+    },
+    children: { type: 'ReactNode', description: 'The content.' },
+  }}
+/>
