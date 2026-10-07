@@ -83,11 +83,8 @@ export function Accordion({
           />
         </Primitive.Trigger>
       </Primitive.Header>
-      <Primitive.Content
-        forceMount
-        className="dk-accordion-content overflow-hidden px-4 pb-4 text-sm [&>:first-child]:mt-0 [&>:last-child]:mb-0"
-      >
-        {children}
+      <Primitive.Content forceMount className="dk-accordion-content">
+        <div className="dk-accordion-body">{children}</div>
       </Primitive.Content>
     </Primitive.Item>
   );

@@ -1,0 +1,39 @@
+---
+icon: palette
+title: Colors
+description: A palette of swatches that copy their value on click.
+---
+
+`Colors` is a palette for brand and design-token pages. Click a swatch to copy its value.
+
+<Colors
+  title="Brand"
+  items={[
+    { name: 'Primary', value: '#4f46e5' },
+    { name: 'Ink', value: '#18181b' },
+    { name: 'Success', value: '#16a34a' },
+    { name: 'Warning', value: '#d97706' },
+  ]}
+/>
+
+```mdx
+<Colors title="Brand" items={[{ name: 'Primary', value: '#4f46e5' }]} />
+```
+
+Any CSS color works: hex, `rgb()`, `oklch()`, or a variable such as `var(--primary)`. Without a `title` the palette has no
+caption. After a copy the swatch shows a tick and screen readers hear "Copied Primary".
+
+<TypeTable
+  type={{
+    items: {
+      type: '{ name: string; value: string }[]',
+      required: true,
+      description:
+        'The swatches, in order. `name` is the label and `value` is the color and what is copied.',
+    },
+    title: { type: 'string', description: 'A caption above the swatches.' },
+  }}
+/>
+
+Each swatch is a button named "Copy Primary, #4f46e5", so the color is available to anyone, not only those who can
+see it. Swatches print with their value written out.

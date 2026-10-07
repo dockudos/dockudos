@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Accordion, Accordions } from './accordion.tsx';
 import { Card, Cards } from './cards.tsx';
-import { Tree } from './files.tsx';
+import { Tree } from './tree.tsx';
 import { Prompt } from './prompt.tsx';
 import { View } from './view.tsx';
 import { Visibility } from './visibility.tsx';

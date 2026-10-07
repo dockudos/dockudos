@@ -1,0 +1,31 @@
+---
+icon: command
+title: Kbd
+description: A keyboard key, written as you want readers to see it.
+---
+
+`Kbd` shows a key as a keycap.
+
+Press <Kbd>Ctrl+K</Kbd> to search, or <Kbd>Esc</Kbd> to close.
+
+```mdx
+Press <Kbd>Ctrl+K</Kbd>, or <Kbd>Esc</Kbd>.
+```
+
+A `+` inside the text separates keys, so `Ctrl+K` shows two keys. To show a literal plus key, pass
+it as an expression: <Kbd>{'+'}</Kbd> is `<Kbd>{'+'}</Kbd>`. Write the key names as you want readers to see
+them; `Kbd` does not translate them.
+
+<TypeTable
+  type={{
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description:
+        'One key, or several joined with `+`. Strings are split on the plus.',
+    },
+  }}
+/>
+
+`Kbd` shows exactly what you write. To show a shortcut that reads `⌘ K` on a Mac and `Ctrl K` elsewhere, use
+[Shortcut](./shortcut.mdx).

@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from 'react';
 import { formatHotkey, isApple } from '../hooks/hotkeys.ts';
+import { KeyCap } from './kbd.tsx';
 
 export interface ShortcutProps {
   /** A chord or sequence in the format `useHotkey` takes: `mod+k`, `?`, `g h`. */
@@ -22,7 +23,7 @@ export function Shortcut({ keys }: ShortcutProps) {
         <Fragment key={i}>
           {i > 0 && <span className="dk-shortcut-then">then</span>}
           {chord.map((key, j) => (
-            <kbd key={j}>{key}</kbd>
+            <KeyCap key={j}>{key}</KeyCap>
           ))}
         </Fragment>
       ))}

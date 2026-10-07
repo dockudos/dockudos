@@ -1,67 +1,8 @@
 ---
 icon: layout-grid
-title: Steps and Cards
-description: A numbered procedure, and a grid of linked cards with icons.
+title: Cards
+description: A grid of linked cards with icons, images and arrows.
 ---
-
-## Steps
-
-`Steps` is a numbered procedure. Each `Step` has a title and a body, and the numbers are drawn for you.
-
-<Steps>
-  <Step title="Install">Add the packages.</Step>
-  <Step title="Configure">Create `docs.json`.</Step>
-  <Step title="Ship">Run the build.</Step>
-</Steps>
-
-```mdx
-<Steps>
-  <Step title="Install">Add the packages.</Step>
-  <Step title="Configure">Create `docs.json`.</Step>
-</Steps>
-```
-
-Any content can go inside a step, including code blocks, images and callouts. Put a blank line between
-a step's opening tag and a code block so the block is parsed as code.
-
-### Icons in place of numbers
-
-An `icon` replaces the number of one step, for a procedure whose steps are not a count:
-
-<Steps>
-  <Step title="Download" icon="download">
-    Get the installer.
-  </Step>
-  <Step title="Done" icon="flag">
-    Nothing more to do.
-  </Step>
-</Steps>
-
-```mdx
-<Step title="Download" icon="download">
-  Get the installer.
-</Step>
-```
-
-### Step props
-
-<TypeTable
-  type={{
-    title: {
-      type: 'string',
-      description: 'The step heading. A step without one shows only its body.',
-    },
-    icon: {
-      type: 'string | ReactNode',
-      description: 'Shown in place of the number: an icon name or an element.',
-    },
-  }}
-/>
-
-Steps render as an ordered list, so they are numbered for screen readers too. On paper each step is kept in one
-piece where it can be.
-
-## Cards
 
 `Cards` is a grid; each `Card` has a title, optional text and an optional link.
 
@@ -89,7 +30,7 @@ piece where it can be.
 With an `href` the whole card is a link, with a lift on hover and a visible focus ring. Internal links use the
 router, so navigation is instant; external links open in a new tab. A card without an `href` is a plain box.
 
-### Columns
+## Columns
 
 `columns` (or `cols`, the same prop under the name other tools use) is `1`, `2` or `3`. Wide screens use that many,
 tablets use two at most, and phones always use one.
@@ -109,9 +50,9 @@ tablets use two at most, and phones always use one.
 ```
 
 `CardGroup` is `Cards` under another name, for content written for other tools. For cards with a screenshot on top
-see [Tile](./tile-and-colors.mdx). For a layout that is not a grid of cards see [Columns](./layout-blocks.mdx).
+see [Tile](./tile.mdx). For a layout that is not a grid of cards see [Columns](./columns.mdx).
 
-### Images, horizontal cards and arrows
+## Images, horizontal cards and arrows
 
 `img` puts a picture across the top of a card. `horizontal` puts the icon beside the text instead of above it. `arrow`
 shows a small arrow on a linked card; it is on by default for links to other sites.
@@ -141,9 +82,9 @@ shows a small arrow on a linked card; it is on by default for links to other sit
 ```
 
 The picture is decorative (empty `alt`); say what matters in the title and text. For a card whose point is its
-preview, use [Tile](./tile-and-colors.mdx).
+preview, use [Tile](./tile.mdx).
 
-### Card props
+## Props
 
 <TypeTable
   type={{

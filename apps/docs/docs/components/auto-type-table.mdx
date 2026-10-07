@@ -1,0 +1,56 @@
+---
+icon: cpu
+title: AutoTypeTable
+description: Generate a props table from your own TypeScript, so it cannot drift.
+---
+
+Generate the table from your own TypeScript:
+
+```mdx
+<AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
+```
+
+<AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
+
+Each property of the interface or type alias becomes a row, with:
+
+- its **type**, as the compiler writes it;
+- **required** if the property is not optional (`?`);
+- its **description**, from the JSDoc comment above it;
+- its **default**, from a `@default` (or `@defaultValue`) tag in that comment.
+
+```ts title="src/example-types.ts"
+export interface ExampleOptions {
+  /** The name shown in the header. */
+  name: string;
+  /**
+   * How many results to show.
+   * @default 10
+   */
+  limit?: number;
+}
+```
+
+It runs when the page is built, and needs `typescript` in your project; without it the build says so. A name that is not
+in the file stops the build, so a rename in code cannot leave a stale table behind.
+
+<TypeTable
+  type={{
+    path: {
+      type: 'string',
+      required: true,
+      description: 'The TypeScript file, relative to the project root.',
+    },
+    name: {
+      type: 'string',
+      required: true,
+      description: 'An interface or type alias in that file.',
+    },
+  }}
+/>
+
+<Callout type="tip">
+  Use `AutoTypeTable` for options a reader will set, since they change with the
+  code. Use `TypeTable` for a few stable props, or when you want to explain more
+  than a type comment can hold.
+</Callout>

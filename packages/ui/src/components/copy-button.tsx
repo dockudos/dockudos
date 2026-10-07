@@ -1,7 +1,8 @@
 'use client';
 
 import { Check, Copy } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard.ts';
 
 /** The text of a rendered code block: no diff-removed lines, no Twoslash popups. */
 export function codeText(pre: Element): string {
@@ -16,23 +17,12 @@ export function codeText(pre: Element): string {
 
 /** Copies the code block it sits in. Announces the result to screen readers. */
 export function CopyButton() {
-  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const ref = useRef<HTMLButtonElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const { copy, state } = useCopyToClipboard();
 
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const copy = async () => {
+  const onClick = () => {
     const pre = ref.current?.closest('.dk-code')?.querySelector('pre');
-    if (!pre) return;
-    try {
-      await navigator.clipboard.writeText(codeText(pre));
-      setState('copied');
-    } catch {
-      setState('failed');
-    }
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setState('idle'), 2000);
+    if (pre) void copy(codeText(pre));
   };
 
   return (
@@ -40,7 +30,7 @@ export function CopyButton() {
       <button
         ref={ref}
         type="button"
-        onClick={copy}
+        onClick={onClick}
         className="dk-copy inline-flex size-8 items-center justify-center rounded-md border bg-background/80 text-muted-foreground backdrop-blur hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         aria-label="Copy code"
         data-print="hide"

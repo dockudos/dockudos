@@ -1,0 +1,74 @@
+---
+icon: panel-left
+title: Panel
+description: Pin content, usually request and response examples, beside the text while the reader scrolls.
+---
+
+On a wide screen a `Panel` sits in the right-hand column, in place of "On this page", and stays in view as you scroll. On a
+phone, and on paper, it is just part of the page. This page uses one.
+
+<Panel>
+  <RequestExample>
+
+```bash title="curl"
+curl https://api.acme.dev/v1/users \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"ada@example.com"}'
+```
+
+```js title="Node"
+const res = await fetch('https://api.acme.dev/v1/users', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}` },
+  body: JSON.stringify({ email: 'ada@example.com' }),
+});
+```
+
+  </RequestExample>
+  <ResponseExample>
+
+```json title="201"
+{ "id": "usr_123", "email": "ada@example.com" }
+```
+
+  </ResponseExample>
+</Panel>
+
+````mdx
+<Panel>
+  <RequestExample>
+
+```bash title="curl"
+curl https://api.acme.dev/v1/users
+```
+
+  </RequestExample>
+  <ResponseExample>
+
+```json title="200"
+{ "ok": true }
+```
+
+  </ResponseExample>
+</Panel>
+````
+
+- A `Panel` can hold anything, not just examples: a summary, a related-links box, a video.
+- Put one `Panel` per page. A page with a panel has no table of contents column.
+- With [RequestExample](./request-example.mdx), [ResponseExample](./response-example.mdx), [Endpoint](./endpoint.mdx) and
+  [ParamField](./param-field.mdx) this is enough to write an API reference by hand.
+
+<TypeTable
+  type={{
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'Anything. Usually a RequestExample and a ResponseExample.',
+    },
+  }}
+/>
+
+## Accessibility and printing
+
+A `Panel` is an `aside` labelled "Examples". On a phone, and on paper, it is not pinned: it stays in the text where you wrote
+it.

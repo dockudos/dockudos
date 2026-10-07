@@ -1,0 +1,118 @@
+---
+icon: folder
+title: Tree
+description: Show a file tree with folders that open and close, and your own icons. Tree.Folder and Tree.File are its parts.
+---
+
+`Tree` draws a project's structure, with `Tree.Folder` and `Tree.File` as its parts. It is for showing the shape of a project; a code block is better for file contents.
+
+<Tree>
+  <Tree.Folder name="docs" defaultOpen>
+    <Tree.File name="index.mdx" />
+    <Tree.Folder name="guides">
+      <Tree.File name="writing.mdx" />
+    </Tree.Folder>
+  </Tree.Folder>
+  <Tree.File name="docs.json" />
+  <Tree.File name="next.config.mjs" />
+</Tree>
+
+```mdx
+<Tree>
+  <Tree.Folder name="docs" defaultOpen>
+    <Tree.File name="index.mdx" />
+    <Tree.Folder name="guides">
+      <Tree.File name="writing.mdx" />
+    </Tree.Folder>
+  </Tree.Folder>
+  <Tree.File name="docs.json" />
+</Tree>
+```
+
+Folders open and close with <Kbd>Enter</Kbd> or <Kbd>Space</Kbd>, and animate unless the visitor prefers reduced
+motion. A folder starts closed unless it has `defaultOpen`; folders can nest as deep as you need.
+
+## Custom icons
+
+`Tree.File` and `Tree.Folder` take an `icon`: any element, such as an SVG, an `<img>` or an icon component.
+`Tree.Folder` also takes `openIcon`, shown while it is open; without it `icon` is used for both states.
+
+<Tree>
+  <Tree.Folder
+    name="src"
+    defaultOpen
+    icon={<span>📁</span>}
+    openIcon={<span>📂</span>}
+  >
+    <Tree.File name="app.ts" icon={<span>🟦</span>} />
+    <Tree.File name="notes.md" />
+  </Tree.Folder>
+</Tree>
+
+```mdx
+<Tree>
+  <Tree.Folder
+    name="src"
+    defaultOpen
+    icon={<MyFolder />}
+    openIcon={<MyFolderOpen />}
+  >
+    <Tree.File name="app.ts" icon={<img src="/ts.svg" alt="" />} />
+  </Tree.Folder>
+</Tree>
+```
+
+Icons are decorative: they are hidden from screen readers, and sized to 1rem. Unlike most `icon` props, these take an
+element and not a name; for a named [icon](./icons.mdx), write `icon={<Icon name="rocket" />}`.
+
+## Aliases
+
+`Files`, `Folder` and `File` are the same components as `Tree`, `Tree.Folder` and `Tree.File`, so content written for other tools
+works as it is:
+
+```mdx
+<Files>
+  <Folder name="src" defaultOpen>
+    <File name="index.ts" />
+  </Folder>
+</Files>
+```
+
+## Props
+
+<TypeTable
+  type={{
+    'Tree.File.name': {
+      type: 'string',
+      required: true,
+      description: 'The file name, shown in monospace.',
+    },
+    'Tree.File.icon': {
+      type: 'ReactNode',
+      description: 'Replaces the default file icon.',
+    },
+    'Tree.Folder.name': {
+      type: 'string',
+      required: true,
+      description: 'The folder name.',
+    },
+    'Tree.Folder.defaultOpen': {
+      type: 'boolean',
+      default: 'false',
+      description: 'Start the folder open.',
+    },
+    'Tree.Folder.icon': {
+      type: 'ReactNode',
+      description: 'Replaces the folder icon, open and closed.',
+    },
+    'Tree.Folder.openIcon': {
+      type: 'ReactNode',
+      description: 'Shown while the folder is open. Defaults to icon.',
+    },
+  }}
+/>
+
+## Accessibility and printing
+
+The tree is a labelled `tree` with `treeitem` rows, and a folder reports whether it is expanded. On paper every folder is
+opened so the whole tree is shown.

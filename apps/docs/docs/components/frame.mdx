@@ -1,0 +1,37 @@
+---
+icon: monitor
+title: Frame
+description: A border and caption around an image, video or diagram.
+---
+
+`Frame` puts a border and an optional caption around an image, a video or a diagram.
+
+<Frame caption="A blue box, framed with a caption">
+  <img src="/example.png" alt="A blue rectangle" width={120} height={60} />
+</Frame>
+
+```mdx
+<Frame caption="The dashboard">![The dashboard](./dashboard.png)</Frame>
+```
+
+The content is centered and never wider than the frame. The caption is a real `figcaption`, so it is read with the image.
+Use a caption to say what the reader should notice; `alt` text still describes the image itself. Images inside a frame
+can still be zoomed, see [Images](../guides/images.mdx).
+
+<TypeTable
+  type={{
+    caption: {
+      type: 'string',
+      description: 'Shown under the content.',
+    },
+    hint: {
+      type: 'string',
+      description: 'A short note above the content, such as "Click to zoom".',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'An image, video, diagram or anything else.',
+    },
+  }}
+/>

@@ -1,0 +1,34 @@
+---
+icon: network
+title: GraphView
+description: Every page as a node and every link between pages as a line.
+---
+
+Every page as a node, every link between pages as a line, with the current page highlighted:
+
+<GraphView />
+
+```mdx
+<GraphView />
+```
+
+Nodes are links, so the graph works from the keyboard: <Kbd>Tab</Kbd> moves between nodes and <Kbd>Enter</Kbd> opens one. Hover
+or focus a node to see its title. The data comes from the links in your pages, found when the site is built. Hidden pages are
+left out. Layout is computed in the browser and is the same every time for the same pages. Very large sites (hundreds of
+pages) get a coarser layout to keep the page fast.
+
+The graph is a purely visual extra: it has a text alternative ("N pages") and is left off printed pages, since the
+sidebar and the cross-links in the text already say the same thing.
+
+<TypeTable
+  type={{
+    data: {
+      type: '{ nodes: { id, title, path }[]; edges: { from, to }[] }',
+      description:
+        'A graph of your own to draw instead of the site. Defaults to the site graph. Nothing is drawn when there are no nodes.',
+    },
+  }}
+/>
+
+A graph needs links to be interesting: link related pages to each other in your text, and the picture will show the
+shape of your documentation, including pages nothing links to.

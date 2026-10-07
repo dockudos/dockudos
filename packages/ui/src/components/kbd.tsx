@@ -1,5 +1,10 @@
 import { Fragment, type ReactNode } from 'react';
 
+/** One keycap. The single look for keys, shared by `Kbd` and `Shortcut`. */
+export function KeyCap({ children }: { children: ReactNode }) {
+  return <kbd className="dk-key">{children}</kbd>;
+}
+
 export interface KbdProps {
   /** One key as text, or several keys joined with `+` like `Ctrl+K`. */
   children: ReactNode;
@@ -13,9 +18,7 @@ export function Kbd({ children }: KbdProps) {
       {keys.map((key, i) => (
         <Fragment key={i}>
           {i > 0 && <span aria-hidden="true"> + </span>}
-          <kbd className="inline-block min-w-[1.5em] rounded-md border border-b-2 bg-muted px-1.5 py-0.5 text-center font-mono text-[0.8em] leading-none text-foreground">
-            {typeof key === 'string' ? key.trim() : key}
-          </kbd>
+          <KeyCap>{typeof key === 'string' ? key.trim() : key}</KeyCap>
         </Fragment>
       ))}
     </span>

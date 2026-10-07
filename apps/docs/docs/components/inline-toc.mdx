@@ -1,0 +1,42 @@
+---
+icon: menu
+title: InlineToc
+description: The headings of a page as a list, anywhere in the page.
+---
+
+The headings of the current page, as a list, anywhere in the page:
+
+<InlineToc />
+
+```mdx
+<InlineToc />
+```
+
+It shows the `h2` to `h4` headings, indented by level, and each entry links to its heading. This is the same list as "On
+this page" in the sidebar; use `InlineToc` when you want it in the flow of the page, such as a summary at the top of a long guide, or
+on a page with a [Panel](./panel.mdx), which takes the place of the side list.
+
+A page with no headings renders nothing at all.
+
+`items` lets you pass your own entries, for a component that builds a contents list from something else:
+
+```mdx
+<InlineToc
+  items={[
+    { id: 'install', text: 'Install', depth: 2 },
+    { id: 'verify', text: 'Verify', depth: 3 },
+  ]}
+/>
+```
+
+<TypeTable
+  type={{
+    items: {
+      type: '{ id: string; text: string; depth: number }[]',
+      description:
+        "The entries. Defaults to the current page's headings. `depth` 2 is the top level.",
+    },
+  }}
+/>
+
+The list is a `nav` labelled "Contents".

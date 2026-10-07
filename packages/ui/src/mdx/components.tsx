@@ -28,7 +28,7 @@ import {
 import { Card, CardGroup, Cards } from '../components/cards.tsx';
 import { Columns } from '../components/columns.tsx';
 import { Expandable } from '../components/expandable.tsx';
-import { File, Files, Folder, Tree } from '../components/files.tsx';
+import { File, Files, Folder, Tree } from '../components/tree.tsx';
 import { CopyText } from '../components/copy-text.tsx';
 import { Endpoint } from '../components/endpoint.tsx';
 import { Prompt } from '../components/prompt.tsx';
@@ -37,12 +37,7 @@ import { Visibility } from '../components/visibility.tsx';
 import { Checklist, ChecklistItem } from '../components/checklist.tsx';
 import { Download } from '../components/download.tsx';
 import { Quote } from '../components/quote.tsx';
-import {
-  Checkpoint,
-  Hint,
-  Solution,
-  TutorialIntro,
-} from '../components/tutorial.tsx';
+import { Checkpoint, TutorialIntro } from '../components/tutorial.tsx';
 import { Stat, Stats } from '../components/stats.tsx';
 import { ThemedImage } from '../components/themed-image.tsx';
 import { Timeline, TimelineItem } from '../components/timeline.tsx';
@@ -56,6 +51,7 @@ import { InlineToc } from '../components/inline-toc.tsx';
 import { Kbd } from '../components/kbd.tsx';
 import { ParamField, ResponseField } from '../components/param-field.tsx';
 import { Step, Steps } from '../components/steps.tsx';
+import { Table } from '../components/table.tsx';
 import { Tab, Tabs } from '../components/tabs.tsx';
 import { Tooltip } from '../components/tooltip.tsx';
 import { TypeTable } from '../components/type-table.tsx';
@@ -83,8 +79,6 @@ export const mdxComponents = {
   Prompt,
   TutorialIntro,
   Checkpoint,
-  Hint,
-  Solution,
   Checklist,
   ChecklistItem,
   Download,
@@ -133,6 +127,7 @@ export const mdxComponents = {
   LinkButton,
   Mermaid,
   pre: CodeBlock,
+  table: Table,
   img: ZoomableImage,
 } as const;
 

@@ -1,0 +1,34 @@
+---
+icon: copy
+title: CopyText
+description: Inline code with a copy button, for a command or ID readers will paste.
+---
+
+Inline code with a copy button, for a command, a URL or an ID the reader will paste.
+
+Install it with <CopyText>npm install dockudos</CopyText> and open <CopyText value="http://localhost:3000">localhost:3000</CopyText>.
+
+```mdx
+Install it with <CopyText>npm install dockudos</CopyText>.
+
+<CopyText value="the real value">shown text</CopyText>
+```
+
+The button copies the shown text, or `value` if you give one, so you can show a shortened version and copy the whole.
+It turns into a tick, and announces "Copied to clipboard" or "Copy failed" to screen readers. It is left off printed
+pages, where the text stays. For several lines, use a [code block](./code-block.mdx), which has its own copy button.
+
+<TypeTable
+  type={{
+    value: {
+      type: 'string',
+      default: 'the shown text',
+      description: 'What is copied, if it differs from what is shown.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The text shown, in code style.',
+    },
+  }}
+/>

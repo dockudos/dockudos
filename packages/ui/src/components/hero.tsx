@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
-import { useLink } from '../provider.tsx';
+import { SmartLink } from './smart-link.tsx';
 
 export interface HeroProps {
   /** A small label above the title: a version, "New", a category. */
@@ -37,25 +37,15 @@ export function LinkButton({
   variant = 'primary',
   children,
 }: LinkButtonProps) {
-  const Link = useLink();
-  const external = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href);
-  const className = cn(
-    'dk-button',
-    variant === 'secondary' && 'dk-button-secondary',
-  );
-  return external ? (
-    <a
+  return (
+    <SmartLink
       href={href}
-      className={className}
-      target="_blank"
-      rel="noreferrer noopener"
+      className={cn(
+        'dk-button',
+        variant === 'secondary' && 'dk-button-secondary',
+      )}
     >
       {children}
-      <span className="sr-only"> (opens in a new tab)</span>
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
+    </SmartLink>
   );
 }

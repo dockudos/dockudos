@@ -1,0 +1,43 @@
+---
+icon: file-json
+title: ResponseField
+description: One field of a response or return value.
+---
+
+The same as `ParamField`, minus `required` and `location`, for the fields of a response or a return value. It takes `name`,
+`type`, `default` and children.
+
+<ResponseField name="id" type="string">
+  The id of the new user.
+</ResponseField>
+<ResponseField name="created_at" type="string (ISO 8601)">
+  When the user was created.
+</ResponseField>
+
+```mdx
+<ResponseField name="id" type="string">
+  The id of the new user.
+</ResponseField>
+<ResponseField name="created_at" type="string (ISO 8601)">
+  When the user was created.
+</ResponseField>
+```
+
+It is the same component as [ParamField](./param-field.mdx), and so it takes its description as children, which can hold
+code, lists, links and a nested [Expandable](./expandable.mdx) for the properties of an object.
+
+<TypeTable
+  type={{
+    name: {
+      type: 'string',
+      required: true,
+      description: 'The field or property name.',
+    },
+    type: { type: 'string', description: 'Its type, shown as code.' },
+    default: {
+      type: 'string',
+      description: 'The default value, shown as code.',
+    },
+    children: { type: 'ReactNode', description: 'The description.' },
+  }}
+/>

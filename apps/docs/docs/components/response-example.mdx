@@ -1,0 +1,47 @@
+---
+icon: inbox
+title: ResponseExample
+description: A response, as tabs, under a "Response" heading.
+---
+
+`ResponseExample` is the same as [RequestExample](./request-example.mdx), for what comes back: its code blocks become tabs
+named by their `title`, so the status, or the format, can be the tab name.
+
+<ResponseExample>
+
+```json title="200"
+{ "id": "usr_123", "email": "ada@example.com" }
+```
+
+```json title="404"
+{ "error": "user_not_found" }
+```
+
+</ResponseExample>
+
+````mdx
+<ResponseExample>
+
+```json title="200"
+{ "id": "usr_123", "email": "ada@example.com" }
+```
+
+```json title="404"
+{ "error": "user_not_found" }
+```
+
+</ResponseExample>
+````
+
+It is a [CodeGroup](./code-group.mdx) with the fixed `groupId` `response-language`, so a language choice is remembered
+across the site. Put it in a [Panel](./panel.mdx) to pin it beside the text.
+
+<TypeTable
+  type={{
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'Code blocks. Each becomes a tab named by its title.',
+    },
+  }}
+/>

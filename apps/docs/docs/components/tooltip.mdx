@@ -1,0 +1,39 @@
+---
+icon: help-circle
+title: Tooltip
+description: An inline hint for a term, shown on hover and keyboard focus.
+---
+
+A tooltip explains a term without leaving the sentence. Hover or focus the word
+
+<Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip> to see the
+hint.
+
+```mdx
+Hover <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip>.
+```
+
+The term is underlined with dots so readers know it does something. It is focusable, so keyboard users get the hint on
+focus, and <Kbd>Esc</Kbd> closes it. The hint opens after a short delay and keeps clear of the edge of the screen.
+
+<Callout type="warning">
+  Put essential information in the text, not only in a tooltip. Touch screens
+  have no hover, and a tooltip is not included when someone prints the page.
+</Callout>
+
+<TypeTable
+  type={{
+    tip: {
+      type: 'string',
+      required: true,
+      description: 'The explanation. Plain text, kept short.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'The term the hint belongs to.',
+    },
+  }}
+/>
+
+For a longer definition, link to a page or use an [Accordion](./accordion.mdx).

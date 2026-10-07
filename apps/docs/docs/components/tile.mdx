@@ -1,10 +1,8 @@
 ---
-icon: palette
-title: Tile and Colors
-description: Cards with a preview image for galleries, and a palette that copies on click.
+icon: box
+title: Tile
+description: A card with a preview image, for galleries, templates and showcases.
 ---
-
-## Tile
 
 A `Tile` is a card with a preview on top. Use it for templates, examples, themes and showcases. Put several in `Cards`
 to make a gallery.
@@ -59,39 +57,3 @@ Give the preview image `alt` text that describes it, or an empty `alt` if the ti
     },
   }}
 />
-
-## Colors
-
-`Colors` is a palette for brand and design-token pages. Click a swatch to copy its value.
-
-<Colors
-  title="Brand"
-  items={[
-    { name: 'Primary', value: '#4f46e5' },
-    { name: 'Ink', value: '#18181b' },
-    { name: 'Success', value: '#16a34a' },
-    { name: 'Warning', value: '#d97706' },
-  ]}
-/>
-
-```mdx
-<Colors title="Brand" items={[{ name: 'Primary', value: '#4f46e5' }]} />
-```
-
-Any CSS color works: hex, `rgb()`, `oklch()`, or a variable such as `var(--primary)`. Without a `title` the palette has no
-caption. After a copy the swatch shows a tick and screen readers hear "Copied Primary".
-
-<TypeTable
-  type={{
-    items: {
-      type: '{ name: string; value: string }[]',
-      required: true,
-      description:
-        'The swatches, in order. `name` is the label and `value` is the color and what is copied.',
-    },
-    title: { type: 'string', description: 'A caption above the swatches.' },
-  }}
-/>
-
-Each swatch is a button named "Copy Primary, #4f46e5", so the color is available to anyone, not only those who can
-see it. Swatches print with their value written out.

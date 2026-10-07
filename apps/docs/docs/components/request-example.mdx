@@ -1,0 +1,54 @@
+---
+icon: send
+title: RequestExample
+description: A request in several languages, as tabs, under a "Request" heading.
+---
+
+`RequestExample` turns its code blocks into language tabs, one per block, named by each block's `title`. Put it in a
+[Panel](./panel.mdx) to pin it beside the text, or use it on its own.
+
+<RequestExample>
+
+```bash title="curl"
+curl https://api.acme.dev/v1/users/usr_123
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/users/usr_123');
+```
+
+```python title="Python"
+requests.get("https://api.acme.dev/v1/users/usr_123")
+```
+
+</RequestExample>
+
+````mdx
+<RequestExample>
+
+```bash title="curl"
+curl https://api.acme.dev/v1/users/usr_123
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/users/usr_123');
+```
+
+</RequestExample>
+````
+
+Leave blank lines around the code blocks, so they are parsed as code. The reader's choice of language is remembered and shared
+with [ResponseExample](./response-example.mdx) and with every other request example on the site, so give your blocks the same
+titles throughout (`curl`, `Node`, `Python`). It is a [CodeGroup](./code-group.mdx) with a fixed `groupId`,
+`request-language`.
+
+<TypeTable
+  type={{
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description:
+        'Code blocks. Each becomes a language tab named by its title.',
+    },
+  }}
+/>

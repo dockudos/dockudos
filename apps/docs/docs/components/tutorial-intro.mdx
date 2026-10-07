@@ -1,0 +1,54 @@
+---
+icon: graduation-cap
+title: TutorialIntro
+description: 'The top of a tutorial: time, level, what you will learn and what you need first.'
+---
+
+The top of a tutorial: how long it takes, who it is for, what the reader will learn, and what they need first.
+
+<TutorialIntro
+  time="15 minutes"
+  level="Beginner"
+  learn={['Create a docs site', 'Add and organize pages']}
+  requires={[
+    'Node.js 20 or later',
+    <>
+      A text editor, such as <a href="https://code.visualstudio.com">VS Code</a>
+    </>,
+  ]}
+>
+  In this tutorial you will build a small documentation site from nothing.
+</TutorialIntro>
+
+```mdx
+<TutorialIntro
+  time="15 minutes"
+  level="Beginner"
+  learn={['Create a docs site', 'Add and organize pages']}
+  requires={['Node.js 20 or later']}
+>
+  In this tutorial you will build a small documentation site from nothing.
+</TutorialIntro>
+```
+
+The text between the tags comes first. "What you will learn" and "Before you start" are real headings, so they appear in
+screen reader outlines; each list is a plain list. `requires` takes elements as well as text, so items can be links.
+
+<TypeTable
+  type={{
+    time: { type: 'string', description: 'How long it takes: `20 minutes`.' },
+    level: { type: 'string', description: 'Who it is for: `Beginner`.' },
+    learn: {
+      type: 'string[]',
+      description: 'What the reader will be able to do afterwards.',
+    },
+    requires: {
+      type: 'ReactNode[]',
+      description: 'What the reader needs first. Text or elements.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'An opening paragraph, shown first.',
+    },
+  }}
+/>

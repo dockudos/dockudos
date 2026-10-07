@@ -1,0 +1,81 @@
+---
+icon: file-code
+title: CodeGroup
+description: Several code blocks as tabs, one per block, named by each block's title.
+---
+
+`CodeGroup` shows several code blocks as tabs, one per block. Each tab is named by its block's `title`; blocks without one
+are named "Tab 1", "Tab 2" and so on. Leave blank lines around the fences so they are parsed as code.
+
+<CodeGroup>
+
+```ts title="client.ts"
+import { connect } from './connect';
+```
+
+```js title="client.js"
+const { connect } = require('./connect');
+```
+
+</CodeGroup>
+
+````mdx
+<CodeGroup>
+
+```ts title="client.ts"
+import { connect } from './connect';
+```
+
+```js title="client.js"
+const { connect } = require('./connect');
+```
+
+</CodeGroup>
+````
+
+`CodeGroup` is [Tabs](./tabs.mdx) underneath, so it works from the keyboard in the same way, and every block is on the page
+when printed. Give several groups the same `groupId` and they switch together, and remember the reader's choice:
+
+<CodeGroup groupId="example-language">
+
+```bash title="curl"
+curl https://api.acme.dev/v1/ping
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/ping');
+```
+
+</CodeGroup>
+
+<CodeGroup groupId="example-language">
+
+```bash title="curl"
+curl -X DELETE https://api.acme.dev/v1/cache
+```
+
+```js title="Node"
+await fetch('https://api.acme.dev/v1/cache', { method: 'DELETE' });
+```
+
+</CodeGroup>
+
+Choosing "Node" in either group switches the other. [RequestExample and ResponseExample](./request-example.mdx) are
+`CodeGroup`s with a fixed `groupId`, shared across a whole site.
+
+## Props
+
+<TypeTable
+  type={{
+    groupId: {
+      type: 'string',
+      description:
+        'Groups with the same id switch together and remember the choice.',
+    },
+    children: {
+      type: 'ReactNode',
+      required: true,
+      description: 'Code blocks. Each becomes a tab named by its title.',
+    },
+  }}
+/>

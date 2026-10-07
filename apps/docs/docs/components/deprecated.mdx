@@ -1,21 +1,8 @@
 ---
-icon: tag
-title: Since and Deprecated
-description: Inline labels that say when something appeared and when it is on its way out.
+icon: warning
+title: Deprecated
+description: An inline label for something on its way out, with what to use instead.
 ---
-
-Readers often need to know whether a feature exists in the version they run. `Since` and `Deprecated` say so, inline, next
-to the thing they describe.
-
-## Since
-
-The `compact` option <Since version="1.4" /> shortens the output.
-
-```mdx
-The `compact` option <Since version="1.4" /> shortens the output.
-```
-
-## Deprecated
 
 `legacyMode` <Deprecated since="2.0" replacedBy="mode: 'classic'" />
 
@@ -28,8 +15,8 @@ The `compact` option <Since version="1.4" /> shortens the output.
 ```
 
 Both are written out in words ("Since 1.4", "Deprecated in 2.0"), not only colored, and use the same colors as
-[Badge](./badges-and-keys.mdx): green for new, red for deprecated. They fit in a heading, a table cell or a
-[ParamField](./api-blocks.mdx).
+[Badge](./badge.mdx): green for new, red for deprecated. They fit in a heading, a table cell or a
+[ParamField](./param-field.mdx).
 
 <TypeTable
   type={{

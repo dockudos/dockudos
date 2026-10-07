@@ -6,7 +6,7 @@ import { Callout } from './callout.tsx';
 import { Card, Cards } from './cards.tsx';
 import { CodeBlock, CodeGroup } from './code-block.tsx';
 import { CopyButton, codeText } from './copy-button.tsx';
-import { File, Files, Folder } from './files.tsx';
+import { File, Files, Folder } from './tree.tsx';
 import { Step, Steps } from './steps.tsx';
 import { Tab, Tabs } from './tabs.tsx';
 import { Tooltip } from './tooltip.tsx';
@@ -186,7 +186,7 @@ describe('Steps, Cards, Files, TypeTable', () => {
       'href',
       '/a',
     );
-    const remote = screen.getByRole('link', { name: 'Remote y' });
+    const remote = screen.getByRole('link', { name: /Remote y/ });
     expect(remote).toHaveAttribute('target', '_blank');
     expect(remote).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(screen.getAllByRole('link')).toHaveLength(2);

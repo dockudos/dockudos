@@ -3,8 +3,8 @@
 import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
-import { useLink } from '../provider.tsx';
 import { renderIcon } from './render-icon.tsx';
+import { SmartLink, isExternal } from './smart-link.tsx';
 
 export function Cards({
   children,
@@ -55,8 +55,7 @@ export function Card({
   arrow,
   children,
 }: CardProps) {
-  const Link = useLink();
-  const external = !!href && /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href);
+  const external = !!href && isExternal(href);
   const showArrow = !!href && (arrow ?? external);
   const text = (
     <div className="min-w-0 flex-1">
@@ -115,19 +114,10 @@ export function Card({
       'transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
   );
   if (!href) return <div className={className}>{body}</div>;
-  return external ? (
-    <a
-      href={href}
-      className={className}
-      target="_blank"
-      rel="noreferrer noopener"
-    >
+  return (
+    <SmartLink href={href} className={className}>
       {body}
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {body}
-    </Link>
+    </SmartLink>
   );
 }
 

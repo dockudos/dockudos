@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
-import { useLink } from '../provider.tsx';
+import { SmartLink } from './smart-link.tsx';
 
 export interface TileProps {
   title: string;
@@ -16,8 +16,6 @@ export interface TileProps {
 
 /** A card with a preview on top: for examples, templates and galleries. Put several in `Cards cols={3}`. */
 export function Tile({ title, description, href, children }: TileProps) {
-  const Link = useLink();
-  const external = !!href && /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href);
   const body = (
     <>
       <div className="dk-tile-preview">{children}</div>
@@ -33,19 +31,9 @@ export function Tile({ title, description, href, children }: TileProps) {
   );
   const className = cn('dk-tile', href && 'dk-tile-link');
   if (!href) return <div className={className}>{body}</div>;
-  return external ? (
-    <a
-      href={href}
-      className={className}
-      target="_blank"
-      rel="noreferrer noopener"
-    >
+  return (
+    <SmartLink href={href} className={className}>
       {body}
-      <span className="sr-only"> (opens in a new tab)</span>
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {body}
-    </Link>
+    </SmartLink>
   );
 }

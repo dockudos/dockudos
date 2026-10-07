@@ -37,20 +37,20 @@ description: Generate a new docs site and see it running in your browser.
 
 ## What you have
 
-<Files>
-  <Folder name="my-docs" defaultOpen>
-    <Folder name="docs" defaultOpen>
-      <File name="index.mdx" />
-      <File name="quickstart.mdx" />
-    </Folder>
-    <File name="docs.json" />
-    <File name="package.json" />
-  </Folder>
-</Files>
+<Tree>
+  <Tree.Folder name="my-docs" defaultOpen>
+    <Tree.Folder name="docs" defaultOpen>
+      <Tree.File name="index.mdx" />
+      <Tree.File name="quickstart.mdx" />
+    </Tree.Folder>
+    <Tree.File name="docs.json" />
+    <Tree.File name="package.json" />
+  </Tree.Folder>
+</Tree>
 
 Your pages are the `.mdx` files in `docs/`. `docs.json` holds the site's name, theme and sidebar. You will use both in the
 next step.
 
-<Hint title="The port is already in use?">
+<Expandable title="The port is already in use?">
   Start the server on another port: `npm run dev -- --port 3001`.
-</Hint>
+</Expandable>

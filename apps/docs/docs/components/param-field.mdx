@@ -1,0 +1,72 @@
+---
+icon: braces
+title: ParamField
+description: 'One documented parameter: name, type, location, required and default.'
+---
+
+One documented parameter: its name, then labels for its type, location, whether it is required and its default, then a
+description underneath. The description is ordinary content, so it can have code, lists and links, and even a nested
+[Expandable](./expandable.mdx) for the properties of an object.
+
+<ParamField name="filter" type="object" location="query">
+  Narrow the results.
+
+<Expandable title="Properties">
+  <ParamField name="status" type="'active' | 'closed'">
+    Only items in this state.
+  </ParamField>
+  <ParamField name="owner" type="string">
+    Only items owned by this id.
+  </ParamField>
+</Expandable>
+</ParamField>
+
+```mdx
+<ParamField name="filter" type="object" location="query">
+  Narrow the results.
+
+<Expandable title="Properties">
+  <ParamField name="status" type="'active' | 'closed'">
+    Only items in this state.
+  </ParamField>
+</Expandable>
+</ParamField>
+```
+
+It is not only for HTTP. Use it for the arguments of a function, the options of a CLI command or the keys of a config
+file; `location` can be any word, such as `flag` or `env`.
+
+<TypeTable
+  type={{
+    name: {
+      type: 'string',
+      required: true,
+      description: 'The parameter, property or header name.',
+    },
+    type: { type: 'string', description: 'Its type, shown as code.' },
+    location: {
+      type: 'string',
+      description:
+        'query, path, body, header or any word you like. Shown as a label.',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Adds a "required" label.',
+    },
+    default: {
+      type: 'string',
+      description:
+        'The default, shown as code. Write strings with their quotes: `"\'member\'"`.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'The description.',
+    },
+  }}
+/>
+
+## Putting it together
+
+A typical API page has an [Endpoint](./endpoint.mdx), a "Parameters" section of `ParamField`s, a "Response" section of
+[ResponseField](./response-field.mdx)s, and a [Panel](./panel.mdx) with the request and response examples pinned beside the
+text. Generated reference pages from an OpenAPI file are planned for a later release and will use these same components.

@@ -1,0 +1,44 @@
+---
+icon: api
+title: Endpoint
+description: An HTTP method and path on one line.
+---
+
+An HTTP method and a path on one line.
+
+| Method            | Color |
+| ----------------- | ----- |
+| `GET`             | blue  |
+| `POST`            | green |
+| `PUT`, `PATCH`    | amber |
+| `DELETE`          | red   |
+| `HEAD`, `OPTIONS` | gray  |
+
+Color helps people scan, but the method name is always written out, so it is never the only signal. An unknown method is
+shown as `GET`. Keep `{placeholders}` in the path as written, for example `/v1/users/{id}`; `baseUrl` is shown dimmed in front.
+
+<Endpoint method="GET" path="/v1/users/{id}" />
+<Endpoint
+  method="DELETE"
+  path="/v1/users/{id}"
+  baseUrl="https://api.acme.dev"
+/>
+
+<TypeTable
+  type={{
+    method: {
+      type: '"GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS"',
+      required: true,
+      description: 'The HTTP method, upper case.',
+    },
+    path: {
+      type: 'string',
+      required: true,
+      description: 'The path, with {placeholders} as written.',
+    },
+    baseUrl: {
+      type: 'string',
+      description: 'Shown dimmed before the path.',
+    },
+  }}
+/>

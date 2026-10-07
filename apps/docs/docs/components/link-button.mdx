@@ -1,0 +1,31 @@
+---
+icon: link
+title: LinkButton
+description: A link that looks like a button.
+---
+
+A link that looks like a button. It is a real link, so it can be opened in a new tab and read as a link by assistive
+technology. Use it inside a `Hero`, or anywhere else a call to action belongs.
+
+Internal paths use the router. Links to other sites open in a new tab, and are announced as such.
+
+<LinkButton href="/getting-started/quickstart">Primary</LinkButton>
+<LinkButton href="/getting-started/quickstart" variant="secondary">
+  Secondary
+</LinkButton>
+
+<TypeTable
+  type={{
+    href: {
+      type: 'string',
+      required: true,
+      description: 'A path, or a URL with a scheme (opens in a new tab).',
+    },
+    variant: {
+      type: '"primary" | "secondary"',
+      default: '"primary"',
+      description: 'A filled button, or an outlined one.',
+    },
+    children: { type: 'ReactNode', required: true, description: 'The label.' },
+  }}
+/>

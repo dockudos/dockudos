@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { TutorialHeader } from '../layout/tutorial-header.tsx';
-import { Checkpoint, Hint, TutorialIntro } from './tutorial.tsx';
+import { Checkpoint, TutorialIntro } from './tutorial.tsx';
 
 describe('tutorial components', () => {
   it('TutorialIntro lists time, what you learn and what you need', () => {
@@ -19,16 +19,12 @@ describe('tutorial components', () => {
     expect(screen.getByText('Node.js')).toBeInTheDocument();
   });
 
-  it('Checkpoint is a titled aside', () => {
+  it('Checkpoint is a check callout', () => {
     render(<Checkpoint>It runs.</Checkpoint>);
-    expect(
-      screen.getByRole('complementary', { name: 'Check your work' }),
-    ).toHaveTextContent('It runs.');
-  });
-
-  it('Hint hides its content in a collapsible block', () => {
-    render(<Hint>Try the file name.</Hint>);
-    expect(screen.getByText('Hint')).toBeInTheDocument();
+    const note = screen.getByRole('note');
+    expect(note).toHaveAttribute('data-callout', 'check');
+    expect(note).toHaveTextContent('Check your work');
+    expect(note).toHaveTextContent('It runs.');
   });
 
   it('TutorialHeader shows the step and a progress bar', () => {

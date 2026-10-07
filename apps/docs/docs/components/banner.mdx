@@ -1,46 +1,8 @@
 ---
 icon: megaphone
-title: Tooltip and Banner
-description: An inline hint for a term, and a dismissible announcement strip.
+title: Banner
+description: A dismissible announcement strip across the page.
 ---
-
-## Tooltip
-
-A tooltip explains a term without leaving the sentence. Hover or focus the word
-
-<Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip> to see the
-hint.
-
-```mdx
-Hover <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip>.
-```
-
-The term is underlined with dots so readers know it does something. It is focusable, so keyboard users get the hint on
-focus, and <Kbd>Esc</Kbd> closes it. The hint opens after a short delay and keeps clear of the edge of the screen.
-
-<Callout type="warning">
-  Put essential information in the text, not only in a tooltip. Touch screens
-  have no hover, and a tooltip is not included when someone prints the page.
-</Callout>
-
-<TypeTable
-  type={{
-    tip: {
-      type: 'string',
-      required: true,
-      description: 'The explanation. Plain text, kept short.',
-    },
-    children: {
-      type: 'ReactNode',
-      required: true,
-      description: 'The term the hint belongs to.',
-    },
-  }}
-/>
-
-For a longer definition, link to a page or use an [Accordion](./accordion.mdx).
-
-## Banner
 
 A banner is an announcement strip across the full width: a release, an event, a migration notice.
 
@@ -52,7 +14,7 @@ A banner is an announcement strip across the full width: a release, an event, a 
 <Banner id="v1-launch">Version 1 is out.</Banner>
 ```
 
-### Dismissing
+## Dismissing
 
 With an `id` the banner has a dismiss button and stays dismissed for that visitor: the choice is stored in the browser
 under that id. Without an `id` it cannot be dismissed. Change the `id` when the message changes, such as
@@ -60,7 +22,7 @@ under that id. Without an `id` it cannot be dismissed. Change the `id` when the 
 
 Dismissal is per browser. If storage is blocked the banner is still shown, and closing it lasts until the page reloads.
 
-### Gradient
+## Gradient
 
 `variant="rainbow"` replaces the solid color with a soft gradient:
 
@@ -70,7 +32,7 @@ Dismissal is per browser. If storage is blocked the banner is still shown, and c
 <Banner variant="rainbow">A gentler look for a quiet announcement.</Banner>
 ```
 
-### On every page
+## On every page
 
 A banner placed in a page shows only in that page. To show one on every page, render the component from
 `@dockudos/ui` in your root layout, next to `DocsRoot`:

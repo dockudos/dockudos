@@ -1,0 +1,35 @@
+---
+icon: layout-dashboard
+title: Columns
+description: Lay content out side by side in two, three or four columns.
+---
+
+`Columns` lays content out side by side. Anything can be a column: cards, code blocks, plain Markdown.
+
+<Columns cols={2}>
+  <Card title="Before">The old way.</Card>
+  <Card title="After">The new way.</Card>
+</Columns>
+
+```mdx
+<Columns cols={3}>
+  <Card title="One">…</Card>
+  <Card title="Two">…</Card>
+  <Card title="Three">…</Card>
+</Columns>
+```
+
+`cols` is 2, 3 or 4, and defaults to 2. Columns stack into one on phones; four columns drop to two on a tablet.
+Each direct child is one column.
+
+<TypeTable
+  type={{
+    cols: {
+      type: '2 | 3 | 4',
+      default: '2',
+      description: 'Columns on wide screens.',
+    },
+  }}
+/>
+
+`Columns` has no borders of its own. To make a grid of linked boxes, use [Cards](./cards.mdx).

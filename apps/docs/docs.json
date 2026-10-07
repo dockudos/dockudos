@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@dockudos/core/docs.schema.json",
   "name": "dockudos",
   "theme": {
-    "primary": "#4f46e5"
+    "primary": "#5DD988"
   },
   "navigation": [
     {
@@ -53,6 +53,100 @@
             "guides/broken-links",
             "guides/protecting-pages"
           ]
+        },
+        {
+          "group": "Components",
+          "pages": [
+            "components/index",
+            {
+              "group": "Content",
+              "pages": [
+                "components/callout",
+                "components/tabs",
+                "components/accordion",
+                "components/steps",
+                "components/cards",
+                "components/columns",
+                "components/frame",
+                "components/expandable",
+                "components/tooltip",
+                "components/banner"
+              ]
+            },
+            {
+              "group": "Inline",
+              "pages": [
+                "components/badge",
+                "components/kbd",
+                "components/shortcut",
+                "components/icons",
+                "components/copy-text",
+                "components/since",
+                "components/deprecated",
+                "components/download",
+                "components/link-button"
+              ]
+            },
+            {
+              "group": "Code and media",
+              "pages": [
+                "components/code-block",
+                "components/code-group",
+                "components/image",
+                "components/themed-image",
+                "components/mermaid",
+                "components/video"
+              ]
+            },
+            {
+              "group": "Display",
+              "pages": [
+                "components/tile",
+                "components/colors",
+                "components/tree",
+                "components/github-info",
+                "components/update",
+                "components/stats",
+                "components/timeline",
+                "components/quote",
+                "components/checklist",
+                "components/hero"
+              ]
+            },
+            {
+              "group": "Page data",
+              "pages": ["components/inline-toc", "components/graph-view"]
+            },
+            {
+              "group": "API reference",
+              "pages": [
+                "components/endpoint",
+                "components/param-field",
+                "components/response-field",
+                "components/panel",
+                "components/request-example",
+                "components/response-example",
+                "components/type-table",
+                "components/auto-type-table"
+              ]
+            },
+            {
+              "group": "AI and audiences",
+              "pages": [
+                "components/prompt",
+                "components/view",
+                "components/visibility"
+              ]
+            },
+            {
+              "group": "Tutorials",
+              "pages": ["components/tutorial-intro", "components/checkpoint"]
+            },
+            {
+              "group": "Feedback",
+              "pages": ["components/kudos"]
+            }
+          ]
         }
       ]
     },
@@ -67,82 +161,6 @@
             "tutorials/first-site/write",
             "tutorials/first-site/ship"
           ]
-        }
-      ]
-    },
-    {
-      "tab": "Components",
-      "groups": [
-        {
-          "group": "Overview",
-          "pages": ["components/index"]
-        },
-        {
-          "group": "Text and structure",
-          "pages": [
-            "components/callout",
-            "components/tabs",
-            "components/accordion",
-            "components/steps-and-cards",
-            "components/layout-blocks",
-            "components/tooltip-and-banner",
-            "components/quote",
-            "components/checklist",
-            "components/tutorial"
-          ]
-        },
-        {
-          "group": "Inline",
-          "pages": [
-            "components/badges-and-keys",
-            "components/shortcut",
-            "components/icons",
-            "components/copy-text-and-hero",
-            "components/version-labels",
-            "components/download"
-          ]
-        },
-        {
-          "group": "Code and media",
-          "pages": [
-            "components/code-block",
-            "components/mermaid",
-            "components/image",
-            "components/video",
-            "components/themed-image"
-          ]
-        },
-        {
-          "group": "Display",
-          "pages": [
-            "components/tile-and-colors",
-            "components/files",
-            "components/github-info",
-            "components/update",
-            "components/page-data",
-            "components/stats",
-            "components/timeline"
-          ]
-        },
-        {
-          "group": "API reference",
-          "pages": [
-            "components/api-blocks",
-            "components/panel-and-examples",
-            "components/type-tables"
-          ]
-        },
-        {
-          "group": "AI and audiences",
-          "pages": [
-            "components/prompt",
-            "components/view",
-            "components/visibility"
-          ]
-        },
-        {
-          "group": "Feedback",
-          "pages": ["components/kudos"]
         }
       ]
     },
@@ -178,5 +196,59 @@
     "packs": {
       "dockudos": "icons/dockudos"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/components/steps-and-cards",
+      "destination": "/components/steps"
+    },
+    {
+      "source": "/components/tooltip-and-banner",
+      "destination": "/components/tooltip"
+    },
+    {
+      "source": "/components/tile-and-colors",
+      "destination": "/components/tile"
+    },
+    {
+      "source": "/components/badges-and-keys",
+      "destination": "/components/badge"
+    },
+    {
+      "source": "/components/layout-blocks",
+      "destination": "/components/columns"
+    },
+    {
+      "source": "/components/api-blocks",
+      "destination": "/components/endpoint"
+    },
+    {
+      "source": "/components/copy-text-and-hero",
+      "destination": "/components/copy-text"
+    },
+    {
+      "source": "/components/panel-and-examples",
+      "destination": "/components/panel"
+    },
+    {
+      "source": "/components/type-tables",
+      "destination": "/components/type-table"
+    },
+    {
+      "source": "/components/page-data",
+      "destination": "/components/inline-toc"
+    },
+    {
+      "source": "/components/version-labels",
+      "destination": "/components/since"
+    },
+    {
+      "source": "/components/tutorial",
+      "destination": "/components/tutorial-intro"
+    },
+    {
+      "source": "/components/files",
+      "destination": "/components/tree"
+    }
+  ]
 }

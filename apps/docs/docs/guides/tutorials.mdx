@@ -50,7 +50,7 @@ tutorial: its pages count as steps too.
 ## Write a step
 
 A good step does one thing, and ends with a way to tell it worked. Start the first page with a
-[`TutorialIntro`](../components/tutorial.mdx), use [`Steps`](../components/steps-and-cards.mdx) for the actions, and finish each page with a
+[`TutorialIntro`](../components/tutorial-intro.mdx), use [`Steps`](../components/steps.mdx) for the actions, and finish each page with a
 `Checkpoint`.
 
 ````mdx title="docs/tutorials/first-site/create.mdx"
@@ -80,16 +80,16 @@ description: Generate a new docs site and see it running.
 
 ## Components for tutorials
 
-| Component                                           | Use it to                                                                 |
-| --------------------------------------------------- | ------------------------------------------------------------------------- |
-| [`TutorialIntro`](../components/tutorial.mdx)       | Say how long it takes, who it is for, what is learned and what is needed. |
-| [`Steps`](../components/steps-and-cards.mdx)        | Number the actions inside a page.                                         |
-| [`Checkpoint`](../components/tutorial.mdx)          | Say what the reader should see before they go on.                         |
-| [`Hint` and `Solution`](../components/tutorial.mdx) | Hide help until it is asked for, so readers can try first.                |
-| [`CodeGroup`](../components/code-block.mdx)         | Show a command or file for each operating system or language.             |
-| [`Files`](../components/files.mdx)                  | Show the project's shape after a step.                                    |
-| [`View`](../components/view.mdx)                    | Let the reader choose a language or framework once, for the whole page.   |
-| [`Callout`](../components/callout.mdx)              | Warn about a common mistake at the step where it happens.                 |
+| Component                                           | Use it to                                                                  |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| [`TutorialIntro`](../components/tutorial-intro.mdx) | Say how long it takes, who it is for, what is learned and what is needed.  |
+| [`Steps`](../components/steps.mdx)                  | Number the actions inside a page.                                          |
+| [`Checkpoint`](../components/checkpoint.mdx)        | Say what the reader should see before they go on.                          |
+| [`Expandable`](../components/expandable.mdx)        | Hide a hint or a solution until it is asked for, so readers can try first. |
+| [`CodeGroup`](../components/code-block.mdx)         | Show a command or file for each operating system or language.              |
+| [`Tree`](../components/tree.mdx)                    | Show the project's shape after a step.                                     |
+| [`View`](../components/view.mdx)                    | Let the reader choose a language or framework once, for the whole page.    |
+| [`Callout`](../components/callout.mdx)              | Warn about a common mistake at the step where it happens.                  |
 
 ## Tips
 
@@ -104,4 +104,4 @@ You can see a complete tutorial in [Build your first docs site](../tutorials/fir
 ## Printing
 
 On paper every step prints in order. The progress header's row of links is left out, since links do nothing on paper, and
-`Hint` and `Solution` are opened.
+`Expandable` blocks are opened.

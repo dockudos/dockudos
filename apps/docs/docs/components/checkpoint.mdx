@@ -1,0 +1,36 @@
+---
+icon: flag
+title: Checkpoint
+description: A place to stop and check what the reader should see before going on.
+---
+
+A place to stop and check: what the reader should see, run or find before moving on. It is a [Callout](./callout.mdx) of type
+`check`, with the title "Check your work", so it looks like the rest of your callouts.
+
+<Checkpoint>
+  Run `npm run dev` and open `http://localhost:3000`. You should see your site's
+  home page.
+</Checkpoint>
+
+```mdx
+<Checkpoint>
+  Run `npm run dev` and open `http://localhost:3000`. You should see your site's
+  home page.
+</Checkpoint>
+
+<Checkpoint title="Before you go on">The build prints no errors.</Checkpoint>
+```
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      default: '"Check your work"',
+      description: 'The heading.',
+    },
+    children: {
+      type: 'ReactNode',
+      description: 'What the reader should see.',
+    },
+  }}
+/>

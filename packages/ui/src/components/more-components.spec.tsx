@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Badge } from './badge.tsx';
 import { Columns } from './columns.tsx';
 import { Expandable } from './expandable.tsx';
-import { File, Files, Folder } from './files.tsx';
+import { File, Files, Folder } from './tree.tsx';
 import { Frame } from './frame.tsx';
 import { Kbd } from './kbd.tsx';
 import { Video } from './video.tsx';

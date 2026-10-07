@@ -1,0 +1,33 @@
+---
+icon: plus
+title: Expandable
+description: One collapsible block for optional detail.
+---
+
+`Expandable` is one collapsible block, for optional detail such as nested properties of an API field.
+
+<Expandable title="Show the details">
+  Optional content that most readers can skip. It is a native `details` element:
+  it works without JavaScript, and Enter or Space opens it.
+</Expandable>
+
+```mdx
+<Expandable title="Show the details" defaultOpen>
+  …
+</Expandable>
+```
+
+Use [Accordion](./accordion.mdx) for a group of related questions and `Expandable` for a single optional block. It
+animates as it opens, unless the visitor prefers reduced motion, and is opened on paper.
+
+<TypeTable
+  type={{
+    title: { type: 'string', required: true, description: 'The summary line.' },
+    defaultOpen: {
+      type: 'boolean',
+      default: 'false',
+      description: 'Start open.',
+    },
+    children: { type: 'ReactNode', description: 'The hidden content.' },
+  }}
+/>

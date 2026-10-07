@@ -1,7 +1,6 @@
 import { Clock, Gauge } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Expandable } from './expandable.tsx';
-import { renderIcon } from './render-icon.tsx';
+import { Callout } from './callout.tsx';
 
 export interface TutorialIntroProps {
   /** How long it takes: `20 minutes`. */
@@ -74,34 +73,14 @@ export interface CheckpointProps {
   children?: ReactNode;
 }
 
-/** A place to stop and check: what the reader should see before going on. */
+/** A place to stop and check: what the reader should see before going on. A `Callout` of type `check`. */
 export function Checkpoint({
   title = 'Check your work',
   children,
 }: CheckpointProps) {
   return (
-    <aside className="dk-checkpoint" aria-label={title}>
-      <p className="dk-checkpoint-title">
-        {renderIcon('circle-check', 16)}
-        {title}
-      </p>
-      <div>{children}</div>
-    </aside>
+    <Callout type="check" title={title}>
+      {children}
+    </Callout>
   );
-}
-
-export interface HintProps {
-  /** Default "Hint". */
-  title?: string;
-  children?: ReactNode;
-}
-
-/** A nudge, hidden until asked for, so a reader can try first. */
-export function Hint({ title = 'Hint', children }: HintProps) {
-  return <Expandable title={title}>{children}</Expandable>;
-}
-
-/** The answer, hidden until asked for. Opened on paper. */
-export function Solution({ title = 'Solution', children }: HintProps) {
-  return <Expandable title={title}>{children}</Expandable>;
 }

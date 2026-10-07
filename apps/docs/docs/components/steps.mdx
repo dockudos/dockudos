@@ -1,0 +1,60 @@
+---
+icon: arrow-right
+title: Steps
+description: A numbered procedure, with a title and any content in each step.
+---
+
+`Steps` is a numbered procedure. Each `Step` has a title and a body, and the numbers are drawn for you.
+
+<Steps>
+  <Step title="Install">Add the packages.</Step>
+  <Step title="Configure">Create `docs.json`.</Step>
+  <Step title="Ship">Run the build.</Step>
+</Steps>
+
+```mdx
+<Steps>
+  <Step title="Install">Add the packages.</Step>
+  <Step title="Configure">Create `docs.json`.</Step>
+</Steps>
+```
+
+Any content can go inside a step, including code blocks, images and callouts. Put a blank line between
+a step's opening tag and a code block so the block is parsed as code.
+
+## Icons in place of numbers
+
+An `icon` replaces the number of one step, for a procedure whose steps are not a count:
+
+<Steps>
+  <Step title="Download" icon="download">
+    Get the installer.
+  </Step>
+  <Step title="Done" icon="flag">
+    Nothing more to do.
+  </Step>
+</Steps>
+
+```mdx
+<Step title="Download" icon="download">
+  Get the installer.
+</Step>
+```
+
+## Props
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      description: 'The step heading. A step without one shows only its body.',
+    },
+    icon: {
+      type: 'string | ReactNode',
+      description: 'Shown in place of the number: an icon name or an element.',
+    },
+  }}
+/>
+
+Steps render as an ordered list, so they are numbered for screen readers too. On paper each step is kept in one
+piece where it can be.
