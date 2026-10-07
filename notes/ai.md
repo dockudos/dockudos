@@ -97,12 +97,17 @@ AI navigation answers "where do I go?" instead of "what is the answer?". It retu
 6. The client navigates to the page, scrolls to the anchor, and shows a one-line reason.
 
 ```ts
-// POST /api/navigate
+// POST /api/navigate  { query }   (as built)
 interface NavigateResponse {
   path: string;     // "/guides/billing"
   anchor?: string;  // "update-billing-email"
+  url: string;      // "/guides/billing#update-billing-email"
+  title: string;
+  headingPath: string[];
   reason: string;   // "This section explains how to change the billing email."
-  alternatives?: { path: string; anchor?: string; title: string }[];
+  confidence: "high" | "low";   // low: show the choices instead of jumping
+  ranked: "model" | "search";
+  alternatives?: { path: string; anchor?: string; title: string; headingPath: string[]; url: string }[];
 }
 ```
 
@@ -211,4 +216,4 @@ It can also run scheduled automations, such as a weekly check for outdated pages
 - Which LLM and embedding adapters ship in the first release?
 - Should the built-in vector search run in the browser, on the server, or both?
 - How should conversation history be stored for the analytics service, and for how long?
-- Should AI navigation be a separate palette mode or the default behavior for natural-language queries?
+- ~~Should AI navigation be a separate palette mode or the default behavior for natural-language queries?~~ Decided in [ADR 0008](./adr/0008-palette-ai-modes.md): neither. Search stays the default, and the AI actions are rows whose position depends on what was typed.

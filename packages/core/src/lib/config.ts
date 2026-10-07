@@ -187,6 +187,13 @@ const aiSchema = z
       .string()
       .startsWith('/', 'must start with "/"')
       .default('/api/ask'),
+    /** The route that finds the page for a request. Default `/api/navigate`. */
+    navigateEndpoint: z
+      .string()
+      .startsWith('/', 'must start with "/"')
+      .default('/api/navigate'),
+    /** Offer "Take me there" in the palette: type what you want, and be taken to the right section. */
+    navigation: z.boolean().default(true),
     /** Address of the provider's API, for compatible servers. Not a secret. */
     baseUrl: httpUrl.optional(),
     /** Meaning-based search on top of keywords. Needs DOCKUDOS_EMBEDDINGS_API_KEY (or DOCKUDOS_LLM_API_KEY for OpenAI). */

@@ -254,6 +254,8 @@
       "default": {
         "enabled": false,
         "endpoint": "/api/ask",
+        "navigateEndpoint": "/api/navigate",
+        "navigation": true,
         "limits": {
           "maxQuestionLength": 500,
           "maxOutputTokens": 800,
@@ -281,6 +283,16 @@
           "type": "string",
           "format": "starts_with",
           "pattern": "^\\/.*"
+        },
+        "navigateEndpoint": {
+          "default": "/api/navigate",
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/.*"
+        },
+        "navigation": {
+          "default": true,
+          "type": "boolean"
         },
         "baseUrl": {
           "type": "string",

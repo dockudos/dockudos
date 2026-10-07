@@ -1,0 +1,62 @@
+---
+icon: compass
+title: AI navigation
+description: Type what you want to do and be taken to the right section.
+---
+
+"Where do I change my billing email?" is a request for a place, not an answer. AI navigation takes the reader to the
+best section and tells them why in one line. It needs `ai.enabled` (see [Ask the docs](./ask-the-docs.mdx)) and works with
+a model or without one.
+
+## For readers
+
+In the palette (<Shortcut keys="mod+k" />), type what you want and choose **Take me there**, or press <Shortcut keys="mod+enter" /> from
+anywhere in the results. The page opens scrolled to the heading, and a note at the bottom says why you were sent there.
+
+When the answer is not clear, you are not sent anywhere. The palette lists the best guess and the other places that fit, and you choose.
+
+Where the AI rows appear depends on what you typed (see [the decision](https://github.com/dockudos/dockudos/blob/main/notes/adr/0008-palette-ai-modes.md)):
+
+- A question (`how do I rotate a key?`) puts **Ask AI** first, then **Take me there**.
+- Keywords keep the search results first, so <Kbd>Enter</Kbd> still opens the best result. The AI rows come after.
+- A few words that match nothing put **Take me there** first.
+
+## How it picks
+
+1. Search finds the best sections for the request (keywords, plus meaning if you set up embeddings).
+2. **With a model:** it is shown the top five, as short quotations, and asked for one choice, how sure it is, and a one-line reason.
+3. **Without a model:** the best result wins. It is "sure" only when it matches most of the words and clearly leads the next one.
+
+If the model fails or answers with something unusable, the search ranking decides, so a reader is never left without a page. The sections shown to the model are marked as untrusted, the model has no tools, and the reason it writes is cleaned to plain text (no links, no markup), so a page's text cannot steer the reader.
+
+Pages that are hidden or behind an [access rule](./protecting-pages.mdx) are never candidates.
+
+## The route
+
+`POST /api/navigate` with `{ "query": "change my billing email" }`:
+
+```json
+{
+  "path": "/guides/billing",
+  "anchor": "change-the-billing-email",
+  "url": "/guides/billing#change-the-billing-email",
+  "title": "Billing",
+  "headingPath": ["Change the billing email"],
+  "reason": "This section explains how to change the billing email.",
+  "confidence": "high",
+  "ranked": "model",
+  "alternatives": [
+    {
+      "path": "/guides/team",
+      "anchor": "notifications",
+      "title": "Team settings",
+      "headingPath": ["Notifications"],
+      "url": "/guides/team#notifications"
+    }
+  ]
+}
+```
+
+It answers `404` when nothing in the docs relates to the request, and shares the visitor's per-minute budget with the assistant.
+
+Turn it off with `"ai": { "navigation": false }`. The route can move with `ai.navigateEndpoint`.

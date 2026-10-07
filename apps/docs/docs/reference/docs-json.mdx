@@ -271,6 +271,17 @@ Off by default. Keys are never read from `docs.json`: set `DOCKUDOS_LLM_API_KEY`
       default: '"/api/ask"',
       description: 'The route that answers questions. Must start with "/".',
     },
+    navigateEndpoint: {
+      type: 'string',
+      default: '"/api/navigate"',
+      description:
+        'The route that finds the page for a request. Must start with "/".',
+    },
+    navigation: {
+      type: 'boolean',
+      default: 'true',
+      description: 'Offer "Take me there" in the palette.',
+    },
     embeddings: {
       type: '{ provider: "openai", model: string, baseUrl?: string, dimensions?: number }',
       description:
@@ -284,7 +295,7 @@ Off by default. Keys are never read from `docs.json`: set `DOCKUDOS_LLM_API_KEY`
   }}
 />
 
-See [AI providers](../guides/ai-providers.mdx) and [Ask the docs](../guides/ask-the-docs.mdx).
+See [AI providers](../guides/ai-providers.mdx), [Ask the docs](../guides/ask-the-docs.mdx) and [AI navigation](../guides/ai-navigation.mdx).
 
 ## actions
 

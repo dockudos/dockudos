@@ -27,6 +27,8 @@ describe('parseConfig', () => {
       ai: {
         enabled: false,
         endpoint: '/api/ask',
+        navigateEndpoint: '/api/navigate',
+        navigation: true,
         limits: {
           maxQuestionLength: 500,
           maxOutputTokens: 800,

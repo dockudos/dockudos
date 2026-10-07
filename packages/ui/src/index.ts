@@ -85,3 +85,5 @@ export * from './lib/ask-store.ts';
 export * from './components/answer.tsx';
 export * from './components/ask-view.tsx';
 export * from './layout/assistant-panel.tsx';
+export * from './lib/navigate-client.ts';
+export * from './components/navigation-notice.tsx';

@@ -169,7 +169,7 @@ test.describe('protected routes', () => {
     await page.getByRole('combobox').fill('Quokka');
     // Nothing found; the only row left is the offer to ask the assistant.
     await expect(
-      page.getByRole('option').filter({ hasNotText: 'Ask AI' }),
+      page.getByRole('option').filter({ hasNotText: /Ask AI|Take me there/ }),
     ).toHaveCount(0);
     // And the open pages are still open.
     expect((await request.get('/guides/hello')).status()).toBe(200);

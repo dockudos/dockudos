@@ -42,6 +42,7 @@
           "pages": [
             "guides/search",
             "guides/ask-the-docs",
+            "guides/ai-navigation",
             "guides/ai-providers",
             "guides/ai-outputs"
           ]

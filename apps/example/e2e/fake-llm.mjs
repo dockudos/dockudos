@@ -50,6 +50,39 @@ function answerFor(userMessage) {
   return `${best.sentence} [${best.n}]`;
 }
 
+const OPTION =
+  /<<<OPTION (\S+) (\d+) \| ([^\n]*?)>>>\n([\s\S]*?)\n<<<END \1>>>/g;
+
+// Picks the option that shares most words with the request, and is unsure when two are level.
+function navigationFor(userMessage) {
+  const options = [...userMessage.matchAll(OPTION)].map((m) => ({
+    n: Number(m[2]),
+    where: m[3],
+    text: m[4],
+  }));
+  const request = /Request: ([\s\S]*)$/.exec(userMessage)?.[1] ?? '';
+  const asked = [...new Set(words(request))];
+  const score = (o) => {
+    const have = new Set(words(`${o.where} ${o.where} ${o.text}`));
+    return asked.filter((w) => have.has(w)).length;
+  };
+  const ranked = options
+    .map((o) => ({ ...o, score: score(o) }))
+    .sort((a, b) => b.score - a.score);
+  const [best, next] = ranked;
+  if (!best || best.score === 0)
+    return JSON.stringify({
+      choice: 0,
+      confidence: 'low',
+      reason: 'Nothing fits.',
+    });
+  return JSON.stringify({
+    choice: best.n,
+    confidence: next && next.score === best.score ? 'low' : 'high',
+    reason: `This section covers ${best.where.split(' › ').at(-1).toLowerCase()}.`,
+  });
+}
+
 const server = createServer((req, res) => {
   if (req.url === '/__calls') {
     if (req.method === 'DELETE') calls.length = 0;
@@ -64,7 +97,9 @@ const server = createServer((req, res) => {
       const body = JSON.parse(raw);
       calls.push({ authorization: req.headers.authorization, body });
       const last = body.messages.at(-1)?.content ?? '';
-      const text = answerFor(last);
+      const text = last.includes('<<<OPTION')
+        ? navigationFor(last)
+        : answerFor(last);
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       for (const piece of text.match(/\S+\s*/g) ?? []) {
         res.write(

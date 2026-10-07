@@ -10,6 +10,7 @@ import {
   ask,
   buildPrompt,
   estimateTokens,
+  looksLikeQuestion,
   packContext,
   parseExcerpts,
   systemPrompt,
@@ -604,5 +605,28 @@ describe('ask', () => {
       expect(events[0]).toMatchObject({ type: 'sources' });
       expect(textOf(events)).toContain('Rotate a key every ninety days');
     });
+  });
+});
+
+describe('looksLikeQuestion', () => {
+  it('is true for a question mark or a leading question word, false for keywords', () => {
+    for (const q of [
+      'how do I rotate a key',
+      'What is a chunk',
+      'rotate keys?',
+      'can I export',
+      'Show me the limits',
+      'my invoice is wrong',
+    ])
+      expect(looksLikeQuestion(q), q).toBe(true);
+    for (const q of [
+      'rotate',
+      'api keys',
+      'createAccessProxy',
+      'billing email settings page',
+      '',
+      '  ',
+    ])
+      expect(looksLikeQuestion(q), q).toBe(false);
   });
 });

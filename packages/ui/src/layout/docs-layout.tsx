@@ -80,6 +80,8 @@ export function DocsLayout({
   const ai = config.ai?.enabled
     ? {
         endpoint: config.ai.endpoint,
+        navigateEndpoint: config.ai.navigateEndpoint,
+        navigation: config.ai.navigation,
         maxQuestionLength: config.ai.limits.maxQuestionLength,
       }
     : undefined;

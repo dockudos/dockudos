@@ -44,9 +44,9 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 - [x] P2.24 Assistant UI in the palette and as a panel: streaming render, numbered source links, history.
 
 ### 2F. AI navigation
-- [ ] P2.25 `/api/navigate` returning `{ path, anchor, reason, alternatives? }`; model-ranked when an LLM is set, top chunk otherwise.
-- [ ] P2.26 Palette behavior: jump and scroll to anchor with a one-line reason; show alternatives when confidence is low.
-- [ ] P2.27 Decide palette UX: separate mode or default for natural-language queries (ai.md open question).
+- [x] P2.25 `/api/navigate` returning `{ path, anchor, reason, alternatives? }`; model-ranked when an LLM is set, top chunk otherwise.
+- [x] P2.26 Palette behavior: jump and scroll to anchor with a one-line reason; show alternatives when confidence is low.
+- [x] P2.27 Decide palette UX: separate mode or default for natural-language queries (ai.md open question).
 
 ### 2G. MCP and embeddable assistant
 - [ ] P2.28 MCP server with `search_docs`, `get_page`, `list_pages`; route handler `/mcp` and standalone process.
@@ -90,7 +90,7 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 ### Integration / E2E (Playwright)
 - [x] Cmd+K opens the palette; typing returns results; Enter navigates.
 - [x] Ask flow with mocked LLM: streamed text, clickable numbered sources.
-- [ ] AI navigation lands on the heading and shows the reason.
+- [x] AI navigation lands on the heading and shows the reason.
 - [x] `curl -H "Accept: text/markdown"` returns the Markdown twin.
 - [ ] MCP client smoke test: list tools, call `search_docs` and `get_page`.
 - [ ] Widget embedded in a plain HTML page can ask a question.

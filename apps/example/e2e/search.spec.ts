@@ -34,7 +34,7 @@ test.describe('search', () => {
     await page.getByRole('combobox').fill('Quokka');
     await expect(page.getByText(/No results for/)).toBeVisible();
     await expect(
-      page.getByRole('option').filter({ hasNotText: 'Ask AI' }),
+      page.getByRole('option').filter({ hasNotText: /Ask AI|Take me there/ }),
     ).toHaveCount(0);
 
     const index = await request.get('/api/search/index');

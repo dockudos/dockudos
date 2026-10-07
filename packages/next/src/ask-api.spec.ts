@@ -236,3 +236,129 @@ describe('POST /api/ask', () => {
     await expect(reader.cancel()).resolves.toBeUndefined();
   });
 });
+
+describe('POST /api/navigate', () => {
+  const nav = (
+    body: unknown,
+    headers: Record<string, string> = {},
+    raw?: string,
+  ) =>
+    new Request('http://docs.test/api/navigate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: raw ?? JSON.stringify(body),
+    });
+
+  it('finds the section for a request without any model key, saying why', async () => {
+    await writeSite({
+      provider: 'openai',
+      model: 'gpt-x',
+      limits: { ratePerMinute: 50 },
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const api = createDocsApi({ ai: { env: {} } });
+    const res = await api.POST(
+      nav({ query: 'rotate my key' }),
+      ctx('navigate'),
+    );
+    warn.mockRestore();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      path: '/guides/auth',
+      anchor: 'api-keys',
+      url: '/guides/auth#api-keys',
+      title: 'Authentication',
+      headingPath: ['API keys'],
+      confidence: 'high',
+      ranked: 'search',
+      reason: expect.stringContaining('Authentication › API keys'),
+    });
+  });
+
+  it('lets the model choose when there is one, and remembers the answer', async () => {
+    await writeSite({ limits: { ratePerMinute: 50 } });
+    const llm = mockLLM(
+      () =>
+        '{"choice": 1, "confidence": "high", "reason": "This section explains rotating keys."}',
+    );
+    const api = createDocsApi({ ai: { llm } });
+    const first = await (
+      await api.POST(nav({ query: 'rotate my key' }), ctx('navigate'))
+    ).json();
+    expect(first).toMatchObject({
+      ranked: 'model',
+      reason: 'This section explains rotating keys.',
+    });
+    await api.POST(nav({ query: '  Rotate my   KEY ' }), ctx('navigate'));
+    expect(llm.calls).toHaveLength(1);
+  });
+
+  it('answers 404 when the docs have nothing on it, and when navigation is off', async () => {
+    await writeSite({ limits: { ratePerMinute: 50 } });
+    const api = createDocsApi({ ai: { llm: mockLLM() } });
+    const none = await api.POST(
+      nav({ query: 'quantum teleportation of llamas' }),
+      ctx('navigate'),
+    );
+    expect(none.status).toBe(404);
+    expect((await none.json()).error).toBe('Nothing in the docs matches that.');
+
+    await writeSite({ navigation: false });
+    const off = await createDocsApi({ ai: { llm: mockLLM() } }).POST(
+      nav({ query: 'rotate my key' }),
+      ctx('navigate'),
+    );
+    expect(off.status).toBe(404);
+    await writeSite(null);
+    const disabled = await createDocsApi().POST(
+      nav({ query: 'rotate my key' }),
+      ctx('navigate'),
+    );
+    expect(disabled.status).toBe(404);
+  });
+
+  it('rejects bad requests with a message', async () => {
+    await writeSite({ limits: { ratePerMinute: 100, maxQuestionLength: 100 } });
+    const api = createDocsApi({ ai: { llm: mockLLM() } });
+    const bad = async (request: Request) => {
+      const res = await api.POST(request, ctx('navigate'));
+      return [res.status, (await res.json()).error] as const;
+    };
+    expect(await bad(nav(null, {}, '{nope'))).toEqual([
+      400,
+      'The request body is not valid JSON.',
+    ]);
+    expect(await bad(nav({}))).toEqual([400, 'Say where you want to go.']);
+    expect(await bad(nav({ query: 'x'.repeat(101) }))).toEqual([
+      413,
+      'The request is longer than 100 characters.',
+    ]);
+    expect(await bad(nav({ query: 'q', pad: 'x'.repeat(40_000) }))).toEqual([
+      413,
+      'The request is too large.',
+    ]);
+  });
+
+  it('shares the visitor’s budget with the assistant', async () => {
+    const api = createDocsApi({ ai: { llm: citing() } });
+    const ip = { 'x-forwarded-for': '9.9.9.9' };
+    expect(
+      (
+        await api.POST(
+          post({ question: 'How do I rotate a key?' }, ip),
+          ctx('ask'),
+        )
+      ).status,
+    ).toBe(200);
+    expect(
+      (await api.POST(nav({ query: 'rotate my key' }, ip), ctx('navigate')))
+        .status,
+    ).toBe(200);
+    const limited = await api.POST(
+      nav({ query: 'rotate my key please' }, ip),
+      ctx('navigate'),
+    );
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('retry-after')).toBeTruthy();
+  });
+});

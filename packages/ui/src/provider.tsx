@@ -4,6 +4,7 @@ import {
   type IconComponent,
   IconsProvider,
 } from './components/icons-context.tsx';
+import { NavigationNoticeView } from './components/navigation-notice.tsx';
 import type { SearchBackend, SvgIcon } from '@dockudos/core';
 import {
   type AnchorHTMLAttributes,
@@ -72,6 +73,7 @@ export function DocsProvider({
     <HostContext.Provider value={value}>
       <IconsProvider icons={icons} components={iconComponents}>
         {children}
+        <NavigationNoticeView />
       </IconsProvider>
     </HostContext.Provider>
   );

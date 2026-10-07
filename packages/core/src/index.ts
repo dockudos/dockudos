@@ -28,3 +28,4 @@ export * from './lib/retrieval.ts';
 export * from './lib/embed-index.ts';
 export * from './lib/rate-limit.ts';
 export * from './lib/ask.ts';
+export * from './lib/navigate.ts';

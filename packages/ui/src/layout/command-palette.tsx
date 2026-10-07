@@ -1,11 +1,13 @@
 'use client';
 
 import {
+  type NavigateResult,
+  type NavigateTarget,
   type SearchHit,
   type Snippet,
   looksLikeQuestion,
 } from '@dockudos/core';
-import { ArrowLeft, Search, Sparkles } from 'lucide-react';
+import { ArrowLeft, Compass, Search, Sparkles } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import {
   type KeyboardEvent,
@@ -17,6 +19,7 @@ import {
   useState,
 } from 'react';
 import { AskView } from '../components/ask-view.tsx';
+import { announceNavigation } from '../components/navigation-notice.tsx';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';
 import {
@@ -25,6 +28,7 @@ import {
   useSearchClient,
 } from '../hooks/use-search.ts';
 import { renderIcon } from '../components/render-icon.tsx';
+import { requestNavigation } from '../lib/navigate-client.ts';
 import { useNavigate } from '../provider.tsx';
 
 export interface PaletteEntry {
@@ -89,13 +93,30 @@ export function PaletteButton() {
 type Row =
   | { kind: 'page'; key: string; entry: PaletteEntry }
   | { kind: 'hit'; key: string; hit: SearchHit }
-  | { kind: 'ask'; key: string };
+  | { kind: 'ask'; key: string }
+  | { kind: 'navigate'; key: string }
+  | { kind: 'choice'; key: string; target: NavigateTarget; primary: boolean };
+
+/** What "Take me there" is doing. */
+type Nav =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'choices'; result: NavigateResult }
+  | { status: 'none' }
+  | { status: 'error'; message: string };
+
+const targetLabel = (t: NavigateTarget) =>
+  [t.title, ...t.headingPath].join(' › ');
 
 /** The `ai` key of docs.json, as far as the palette needs it. Present means the assistant is on. */
 export interface PaletteAi {
   /** The ask route. Default `/api/ask`. */
   endpoint?: string;
   maxQuestionLength?: number;
+  /** The navigate route. Default `/api/navigate`. */
+  navigateEndpoint?: string;
+  /** Offer "Take me there". Default true. */
+  navigation?: boolean;
 }
 
 /** Text with the matched words marked. */
@@ -142,6 +163,8 @@ export function CommandPalette({
   const [question, setQuestion] = useState<string | undefined>();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  const [nav, setNav] = useState<Nav>({ status: 'idle' });
+  const navRun = useRef(0);
   const navigate = useNavigate();
   const listId = useId();
   const list = useRef<HTMLUListElement>(null);
@@ -207,15 +230,36 @@ export function CommandPalette({
         ),
       ];
     }
+    if (nav.status === 'choices') {
+      const { result } = nav;
+      return [result, ...(result.alternatives ?? [])].map(
+        (target, i): Row => ({
+          kind: 'choice',
+          key: `choice:${target.url}`,
+          target,
+          primary: i === 0,
+        }),
+      );
+    }
     if (!ai || !query.trim()) return results;
-    // A query that reads like a question goes to the assistant first; keywords keep search results first.
+    // What the reader typed decides what comes first. A question goes to the assistant. Anything else stays
+    // plain search, with the AI choices after the results, so Enter on keywords still opens the best result.
+    // With no results at all, a request of a few words is more likely a task: navigation comes first.
     const askRow: Row = { kind: 'ask', key: 'ask' };
-    return looksLikeQuestion(query)
-      ? [askRow, ...results]
-      : [...results, askRow];
-  }, [searching, found, pageRows, ai, query]);
+    const goRow: Row[] =
+      ai.navigation === false ? [] : [{ kind: 'navigate', key: 'navigate' }];
+    if (looksLikeQuestion(query)) return [askRow, ...goRow, ...results];
+    if (results.length === 0 && query.trim().split(/\s+/).length >= 3)
+      return [...goRow, askRow];
+    return [...results, askRow, ...goRow];
+  }, [searching, found, pageRows, ai, query, nav]);
 
-  useEffect(() => setActive(0), [query, open, found.query]);
+  useEffect(() => setActive(0), [query, open, found.query, nav.status]);
+  // A new query, or closing the palette, forgets what "Take me there" was doing.
+  useEffect(() => {
+    navRun.current++;
+    setNav({ status: 'idle' });
+  }, [query, open]);
   useEffect(() => {
     list.current
       ?.querySelector('[aria-selected="true"]')
@@ -230,9 +274,44 @@ export function CommandPalette({
     setMode('ask');
   };
 
+  const arrive = (target: NavigateTarget, reason?: string) => {
+    setOpen(false);
+    setQuery('');
+    navigate(target.url);
+    if (reason) announceNavigation({ reason, title: targetLabel(target) });
+  };
+
+  const startNavigating = () => {
+    const wanted = query.trim();
+    if (!ai || ai.navigation === false || !wanted) return;
+    const run = ++navRun.current;
+    setNav({ status: 'loading' });
+    void requestNavigation(wanted, { endpoint: ai.navigateEndpoint }).then(
+      (outcome) => {
+        if (run !== navRun.current) return; // the reader typed on, or left
+        if (outcome.kind === 'none') setNav({ status: 'none' });
+        else if (outcome.kind === 'error')
+          setNav({ status: 'error', message: outcome.message });
+        else if (outcome.result.confidence === 'high')
+          arrive(outcome.result, outcome.result.reason);
+        else setNav({ status: 'choices', result: outcome.result });
+      },
+    );
+  };
+
   const go = (row: Row | undefined) => {
     if (!row) return;
     if (row.kind === 'ask') return startAsking();
+    if (row.kind === 'navigate') return startNavigating();
+    if (row.kind === 'choice')
+      return arrive(
+        row.target,
+        row.primary
+          ? nav.status === 'choices'
+            ? nav.result.reason
+            : undefined
+          : undefined,
+      );
     setOpen(false);
     setQuery('');
     navigate(row.kind === 'hit' ? row.hit.url : row.entry.path);
@@ -253,7 +332,9 @@ export function CommandPalette({
       setActive(Math.max(rows.length - 1, 0));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      go(rows[active]);
+      // Cmd or Ctrl + Enter always means "take me there", whatever is highlighted.
+      if ((e.metaKey || e.ctrlKey) && ai) startNavigating();
+      else go(rows[active]);
     } else if (e.key === 'Tab' && ai && query.trim() && !e.shiftKey) {
       e.preventDefault();
       startAsking();
@@ -261,13 +342,22 @@ export function CommandPalette({
   };
 
   const waiting = searching && found.status === 'loading' && rows.length === 0;
-  const status = waiting
-    ? 'Searching…'
-    : searching && found.status === 'error'
-      ? 'Full-text search is unavailable. Showing matching page titles.'
-      : query.trim()
-        ? `${rows.length} ${rows.length === 1 ? 'result' : 'results'}`
-        : '';
+  const status =
+    nav.status === 'loading'
+      ? 'Finding the best page…'
+      : nav.status === 'none'
+        ? 'Nothing in the docs matches that.'
+        : nav.status === 'choices'
+          ? `Not sure which you mean. ${rows.length} places to choose from.`
+          : nav.status === 'error'
+            ? nav.message
+            : waiting
+              ? 'Searching…'
+              : searching && found.status === 'error'
+                ? 'Full-text search is unavailable. Showing matching page titles.'
+                : query.trim()
+                  ? `${rows.length} ${rows.length === 1 ? 'result' : 'results'}`
+                  : '';
 
   return (
     <Dialog.Root
@@ -353,14 +443,50 @@ export function CommandPalette({
                 aria-label="Results"
                 className="m-0 max-h-[50vh] list-none overflow-y-auto p-2"
               >
-                {!rows.some((r) => r.kind !== 'ask') && !waiting && (
+                {nav.status === 'loading' && (
                   <li
                     role="presentation"
-                    className="px-3 py-6 text-center text-sm text-muted-foreground"
+                    className="px-3 py-3 text-sm text-muted-foreground"
                   >
-                    {client ? 'No results for' : 'No pages match'} “{query}”.
+                    Finding the best page…
                   </li>
                 )}
+                {nav.status === 'none' && (
+                  <li
+                    role="presentation"
+                    className="px-3 py-3 text-sm text-muted-foreground"
+                  >
+                    Nothing in the docs matches that.
+                  </li>
+                )}
+                {nav.status === 'error' && (
+                  <li
+                    role="alert"
+                    className="px-3 py-3 text-sm text-red-600 dark:text-red-400"
+                  >
+                    {nav.message}
+                  </li>
+                )}
+                {nav.status === 'choices' && (
+                  <li
+                    role="presentation"
+                    className="px-3 py-2 text-xs text-muted-foreground"
+                  >
+                    Not sure which you mean. {nav.result.reason}
+                  </li>
+                )}
+                {nav.status !== 'choices' &&
+                  !rows.some(
+                    (r) => r.kind !== 'ask' && r.kind !== 'navigate',
+                  ) &&
+                  !waiting && (
+                    <li
+                      role="presentation"
+                      className="px-3 py-6 text-center text-sm text-muted-foreground"
+                    >
+                      {client ? 'No results for' : 'No pages match'} “{query}”.
+                    </li>
+                  )}
                 {rows.map((row, i) => (
                   <li
                     key={row.key}
@@ -385,6 +511,37 @@ export function CommandPalette({
                           </span>
                         </span>
                         <Shortcut keys="tab" />
+                      </>
+                    ) : row.kind === 'navigate' ? (
+                      <>
+                        <span className="text-primary">
+                          <Compass className="size-4" aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">
+                            Take me there: “{query.trim()}”
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            Go to the best section for this
+                          </span>
+                        </span>
+                        <Shortcut keys="mod+enter" />
+                      </>
+                    ) : row.kind === 'choice' ? (
+                      <>
+                        <span className="text-primary">
+                          <Compass className="size-4" aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">
+                            {targetLabel(row.target)}
+                          </span>
+                          {row.primary && (
+                            <span className="block text-xs text-muted-foreground">
+                              Best guess
+                            </span>
+                          )}
+                        </span>
                       </>
                     ) : row.kind === 'page' ? (
                       <>
@@ -450,6 +607,7 @@ export function CommandPalette({
                 <span>↑↓ to move</span>
                 <span>Enter to open</span>
                 {ai && <span>Tab to ask AI</span>}
+                {ai && ai.navigation !== false && <span>⌘↵ take me there</span>}
                 <span>Esc to close</span>
               </div>
             </>

@@ -557,14 +557,10 @@ const QUESTION_WORDS =
   /^(how|what|why|when|where|which|who|can|could|should|does|do|is|are|will|would|i|my|we|show|tell|explain|help)\b/i;
 
 /**
- * Does a query read like a question to a person rather than keywords for a search? True for a question mark,
- * a leading question word, or four words or more. The palette uses it to decide whether the assistant is the
- * likelier thing wanted.
+ * Does a query read like a question to a person rather than keywords for a search? True for a question mark
+ * or a leading question word ("how do I...", "what is..."). The palette uses it to put the assistant first.
  */
 export function looksLikeQuestion(query: string): boolean {
   const q = query.trim();
-  if (!q) return false;
-  return (
-    q.endsWith('?') || QUESTION_WORDS.test(q) || q.split(/\s+/).length >= 4
-  );
+  return q !== '' && (q.endsWith('?') || QUESTION_WORDS.test(q));
 }
