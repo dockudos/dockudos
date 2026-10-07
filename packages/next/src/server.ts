@@ -7,6 +7,7 @@ import {
   buildRobots,
   buildSitemap,
   expandIncludes,
+  findAccessRule,
   flattenSidebar,
   parseFrontmatter,
   extractLinks,
@@ -53,6 +54,8 @@ export interface Site {
    * frontmatter removed. For "copy page", `llms.txt`-style exports and AI assistants.
    */
   markdown(page: Page): Promise<string>;
+  /** Is a page covered by an `access` rule? Protected pages stay out of the sitemap, graph and the public book. */
+  isProtected(page: Page): boolean;
 }
 
 export interface PageGraph {
@@ -85,7 +88,15 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
   const tree = await discoverPages(dir, { prefix: config.urlPrefix });
   // Every page renders the graph, so build it once per site, not once per page.
   let graph: Promise<PageGraph> | undefined;
-  const nav = buildNavigation(config, tree);
+  const rules = config.access.rules;
+  const isProtected = (path: string) => !!findAccessRule(rules, path);
+  const built = buildNavigation(config, tree);
+  // Pages the author did not list are not advertised (search, "More" lists) when they sit behind a rule.
+  // Pages the author listed stay in the navigation: that is their choice.
+  const nav = {
+    ...built,
+    unlisted: built.unlisted.filter((p) => !isProtected(p.path)),
+  };
   const site: Site = {
     root,
     config,
@@ -103,7 +114,13 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       });
       return extractToc(source);
     },
-    graph: () => (graph ??= buildGraph(tree, dir, config.urlPrefix)),
+    isProtected: (page) => isProtected(page.path),
+    graph: () =>
+      (graph ??= buildGraph(
+        { ...tree, pages: tree.pages.filter((p) => !isProtected(p.path)) },
+        dir,
+        config.urlPrefix,
+      )),
     markdown: async (page) => {
       const read = (file: string) => readFile(join(dir, file), 'utf8');
       const expanded = await expandIncludes(await read(page.file), {
@@ -122,10 +139,17 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
     book: async () => {
       const ordered = [
         ...nav.tabs.flatMap((t) => flattenSidebar(t.sidebar)),
-        ...nav.unlisted,
+        ...built.unlisted,
       ].filter((p, i, all) => all.indexOf(p) === i);
+      // If the book page itself is protected, whoever sees it was let in and gets every page. If it is
+      // open, pages behind a rule must not appear in it.
+      const bookIsProtected =
+        !!findAccessRule(rules, `${config.urlPrefix ?? ''}/print`) ||
+        !!findAccessRule(rules, '/print');
       return Promise.all(
-        ordered.map(async (page) => ({ page, toc: await site.toc(page) })),
+        ordered
+          .filter((page) => bookIsProtected || !isProtected(page.path))
+          .map(async (page) => ({ page, toc: await site.toc(page) })),
       );
     },
   };
@@ -200,19 +224,22 @@ export function pageMetadata(site: Site, page: Page): Metadata {
     title: { absolute: seo.title },
     ...(seo.description && { description: seo.description }),
     ...(seo.canonical && { alternates: { canonical: seo.canonical } }),
-    ...(seo.noindex && { robots: { index: false, follow: false } }),
+    ...((seo.noindex || site.isProtected(page)) && {
+      robots: { index: false, follow: false },
+    }),
   };
 }
 
 /** `GET` handler for `app/sitemap.xml/route.ts`. 404 when `seo.siteUrl` is not set. */
 export async function sitemapResponse(site?: Site): Promise<Response> {
   const s = site ?? (await getSite());
+  const open = s.tree.pages.filter((p) => !s.isProtected(p));
   const dates = new Map(
     await Promise.all(
-      s.tree.pages.map(async (p) => [p, await s.lastModified(p)] as const),
+      open.map(async (p) => [p, await s.lastModified(p)] as const),
     ),
   );
-  const xml = buildSitemap(s.config, s.tree.pages, (p) => dates.get(p));
+  const xml = buildSitemap(s.config, open, (p) => dates.get(p));
   if (!xml) return new Response('Not found', { status: 404 });
   return new Response(xml, {
     headers: { 'content-type': 'application/xml; charset=utf-8' },

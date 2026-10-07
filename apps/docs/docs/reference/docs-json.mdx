@@ -220,3 +220,35 @@ See [Kudos](../components/kudos.mdx).
 />
 
 See [Page actions](../guides/page-actions.mdx) and [Keyboard shortcuts](../guides/keyboard-shortcuts.mdx).
+
+## access
+
+`access.rules` is a list; the first rule that covers a path decides.
+
+<TypeTable
+  type={{
+    paths: {
+      type: 'string[]',
+      required: true,
+      description:
+        'URL paths: "/print", "/team/*" (one level), "/team/**" (the folder and below). Include urlPrefix.',
+    },
+    require: {
+      type: '"basic" | "token" | "custom" | "deny"',
+      required: true,
+      description:
+        'basic: username and password. token: a bearer token. custom: your verify function. deny: answer 404.',
+    },
+    secretEnv: {
+      type: 'string',
+      description:
+        'Name of the environment variable holding the secret. Defaults: DOCKUDOS_BASIC_AUTH, DOCKUDOS_TOKEN.',
+    },
+    realm: {
+      type: 'string',
+      description: 'Name in the browser sign-in box (basic).',
+    },
+  }}
+/>
+
+See [Protecting pages](../guides/protecting-pages.mdx).

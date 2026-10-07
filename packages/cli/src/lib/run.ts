@@ -15,7 +15,7 @@ Commands:
   dev [next args]   Start the dev server; restarts when docs.json changes
   build [next args] Validate docs.json, check links, then build the site
   broken-links      Check internal links and anchors (--external also checks http links)
-  pdf               Print every page into one PDF (-o file, --no-build, --page-size, --chrome)
+  pdf               Print every page into one PDF (-o file, --no-build, --page-size, --chrome, --user, --token)
   kudos             Show page feedback collected by the kudos widget (--path, --json, --file)
 
 Options:

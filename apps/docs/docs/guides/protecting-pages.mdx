@@ -1,0 +1,130 @@
+---
+title: Protecting pages
+description: Put any route behind a password, a token, your own sign-in, or hide it completely.
+icon: lock
+---
+
+Any route of the site can be protected: pages, the whole site, the `/print` page, API routes such as
+`/api/markdown`, even files in `public/`. You write rules in `docs.json`; a small guard (`src/proxy.ts`, added
+by `dockudos init`) applies them before the page is built or sent.
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "access": {
+    "rules": [
+      {
+        "paths": ["/print", "/internal/**"],
+        "require": "basic",
+        "realm": "Acme team docs"
+      },
+      { "paths": ["/api/status"], "require": "token" },
+      { "paths": ["/draft/**"], "require": "deny" }
+    ]
+  }
+}
+```
+
+The first rule that covers a path decides, so list specific rules before broad ones.
+
+## Which paths
+
+| Pattern    | Covers                                                          |
+| ---------- | --------------------------------------------------------------- |
+| `/print`   | That path only.                                                 |
+| `/team/*`  | One level below `/team`: `/team/a`, not `/team` or `/team/a/b`. |
+| `/team/**` | `/team` and everything below it.                                |
+| `/**`      | The whole site.                                                 |
+
+Paths are the real URLs, so include your `urlPrefix` if you set one. Repeated slashes, a trailing slash and
+percent-encoding (`/%70rivate`) all resolve to the same path before matching, and a path that cannot be read is
+treated as protected. Matching is case sensitive, like the routes.
+
+## Ways to require access
+
+| `require` | The visitor must                                                                              | Secret comes from                                                                                                      |
+| --------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `basic`   | Sign in with the browser's username and password box (HTTP Basic).                            | `DOCKUDOS_BASIC_AUTH`, or the variable named in `secretEnv`: `user:password` entries separated by commas or new lines. |
+| `token`   | Send `Authorization: Bearer <token>` (or an `x-docs-token` header). For scripts and services. | `DOCKUDOS_TOKEN`, or `secretEnv`: tokens of at least 8 characters, separated by commas or new lines.                   |
+| `custom`  | Pass your own check, such as an existing sign-in.                                             | Your code.                                                                                                             |
+| `deny`    | Nothing works: the route answers 404, as if it did not exist.                                 | None.                                                                                                                  |
+
+Secrets are only ever read from environment variables, never from `docs.json`, so the file is safe to commit.
+
+```bash
+DOCKUDOS_BASIC_AUTH="ada:correct-horse,bob:battery-staple" npm start
+```
+
+If a rule needs a secret that is not set, the route answers 503 and the server logs which variable is missing.
+It never opens up because something is missing.
+
+HTTP Basic is simple and works everywhere (browsers, `curl`, `dockudos pdf`), but it sends the password with every
+request, so use it over HTTPS. For single sign-on or per-user roles, use `custom`.
+
+## Your own check
+
+```ts title="src/proxy.ts"
+import { createAccessProxy } from '@dockudos/next/access';
+
+export const proxy = createAccessProxy({
+  async verify(request, rule) {
+    const session = await readSession(request); // your code
+    if (!session) return Response.redirect(new URL('/login', request.url), 302);
+    return session.roles.includes('staff');
+  },
+});
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+```
+
+`verify` returns `true` to allow, `false` for a 403, or a `Response` to send instead, such as a redirect to your
+sign-in page. It only runs for rules with `"require": "custom"`.
+
+## What protection covers
+
+- **Responses that are let through are private.** They are sent with `Cache-Control: private, no-store` and
+  `X-Robots-Tag: noindex`, so a CDN or a search engine does not keep a copy to give to someone else.
+- **Other URLs for the same content.** `/api/markdown?path=…` (Copy page) and `/api/kudos` need the credentials of the
+  page they are about, and they answer the same for a protected page that exists and one that does not, so
+  nothing can be probed.
+- **Generated lists.** Protected pages are left out of `sitemap.xml`, the page graph, and the "More" list in the
+  search palette. Their pages are marked `noindex`.
+- **The book.** `/print` and the PDF include protected pages only when `/print` is itself protected, since then
+  everyone who sees it was let in.
+
+## What it does not cover
+
+- **Pages you list in `navigation`** still show in the sidebar and in search for everyone, because the sidebar is
+  built into the page. If the titles are sensitive, protect the whole site (`/**`), or leave the page out of
+  `navigation` and link to it from where it belongs.
+- It needs a server. A fully static export (`output: "export"`) has no place to run the guard. Put the files behind
+  your host's own access control instead.
+- Basic and token checks compare secrets in constant time, but there is no lockout: put a rate limit in front
+  if people can guess passwords.
+
+## The PDF of a protected site
+
+```bash
+DOCKUDOS_BASIC_AUTH="ada:correct-horse" dockudos pdf --user ada:correct-horse
+dockudos pdf --token "$DOCS_TOKEN"
+```
+
+The environment variable is for the temporary server `dockudos pdf` starts, which needs to know the secret too. `--user`
+(or `DOCKUDOS_PDF_AUTH`) and `--token` (or `DOCKUDOS_PDF_TOKEN`) are what the command presents when it opens `/print`.
+Without them, a protected `/print` stops with a message saying what to give.
+
+## Turning it on in an existing app
+
+```ts title="src/proxy.ts"
+import { createAccessProxy } from '@dockudos/next/access';
+
+export const proxy = createAccessProxy();
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+```
+
+`withDocs()` reads the rules from `docs.json` into the build (the rules only, never secrets). With no rules the guard does nothing.
+Next.js 15 and earlier call this file `middleware.ts` and its export `middleware`.

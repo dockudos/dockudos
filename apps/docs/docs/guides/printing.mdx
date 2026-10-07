@@ -77,7 +77,7 @@ export default async function PrintPage() {
 }
 ```
 
-`/print` is not in the sitemap and is marked `noindex`. A docs page whose URL is `/print` would be hidden by
+`/print` can be [protected](./protecting-pages.mdx) like any other route. It is not in the sitemap and is marked `noindex`. A docs page whose URL is `/print` would be hidden by
 it, so rename that page. Heading ids are made unique per page inside the book, so two pages can both have
 a "Setup" heading, and links such as `/guides/auth#keys` still land in the right place.
 

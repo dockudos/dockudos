@@ -13,6 +13,11 @@ export default defineConfig({
     command: `pnpm exec next start -p ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
+    // Secrets for the `access` rules in docs.json. They are only ever read from the environment.
+    env: {
+      DOCKUDOS_BASIC_AUTH: 'reader:s3cret-pass,editor:other-pass',
+      DOCKUDOS_TOKEN: 'example-token-1234',
+    },
   },
   projects: [
     {

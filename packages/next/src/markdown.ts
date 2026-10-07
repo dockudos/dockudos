@@ -1,3 +1,4 @@
+import { type AccessOptions, authorizePage } from './access.ts';
 import { getSite } from './server.ts';
 
 /**
@@ -7,11 +8,20 @@ import { getSite } from './server.ts';
  *     export const GET = createMarkdownHandler();
  *
  * Request: `GET /api/markdown?path=/guides/auth`. Hidden pages are served too (their URL works),
- * pages that do not exist answer 404.
+ * pages that do not exist answer 404. A page covered by an `access` rule needs the same credentials here
+ * as on its own URL.
  */
-export function createMarkdownHandler() {
+export function createMarkdownHandler({
+  access,
+}: { access?: AccessOptions } = {}) {
   return async function GET(request: Request): Promise<Response> {
     const path = new URL(request.url).searchParams.get('path');
+    // Ask for credentials before saying whether the page exists, so the answer does not reveal which
+    // protected pages there are.
+    if (path) {
+      const denied = await authorizePage(request, path, access);
+      if (denied) return denied;
+    }
     const site = await getSite();
     const page = path
       ? site.tree.pages.find((p) => p.path === path)

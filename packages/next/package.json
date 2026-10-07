@@ -63,6 +63,12 @@
       "types": "./dist/markdown.d.ts",
       "import": "./dist/markdown.js",
       "default": "./dist/markdown.js"
+    },
+    "./access": {
+      "@dockudos/source": "./src/access.ts",
+      "types": "./dist/access.d.ts",
+      "import": "./dist/access.js",
+      "default": "./dist/access.js"
     }
   },
   "files": [

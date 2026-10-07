@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('the whole site as one document', () => {
+  // /print is protected in this site (see docs.json), so the book is read with credentials.
+  test.use({
+    httpCredentials: { username: 'reader', password: 's3cret-pass' },
+  });
+
   test('has a cover, a contents list and every visible page, in navigation order', async ({
     page,
   }) => {
@@ -22,6 +27,8 @@ test.describe('the whole site as one document', () => {
     ]);
     // Hidden pages (the layout fixtures) are not in the book.
     expect(sections.some((p) => p?.startsWith('/layouts/'))).toBe(false);
+    // The book itself is behind credentials, so it holds the protected page too.
+    expect(sections).toContain('/private/secret');
     // Partials are not pages either.
     expect(sections.some((p) => p?.includes('snippets'))).toBe(false);
 

@@ -1,6 +1,7 @@
 import type { KudosEntry } from '@dockudos/core';
 import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { type AccessOptions, authorizePage } from './access.ts';
 import { getSite } from './server.ts';
 
 /** Where feedback is kept. Replace it to use a database; the handler only calls `add`. */
@@ -27,6 +28,8 @@ export interface KudosHandlerOptions {
   maxCommentLength?: number;
   /** Requests allowed per client per minute. Default 20. */
   rateLimitPerMinute?: number;
+  /** For `access` rules with `require: "custom"`: how to verify a visitor. */
+  access?: AccessOptions;
   /** Clock, for tests. */
   now?: () => number;
 }
@@ -118,11 +121,15 @@ export function createKudosHandler(options: KudosHandlerOptions = {}) {
     if (
       typeof path !== 'string' ||
       path.length > 300 ||
-      !path.startsWith('/') ||
-      !(await isKnownPath(path))
+      !path.startsWith('/')
     ) {
       return json({ error: 'unknown page' }, 400);
     }
+    // Feedback on a protected page needs the same credentials as reading it. This comes before the
+    // check that the page exists, so the answer does not reveal which protected pages there are.
+    const denied = await authorizePage(request, path, options.access);
+    if (denied) return denied;
+    if (!(await isKnownPath(path))) return json({ error: 'unknown page' }, 400);
     const at = new Date(t).toISOString();
 
     if (vote !== undefined) {

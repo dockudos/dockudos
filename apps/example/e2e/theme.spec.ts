@@ -54,6 +54,7 @@ test('system mode reacts to a live change of the OS setting', async ({
 }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/');
+  await page.waitForLoadState('networkidle'); // the page must have loaded its scripts to see the change
   await expect(html(page)).not.toHaveClass(/dark/);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(html(page)).toHaveClass(/dark/);

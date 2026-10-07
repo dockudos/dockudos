@@ -51,10 +51,11 @@ See [broken links](../guides/broken-links.mdx). Exit status 0 when there are no 
 
 ```bash
 dockudos pdf [-o <file>] [--no-build] [--page-size A4|Letter] [--chrome <path>] [--port <n>] [--timeout <s>]
+            [--user <user:password>] [--token <token>]
 ```
 
 Builds the site (unless `--no-build`), serves it on a free local port, and prints the `/print` page,
-which holds every page, into one PDF. Needs a Chrome or Chromium. See
+which holds every page, into one PDF. Needs a Chrome or Chromium. If `/print` is [protected](../guides/protecting-pages.mdx#the-pdf-of-a-protected-site), give `--user` or `--token`. See
 [Printing and PDF](../guides/printing.mdx#the-whole-site-as-one-pdf).
 
 ## kudos

@@ -135,6 +135,39 @@ const actionsSchema = z.strictObject({
     .optional(),
 });
 
+const accessRuleSchema = z.strictObject({
+  /**
+   * Which URL paths the rule covers: `/print` (that page), `/team/*` (one level), `/team/**` (the
+   * folder and everything below it). Include any prefix you set in `urlPrefix`.
+   */
+  paths: z
+    .array(
+      z
+        .string()
+        .regex(
+          /^\/(?:[^*\s]*(?:\*\*)?)?$|^\/(?:[^*\s/]+|\*)(?:\/(?:[^*\s/]+|\*))*(?:\/\*\*)?$/,
+          'must start with "/" and use * for one segment or ** only at the end',
+        ),
+    )
+    .min(1),
+  /**
+   * How a visitor proves they may see it:
+   * `basic` (HTTP Basic, credentials from an environment variable), `token` (a bearer token from an
+   * environment variable), `custom` (your own `verify` function in the proxy), or `deny` (answer 404).
+   */
+  require: z.enum(['basic', 'token', 'custom', 'deny']),
+  /** The environment variable holding the secret. Defaults: DOCKUDOS_BASIC_AUTH, DOCKUDOS_TOKEN. */
+  secretEnv: z
+    .string()
+    .regex(
+      /^[A-Z_][A-Z0-9_]*$/,
+      'must be an environment variable name like DOCS_PASSWORD',
+    )
+    .optional(),
+  /** Name shown in the browser's sign-in box (`basic`). */
+  realm: z.string().min(1).max(100).optional(),
+});
+
 /**
  * Shape of `docs.json`. Strict: unknown keys are rejected so typos fail the
  * build instead of being silently ignored. Later phases add keys.
@@ -163,6 +196,10 @@ export const docsConfigSchema = z.strictObject({
   actions: actionsSchema.default(() => actionsSchema.parse({})),
   /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
   shortcuts: z.boolean().default(true),
+  /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */
+  access: z
+    .strictObject({ rules: z.array(accessRuleSchema).default([]) })
+    .default(() => ({ rules: [] })),
 });
 
 /** JSON Schema for `docs.json`, for editor autocomplete. */

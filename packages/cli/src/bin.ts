@@ -46,7 +46,9 @@ const env: Env = {
         server.close(() => resolve(port));
       });
     }),
-  fetch: async (url) => ({ status: (await fetch(url)).status }),
+  fetch: async (url, headers) => ({
+    status: (await fetch(url, { headers })).status,
+  }),
   renderPdf: (options) => renderPdf(options, process.env),
 };
 

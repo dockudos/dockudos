@@ -10,3 +10,4 @@ export * from './lib/links.ts';
 export * from './lib/theme.ts';
 export * from './lib/package-manager.ts';
 export * from './lib/kudos.ts';
+export * from './lib/access.ts';

@@ -20,7 +20,10 @@ export interface Env {
   watch: (path: string, onChange: () => void) => FSWatcher | { close(): void };
   /** A TCP port nothing is listening on. */
   freePort: () => Promise<number>;
-  fetch: (url: string) => Promise<{ status: number }>;
+  fetch: (
+    url: string,
+    headers?: Record<string, string>,
+  ) => Promise<{ status: number }>;
   /** Print a page to PDF with headless Chrome. */
   renderPdf: (options: PdfOptions) => Promise<Uint8Array>;
 }
@@ -34,7 +37,11 @@ export interface PdfOptions {
   title: string;
   /** How long to wait for the page to be ready, in ms. */
   timeout: number;
+  /** Credentials for a protected `/print` page. */
+  auth?: PdfAuth;
 }
+
+export type PdfAuth = { user: string; password: string } | { token: string };
 
 export class CliError extends Error {
   /** Process exit code. */

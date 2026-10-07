@@ -46,6 +46,11 @@ export function withDocs(
 
   return withMdx({
     ...nextConfig,
+    // The rules (not the secrets) go into the build, so `src/proxy.ts` needs no file access.
+    env: {
+      ...nextConfig.env,
+      DOCKUDOS_ACCESS: JSON.stringify(config.access.rules),
+    },
     pageExtensions: [
       ...pageExtensions,
       ...DOC_EXTENSIONS.filter((ext) => !pageExtensions.includes(ext)),

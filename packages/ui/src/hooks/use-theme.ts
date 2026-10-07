@@ -40,6 +40,8 @@ export function useTheme(defaultMode: ThemeMode = 'system'): UseTheme {
           : 'light',
       );
     };
+    // The page script applied the scheme before React loaded; if the system changed since, catch up.
+    applyMode(readStoredMode(defaultMode));
     sync();
     window.addEventListener(EVENT, sync);
     window.addEventListener('storage', sync);

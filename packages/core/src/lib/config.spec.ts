@@ -29,6 +29,7 @@ describe('parseConfig', () => {
         endpoint: '/api/markdown',
       },
       shortcuts: true,
+      access: { rules: [] },
     });
   });
 
@@ -234,6 +235,65 @@ describe('parseConfig: actions and shortcuts', () => {
       );
     },
   );
+});
+
+describe('parseConfig: access', () => {
+  it('accepts rules for each way of requiring access', () => {
+    const c = parseConfig({
+      name: 'A',
+      access: {
+        rules: [
+          { paths: ['/print'], require: 'basic', realm: 'Team docs' },
+          {
+            paths: ['/internal/**', '/api/*'],
+            require: 'token',
+            secretEnv: 'DOCS_TOKEN',
+          },
+          { paths: ['/draft'], require: 'deny' },
+          { paths: ['/members/**'], require: 'custom' },
+        ],
+      },
+    });
+    expect(c.access.rules).toHaveLength(4);
+  });
+
+  it.each([
+    ['no paths', { paths: [], require: 'basic' }, 'access.rules[0].paths'],
+    [
+      'a path without a slash',
+      { paths: ['print'], require: 'basic' },
+      'access.rules[0].paths[0]',
+    ],
+    [
+      'a wildcard in the middle of a name',
+      { paths: ['/a*b'], require: 'basic' },
+      'access.rules[0].paths[0]',
+    ],
+    [
+      '** that is not last',
+      { paths: ['/a/**/b'], require: 'basic' },
+      'access.rules[0].paths[0]',
+    ],
+    [
+      'an unknown way',
+      { paths: ['/a'], require: 'magic' },
+      'access.rules[0].require',
+    ],
+    [
+      'a secret name that is not a variable',
+      { paths: ['/a'], require: 'basic', secretEnv: 'my secret' },
+      'access.rules[0].secretEnv',
+    ],
+    [
+      'an unknown key',
+      { paths: ['/a'], require: 'basic', password: 'x' },
+      'access.rules[0]',
+    ],
+  ])('rejects %s, naming the key', (_name, ruleValue, key) => {
+    expect(messageOf({ name: 'A', access: { rules: [ruleValue] } })).toContain(
+      key,
+    );
+  });
 });
 
 describe('parseConfig: urlPrefix', () => {

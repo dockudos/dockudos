@@ -45,7 +45,7 @@ describe('withDocs', () => {
     });
     expect(config.reactStrictMode).toBe(true);
     expect(config.images).toEqual({ unoptimized: true });
-    expect(config.env).toEqual({ A: '1' });
+    expect(config.env?.['A']).toBe('1');
   });
 
   it('does not mutate the input', () => {
@@ -136,5 +136,27 @@ describe('withDocs: redirects', () => {
     await expect(docs().redirects?.()).rejects.toThrow(
       /existing page[\s\S]*loop/,
     );
+  });
+});
+
+describe('withDocs: access rules', () => {
+  it("puts the rules, and no secrets, in the build environment next to the user's env", async () => {
+    await writeConfig({
+      name: 'T',
+      access: {
+        rules: [
+          { paths: ['/private/**'], require: 'basic', secretEnv: 'DOCS_PW' },
+        ],
+      },
+    });
+    const config = docs({ env: { MINE: '1' } });
+    expect(config.env?.['MINE']).toBe('1');
+    expect(JSON.parse(config.env!['DOCKUDOS_ACCESS']!)).toEqual([
+      { paths: ['/private/**'], require: 'basic', secretEnv: 'DOCS_PW' },
+    ]);
+  });
+
+  it('carries an empty list when nothing is protected', () => {
+    expect(docs().env?.['DOCKUDOS_ACCESS']).toBe('[]');
   });
 });

@@ -65,7 +65,21 @@ export async function renderPdf(
     args: asRoot ? ['--no-sandbox'] : [],
   });
   try {
-    const page = await browser.newPage();
+    const context = await browser.newContext({
+      ...(options.auth &&
+        'user' in options.auth && {
+          httpCredentials: {
+            username: options.auth.user,
+            password: options.auth.password,
+            send: 'always' as const,
+          },
+        }),
+      ...(options.auth &&
+        'token' in options.auth && {
+          extraHTTPHeaders: { authorization: `Bearer ${options.auth.token}` },
+        }),
+    });
+    const page = await context.newPage();
     await page.goto(options.url, {
       waitUntil: 'load',
       timeout: options.timeout,

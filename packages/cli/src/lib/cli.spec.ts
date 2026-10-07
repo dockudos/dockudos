@@ -597,6 +597,85 @@ describe('pdf', () => {
   });
 });
 
+describe('pdf: protected /print', () => {
+  async function finishBuild(t: ReturnType<typeof makeEnv>) {
+    await vi.waitFor(() => expect(t.children.length).toBeGreaterThanOrEqual(1));
+    t.children[0]!.child.emit('exit', 0);
+    await vi.waitFor(() => expect(t.children).toHaveLength(2));
+  }
+
+  it('sends basic credentials to the readiness check and to the browser', async () => {
+    await project(GOOD);
+    const calls: (Record<string, string> | undefined)[] = [];
+    const renderPdf = vi.fn(async () => new Uint8Array([37]));
+    const t = makeEnv({
+      renderPdf,
+      fetch: async (_u, headers) => (
+        calls.push(headers),
+        { status: headers ? 200 : 401 }
+      ),
+    });
+    const done = run(['pdf', '--user', 'ada:pa:ss'], t.env);
+    await finishBuild(t);
+    expect(await done).toBe(0);
+    expect(calls[0]).toEqual({
+      authorization: `Basic ${Buffer.from('ada:pa:ss').toString('base64')}`,
+    });
+    expect(renderPdf).toHaveBeenCalledWith(
+      expect.objectContaining({ auth: { user: 'ada', password: 'pa:ss' } }),
+    );
+  });
+
+  it('takes a token, and reads credentials from the environment', async () => {
+    await project(GOOD);
+    const renderPdf = vi.fn(async () => new Uint8Array([37]));
+    const a = makeEnv({ renderPdf });
+    const doneA = run(['pdf', '--token', 'tok-12345678'], a.env);
+    await finishBuild(a);
+    await doneA;
+    expect(renderPdf).toHaveBeenLastCalledWith(
+      expect.objectContaining({ auth: { token: 'tok-12345678' } }),
+    );
+
+    const b = makeEnv({ renderPdf, vars: { DOCKUDOS_PDF_AUTH: 'env:user' } });
+    const doneB = run(['pdf'], b.env);
+    await finishBuild(b);
+    await doneB;
+    expect(renderPdf).toHaveBeenLastCalledWith(
+      expect.objectContaining({ auth: { user: 'env', password: 'user' } }),
+    );
+  });
+
+  it('explains what to do when the page is protected and no credentials were given, or were wrong', async () => {
+    await project(GOOD);
+    const none = makeEnv({ fetch: async () => ({ status: 401 }) });
+    const doneNone = run(['pdf'], none.env);
+    await finishBuild(none);
+    expect(await doneNone).toBe(1);
+    expect(none.errText()).toContain('is protected');
+    expect(none.errText()).toContain('--user');
+
+    const wrong = makeEnv({ fetch: async () => ({ status: 401 }) });
+    const doneWrong = run(['pdf', '--user', 'a:b'], wrong.env);
+    await finishBuild(wrong);
+    expect(await doneWrong).toBe(1);
+    expect(wrong.errText()).toContain('refused the credentials');
+    expect(wrong.children[1]!.child.killed).toBe('SIGTERM');
+  });
+
+  it('says when the secret is missing from the server’s environment, and rejects a malformed --user', async () => {
+    await project(GOOD);
+    const t = makeEnv({ fetch: async () => ({ status: 503 }) });
+    const done = run(['pdf'], t.env);
+    await finishBuild(t);
+    expect(await done).toBe(1);
+    expect(t.errText()).toContain('secret is not set');
+    const u = makeEnv();
+    expect(await run(['pdf', '--user', 'nocolon'], u.env)).toBe(1);
+    expect(u.errText()).toContain('user:password');
+  });
+});
+
 describe('findChrome', () => {
   it('prefers the flag, then CHROME_PATH, and refuses a path that does not exist', async () => {
     const real = join(dir, 'chrome');

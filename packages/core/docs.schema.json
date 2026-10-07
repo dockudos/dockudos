@@ -228,6 +228,47 @@
     "shortcuts": {
       "default": true,
       "type": "boolean"
+    },
+    "access": {
+      "default": {
+        "rules": []
+      },
+      "type": "object",
+      "properties": {
+        "rules": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "paths": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^\\/(?:[^*\\s]*(?:\\*\\*)?)?$|^\\/(?:[^*\\s/]+|\\*)(?:\\/(?:[^*\\s/]+|\\*))*(?:\\/\\*\\*)?$"
+                }
+              },
+              "require": {
+                "type": "string",
+                "enum": ["basic", "token", "custom", "deny"]
+              },
+              "secretEnv": {
+                "type": "string",
+                "pattern": "^[A-Z_][A-Z0-9_]*$"
+              },
+              "realm": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": ["paths", "require"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": ["name"],
