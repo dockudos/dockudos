@@ -1,0 +1,19 @@
+{
+  "name": "@dockudos/docs",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "sourceRoot": "apps/docs/src",
+    "tags": [
+      "scope:app"
+    ]
+  },
+  "dependencies": {
+    "@dockudos/core": "workspace:*",
+    "@dockudos/next": "workspace:*",
+    "@dockudos/ui": "workspace:*",
+    "next": "~16.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

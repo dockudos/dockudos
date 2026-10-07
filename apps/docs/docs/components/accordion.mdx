@@ -1,0 +1,45 @@
+---
+title: Accordion
+description: Collapsible sections for FAQs and optional detail.
+---
+
+<Accordions>
+  <Accordion title="What is dockudos?">
+    A documentation framework for Next.js.
+  </Accordion>
+  <Accordion title="Is it free?">
+    Yes. It is licensed under Apache 2.0.
+  </Accordion>
+  <Accordion title="Can several be open?">
+    Not by default. Add `multiple` to `Accordions`.
+  </Accordion>
+</Accordions>
+
+```mdx
+<Accordions>
+  <Accordion title="Is it free?">Yes.</Accordion>
+  <Accordion title="Can several be open?">Add `multiple`.</Accordion>
+</Accordions>
+```
+
+Enter and Space toggle a section; arrow keys, Home and End move between headers. Sections have
+`aria-expanded` and the content is a labelled region.
+
+<TypeTable
+  type={{
+    multiple: {
+      type: 'boolean',
+      default: 'false',
+      description: 'On Accordions: allow more than one section open at once.',
+    },
+    title: {
+      type: 'string',
+      required: true,
+      description: 'On Accordion: the header text.',
+    },
+    value: {
+      type: 'string',
+      description: 'On Accordion: a stable id. Defaults to the title.',
+    },
+  }}
+/>

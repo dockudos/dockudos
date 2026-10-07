@@ -1,0 +1,83 @@
+---
+title: Writing content
+description: Pages, frontmatter, callouts and links.
+---
+
+Pages are [MDX](https://mdxjs.com): Markdown, plus components you can use without importing them.
+Tables, task lists and strikethrough work as in GitHub Flavored Markdown.
+
+## URLs
+
+The URL is the file path without the extension:
+
+| File                    | URL            |
+| ----------------------- | -------------- |
+| `docs/index.mdx`        | `/`            |
+| `docs/quickstart.mdx`   | `/quickstart`  |
+| `docs/guides/auth.mdx`  | `/guides/auth` |
+| `docs/guides/index.mdx` | `/guides`      |
+
+Spaces become `-`, and `#`, `?` and `%` are dropped. `.md` files work like `.mdx`.
+
+## Frontmatter
+
+```mdx
+---
+title: Authentication
+description: Sign requests with an API key.
+sidebarTitle: Auth
+hidden: false
+layout: notebook
+---
+```
+
+Every key is optional. See [frontmatter](../reference/frontmatter.mdx) for the full list. The title
+is the page heading, so do not repeat it as a `#` heading in the body. If you leave `title` out, the
+first `# Heading` in the file is used, then the file name.
+
+An invalid value stops the build and names the file and key:
+
+```text
+Invalid frontmatter in guides/auth.mdx:
+  - hidden: Invalid input: expected boolean, received string
+```
+
+## Headings and the table of contents
+
+`##` to `####` headings appear in the "On this page" list. Each heading gets a stable `id` and is a link
+(a `#` appears on hover), so `/guides/auth#api-keys` works. Two headings with the same text get `-1`, `-2`… suffixes.
+
+## Callouts
+
+Write a callout with three colons:
+
+```mdx
+:::warning[Careful]
+This deletes the project.
+:::
+```
+
+:::warning[Careful]
+This deletes the project.
+:::
+
+Types are `note`, `info`, `tip`, `warning` and `danger`. The text in brackets is the title; without
+it the type's name is used. The same thing as a component: `<Callout type="tip" title="Hint">…</Callout>`.
+
+## Links
+
+Link to another page with a relative path to its file. It becomes the page's URL, and the link
+checker verifies it:
+
+```mdx
+See [navigation](./navigation.mdx#tabs) or [the reference](../reference/docs-json.mdx).
+```
+
+Links such as `https://…` are left alone. A link to a heading must match a real `id`; `dockudos
+broken-links` reports one that does not. See [broken links](./broken-links.mdx).
+
+## Hidden pages and partials
+
+`hidden: true` keeps a page out of the generated sidebar and the sitemap and marks it `noindex`; the
+URL still works. Files and folders starting with `_` are not pages at all, which makes them the right
+place for [includes](./includes.mdx).

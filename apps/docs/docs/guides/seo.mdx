@@ -1,0 +1,38 @@
+---
+title: SEO and metadata
+description: Titles, descriptions, canonical URLs, sitemap and robots.txt.
+---
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "seo": {
+    "siteUrl": "https://docs.acme.dev",
+    "description": "Documentation for Acme.",
+    "noindex": false
+  }
+}
+```
+
+## What is generated
+
+| Output                      | From                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| `<title>`                   | `Page title \| Site name`; the home page uses just the site name.                             |
+| `<meta name="description">` | The page's `description`, else `seo.description`.                                             |
+| Canonical URL               | `seo.siteUrl` plus the page path. Omitted when `siteUrl` is not set.                          |
+| `robots` meta               | `noindex` for pages with `hidden: true`, and for every page when `seo.noindex` is true.       |
+| `/sitemap.xml`              | Every non-hidden page, with `lastmod`. Needs `seo.siteUrl`; without it the route returns 404. |
+| `/robots.txt`               | Allows everything and points to the sitemap; with `seo.noindex` it disallows everything.      |
+
+## Last updated
+
+Each page shows "Last updated" under the content. The date is the last Git commit that touched the
+file. If Git is not available, the file is not in a repository, is not committed yet, or has
+uncommitted changes, the file's modification time is used instead.
+
+<Callout type="note">
+  On hosts that build from a shallow clone, every file can look like it changed
+  in the latest commit. Fetch full history (for example `fetch-depth: 0` in
+  GitHub Actions) for accurate dates.
+</Callout>

@@ -1,0 +1,60 @@
+name: Bug report
+description: Something does not work as the documentation says.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time. A small reproduction is the fastest way to a fix.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Ideally a link to a repository, or the `docs.json` and the page that show the problem.
+      placeholder: |
+        1. npx dockudos init repro
+        2. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        [
+          Config / docs.json,
+          MDX / content,
+          UI / components,
+          Theming / layouts,
+          CLI,
+          Build / Next.js integration,
+          Other,
+        ]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: dockudos version
+      description: Output of `npx dockudos --version`.
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Node.js version, package manager, Next.js version, operating system, browser if it is a visual problem.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output
+      description: The full message from the terminal or the browser console.
+      render: text

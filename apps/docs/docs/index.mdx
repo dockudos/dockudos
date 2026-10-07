@@ -1,0 +1,41 @@
+---
+title: dockudos
+description: Documentation sites for Next.js, from MDX files and one JSON config.
+layout: home
+---
+
+dockudos turns a folder of MDX files and a `docs.json` into a documentation site with navigation,
+table of contents, dark mode, syntax highlighting and a set of ready-made components. It runs inside
+a Next.js App Router project, so you keep the whole Next.js toolbox.
+
+<Cards columns={3}>
+  <Card title="Quickstart" href="/getting-started/quickstart">
+    A new site in a few minutes with `npx dockudos init`.
+  </Card>
+  <Card title="Add to a Next.js app" href="/getting-started/existing-project">
+    Mount the docs under `/docs` in an app you already have.
+  </Card>
+  <Card title="docs.json reference" href="/reference/docs-json">
+    Every key, its type and its default.
+  </Card>
+</Cards>
+
+## What you get
+
+- **Content from files.** Pages are MDX in `docs/`. The URL comes from the file path; the title and
+  description from frontmatter.
+- **Navigation you control.** List pages in `docs.json`, or leave it empty and the sidebar follows
+  your folders.
+- **A real theme.** One brand color generates a palette for light and dark mode that meets WCAG AA
+  contrast. Six layouts, switchable per site or per page.
+- **Components for docs.** Callouts, tabs, steps, cards, file trees, type tables, diagrams, math and more.
+- **Checks that fail the build.** An invalid `docs.json` or a broken link stops `dockudos build` and
+  tells you the file and line.
+- **A headless core.** Config validation, the page tree, breadcrumbs and the table of contents work
+  without React. See [the headless core](/reference/headless-core).
+
+<Callout type="info" title="Status">
+  dockudos is at version 0.x. The documentation covers what is built today:
+  authoring, theming, components and the CLI. Search, the AI assistant and API
+  reference pages are planned for later releases.
+</Callout>

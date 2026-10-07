@@ -1,22 +1,19 @@
 # @dockudos/ui
 
-Shared shadcn/ui components (Radix, Tailwind v4) for dockudos apps.
-
-## Add a component
-
-Run from `apps/web` (or any app with a `components.json`); files land in `packages/ui/src/components`:
+Layouts, theme and components for [dockudos](https://github.com/dockudos/dockudos) sites: callouts,
+tabs, accordions, steps, cards, code blocks with copy buttons, file trees, type tables, diagrams,
+a zoomable image, a page graph, and six page layouts in light and dark mode.
 
 ```bash
-cd apps/web && pnpm dlx shadcn@latest add <component>
+npm install @dockudos/ui
 ```
-
-Then export it from `src/index.ts`. If the CLI writes a wrong import such as `from "cn"`, change it to `@dockudos/ui/lib/utils`.
-
-## Use
 
 ```tsx
-import '@dockudos/ui/globals.css'; // once, in the app root layout
-import { Button } from '@dockudos/ui/components/button';
+import '@dockudos/ui/styles.css'; // compiled, no Tailwind setup needed
+import { DocsLayout, ThemeScript } from '@dockudos/ui';
 ```
 
-Apps need `@tailwindcss/postcss` in `postcss.config.mjs` and `transpilePackages: ['@dockudos/ui']` in `next.config.js`.
+Colors, fonts and radius are CSS variables, so `docs.json` (or your own stylesheet) can change them.
+Peer dependencies: `react` and `react-dom` 19.
+
+Most people want the [`dockudos` CLI](https://www.npmjs.com/package/@dockudos/cli) instead.

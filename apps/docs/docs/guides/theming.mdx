@@ -1,0 +1,71 @@
+---
+title: Theming
+description: Brand color, dark mode, fonts and your own CSS.
+---
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "theme": {
+    "primary": "#7c3aed",
+    "mode": "system",
+    "layout": "docs",
+    "fonts": {
+      "sans": "Inter, system-ui, sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "radius": "0.5rem",
+    "css": "custom.css"
+  }
+}
+```
+
+## Brand color
+
+`primary` is one hex color. dockudos derives the rest of the palette from it for both color schemes
+and adjusts its lightness only as far as needed so links and buttons keep a contrast ratio of at
+least 4.5:1 (WCAG AA): darker in light mode, lighter in dark mode. A very pale yellow will end up
+as a darker yellow, by design.
+
+## Dark mode
+
+`mode` sets the default: `light`, `dark` or `system`. Visitors can change it with the button in the
+navbar, which cycles light, dark, system and remembers the choice. A small script in `<head>` applies the
+saved choice before the first paint, so there is no flash of the wrong scheme.
+
+## Fonts and radius
+
+`fonts.sans` and `fonts.mono` are CSS `font-family` values. dockudos does not load font files; load
+them yourself (with `next/font`, for example) and name the family here. `radius` is a CSS length that
+scales every rounded corner.
+
+## Everything is a CSS variable
+
+Colors, fonts and radius are CSS variables (`--primary`, `--background`, `--font-sans`, `--radius`, …).
+`theme.css` is a path to a stylesheet, relative to the project root, that is added after the theme.
+Because it comes last and is not part of a CSS layer, it wins over the built-in styles:
+
+```css title="custom.css"
+:root {
+  --background: oklch(0.99 0.01 90);
+}
+.dark {
+  --background: oklch(0.15 0.02 270);
+}
+.dk-page-title {
+  letter-spacing: -0.03em;
+}
+```
+
+A path that does not exist stops the build with `theme.css: file not found`.
+
+## Logo and favicon
+
+```json
+{
+  "logo": { "light": "/logo-light.svg", "dark": "/logo-dark.svg", "href": "/" },
+  "favicon": "/favicon.ico"
+}
+```
+
+`logo` can also be a single path. Files live in `public/`.

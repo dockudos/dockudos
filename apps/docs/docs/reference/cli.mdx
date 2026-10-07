@@ -1,0 +1,58 @@
+---
+title: CLI
+description: The dockudos command.
+---
+
+```text
+dockudos <command> [options]
+```
+
+## init
+
+```bash
+dockudos init [folder] [--name <text>] [--package-manager <npm|pnpm|yarn|bun>] [--yes]
+```
+
+Creates a site from the default template. Asks for anything you did not pass, unless `--yes` or the
+terminal is not interactive. Fails if the folder has files in it. See [installation](../getting-started/installation.mdx).
+
+## dev
+
+```bash
+dockudos dev [next dev options]
+```
+
+Runs `next dev` from your project. Arguments after `dev` go to Next.js, for example `-p 4000`.
+MDX and component changes hot-reload through Next.js. A change to `docs.json` restarts the server
+(it is read when Next.js starts); if the new file is invalid, the problem is printed and the running
+server stays up.
+
+## build
+
+```bash
+dockudos build [next build options]
+```
+
+1. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
+2. Checks every link, anchor and image. Any error stops here.
+3. Runs `next build`.
+
+Exits with the status of `next build`, or 1 when a check fails, with the reason printed.
+
+## broken-links
+
+```bash
+dockudos broken-links [--external]
+```
+
+See [broken links](../guides/broken-links.mdx). Exit status 0 when there are no errors, 1 otherwise.
+
+## Exit status
+
+| Status | Meaning                                                        |
+| ------ | -------------------------------------------------------------- |
+| 0      | Success                                                        |
+| 1      | A check failed, a flag was wrong, or the command could not run |
+| other  | `dev` and `build` return what `next` returned                  |
+
+`dockudos --help` and `dockudos --version` work as expected.

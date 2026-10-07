@@ -1,0 +1,40 @@
+---
+title: Layouts
+description: Six page layouts, chosen for the site or per page.
+---
+
+Set the default in `docs.json`, and override it in a page's frontmatter:
+
+```json title="docs.json"
+{ "name": "Acme", "theme": { "layout": "notebook" } }
+```
+
+```mdx title="docs/index.mdx"
+---
+title: Welcome
+layout: home
+---
+```
+
+| Layout     | What it is                                                               |
+| ---------- | ------------------------------------------------------------------------ |
+| `docs`     | The default: navbar, sidebar, content and table of contents.             |
+| `notebook` | Compact. Smaller type, a narrower sidebar shown as a card.               |
+| `spacious` | A wide reading column and larger type.                                   |
+| `flux`     | Minimal chrome: no rules between regions and no table of contents.       |
+| `glass`    | Translucent navbar and sidebar over a soft gradient of your brand color. |
+| `home`     | A landing page: centered, no sidebar and no table of contents.           |
+
+Every layout works in light and dark mode. This site uses `home` for its front page.
+
+## Changing a layout's look
+
+Layouts are CSS keyed on the `data-layout` attribute of the page frame. To tweak one, target it from
+[your own stylesheet](./theming.mdx#everything-is-a-css-variable):
+
+```css
+[data-layout='notebook'] {
+  --dk-sidebar-w: 16rem;
+  --dk-content-w: 48rem;
+}
+```

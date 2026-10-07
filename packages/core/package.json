@@ -1,7 +1,26 @@
 {
   "name": "@dockudos/core",
   "version": "0.0.1",
+  "description": "Headless core of dockudos: docs.json schema, page tree, navigation, link checking. No React.",
   "license": "Apache-2.0",
+  "keywords": [
+    "docs",
+    "documentation",
+    "mdx",
+    "headless"
+  ],
+  "homepage": "https://github.com/dockudos/dockudos#readme",
+  "bugs": {
+    "url": "https://github.com/dockudos/dockudos/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dockudos/dockudos.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

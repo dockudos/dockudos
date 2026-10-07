@@ -1,0 +1,56 @@
+---
+title: Tabs
+description: Tabbed content, and code blocks as tabs.
+---
+
+<Tabs>
+  <Tab value="JavaScript">Use `fetch()` in the browser and in Node 18+.</Tab>
+  <Tab value="Python">Use `requests.get()`.</Tab>
+  <Tab value="curl">Use `curl -s URL`.</Tab>
+</Tabs>
+
+```mdx
+<Tabs>
+  <Tab value="JavaScript">Use `fetch()`.</Tab>
+  <Tab value="Python">Use `requests.get()`.</Tab>
+</Tabs>
+```
+
+The tab labels come from the `value` of each `<Tab>`, in order. Arrow keys move between tabs, Home and
+End jump to the first and last, and the panel is reachable with Tab.
+
+## Keeping tabs in step
+
+Give related tab sets the same `groupId`. Choosing a tab in one switches all of them, and the choice
+is remembered on the next visit. The `package-install` code block uses `groupId="package-manager"`.
+
+<Tabs groupId="os">
+  <Tab value="macOS">Press Cmd+K.</Tab>
+  <Tab value="Windows">Press Ctrl+K.</Tab>
+</Tabs>
+
+<Tabs groupId="os">
+  <Tab value="macOS">Cmd+Shift+P opens commands.</Tab>
+  <Tab value="Windows">Ctrl+Shift+P opens commands.</Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+    items: {
+      type: 'string[]',
+      description:
+        'Labels, if you want them listed explicitly. Normally taken from the Tab children.',
+    },
+    defaultValue: {
+      type: 'string',
+      description: 'The tab shown first. Defaults to the first.',
+    },
+    groupId: {
+      type: 'string',
+      description:
+        'Tabs sharing a groupId switch together and remember the choice.',
+    },
+  }}
+/>
+
+`<CodeGroup>` is the same idea for code blocks; see [code blocks](../guides/code-blocks.mdx).

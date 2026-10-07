@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest something dockudos should do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that is hard or impossible today? Start from the problem, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like
+      description: How would it work for someone writing docs? A sketch of the `docs.json` key or the MDX you would write helps.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you tried
+      description: Workarounds, or how other tools handle it.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I would be willing to work on this.

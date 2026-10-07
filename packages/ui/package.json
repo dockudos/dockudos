@@ -1,7 +1,27 @@
 {
   "name": "@dockudos/ui",
   "version": "0.0.1",
+  "description": "React components, layouts and theme for dockudos documentation sites.",
   "license": "Apache-2.0",
+  "keywords": [
+    "docs",
+    "documentation",
+    "mdx",
+    "react",
+    "components"
+  ],
+  "homepage": "https://github.com/dockudos/dockudos#readme",
+  "bugs": {
+    "url": "https://github.com/dockudos/dockudos/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dockudos/dockudos.git",
+    "directory": "packages/ui"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

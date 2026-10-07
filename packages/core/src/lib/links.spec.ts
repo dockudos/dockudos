@@ -120,6 +120,18 @@ describe('extractLinks', () => {
     expect(extractLinks(src).map((l) => l.href)).toEqual(['./yes.mdx']);
   });
 
+  it('skips fences indented inside JSX, as in <Step>', () => {
+    const src = [
+      '<Step>',
+      '    ```mdx',
+      '    [no](./nope.mdx)',
+      '    ```',
+      '    [yes](./yes.mdx)',
+      '</Step>',
+    ].join('\n');
+    expect(extractLinks(src).map((l) => l.href)).toEqual(['./yes.mdx']);
+  });
+
   it('supports angle-bracket destinations and counts frontmatter lines', () => {
     const src = ['---', 'title: T', '---', '[x](<./a b.mdx>)'].join('\n');
     expect(extractLinks(src)).toEqual([

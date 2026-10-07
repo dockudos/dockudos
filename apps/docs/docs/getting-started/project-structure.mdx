@@ -1,0 +1,39 @@
+---
+title: Project structure
+description: What init creates, and which files you edit.
+---
+
+```
+my-docs/
+├── docs/                    your content (MDX)
+│   ├── index.mdx
+│   ├── quickstart.mdx
+│   └── guides/writing.mdx
+├── docs.json                site config and navigation
+├── next.config.mjs          wraps your Next.js config with withDocs()
+├── mdx-components.tsx       the components available in MDX
+├── public/                  static files, served from /
+├── src/app/
+│   ├── layout.tsx           styles, theme script and the router link
+│   ├── [[...slug]]/page.tsx renders any page from docs/
+│   ├── sitemap.xml/route.ts
+│   └── robots.txt/route.ts
+└── package.json
+```
+
+You normally edit `docs/`, `docs.json` and `public/`. The files in `src/app/` are small and yours to
+change, but they are the glue between your content and the packages, so read them before you do.
+
+## The packages
+
+| Package          | What it does                                                    |
+| ---------------- | --------------------------------------------------------------- |
+| `@dockudos/core` | Config schema, page tree, navigation, link checking. No React.  |
+| `@dockudos/next` | `withDocs()`, the MDX pipeline, `getSite()`, metadata, sitemap. |
+| `@dockudos/ui`   | Layouts, theme, and every component. Ships its own stylesheet.  |
+| `@dockudos/cli`  | The `dockudos` command.                                         |
+
+## Files that are not pages
+
+Inside `docs/`, anything starting with `.` or `_` is ignored when pages are discovered. Use a folder
+like `docs/_snippets/` for content you [include](../guides/includes.mdx) in several pages.

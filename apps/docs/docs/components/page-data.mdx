@@ -1,0 +1,29 @@
+---
+title: Page data
+description: An inline table of contents and a graph of your pages.
+---
+
+## InlineToc
+
+The headings of the current page, as a list, anywhere in the page:
+
+<InlineToc />
+
+```mdx
+<InlineToc />
+```
+
+## GraphView
+
+Every page as a node, every link between pages as a line, with the current page highlighted. Nodes
+are links, so the graph can be used from the keyboard; hover or focus a node for its title.
+
+<GraphView />
+
+```mdx
+<GraphView />
+```
+
+The data comes from the links in your pages, found when the site is built. Hidden pages are left out.
+Layout is computed in the browser and is the same every time for the same pages. Very large sites
+(hundreds of pages) get a coarser layout to keep the page fast.

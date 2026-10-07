@@ -1,7 +1,26 @@
 {
   "name": "@dockudos/next",
   "version": "0.0.1",
+  "description": "Next.js integration for dockudos: withDocs(), the MDX pipeline, metadata, sitemap.",
   "license": "Apache-2.0",
+  "keywords": [
+    "docs",
+    "documentation",
+    "mdx",
+    "nextjs"
+  ],
+  "homepage": "https://github.com/dockudos/dockudos#readme",
+  "bugs": {
+    "url": "https://github.com/dockudos/dockudos/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dockudos/dockudos.git",
+    "directory": "packages/next"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

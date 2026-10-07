@@ -1,0 +1,14 @@
+---
+title: GitHub info
+description: A repository card with stars and forks.
+---
+
+<GithubInfo owner="vercel" repo="next.js" />
+
+```mdx
+<GithubInfo owner="vercel" repo="next.js" />
+```
+
+The numbers are fetched from the GitHub API when the page is built. If GitHub cannot be reached, or
+the rate limit is hit, the card still works as a link, just without numbers. Set a `GITHUB_TOKEN`
+environment variable at build time to raise the rate limit.

@@ -1,6 +1,7 @@
 import { parse } from 'yaml';
 import { z } from 'zod';
 import { LAYOUTS } from './config.ts';
+import { FenceTracker } from './fence.ts';
 
 /** Known frontmatter keys. Unknown keys are kept so pages can carry custom metadata. */
 export const frontmatterSchema = z.looseObject({
@@ -77,15 +78,9 @@ export function parseFrontmatter(
 
 /** First level-one ATX heading outside code fences, used as the title when frontmatter has none. */
 export function firstHeading(body: string): string | undefined {
-  let fence: string | undefined;
+  const fence = new FenceTracker();
   for (const line of body.split(/\r?\n/)) {
-    const f = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
-    if (f) {
-      if (!fence) fence = f;
-      else if (f[0] === fence[0] && f.length >= fence.length) fence = undefined;
-      continue;
-    }
-    if (fence) continue;
+    if (fence.inCode(line)) continue;
     const h = /^#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/.exec(line)?.[1];
     if (h) return h.replace(/[*_`]/g, '').trim();
   }

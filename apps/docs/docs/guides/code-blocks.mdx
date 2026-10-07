@@ -1,0 +1,108 @@
+---
+title: Code blocks
+description: Highlighting, titles, line highlights, diffs, package-manager tabs and TypeScript hints.
+---
+
+Fenced code is highlighted with Shiki in a light and a dark theme at once, so switching theme needs
+no re-render. Each block gets a copy button. Unknown languages are shown as plain text.
+
+## Title, line numbers and highlighted lines
+
+Put options after the language:
+
+````mdx
+```ts title="hello.ts" {2,4-5} showLineNumbers
+export function greet(name: string) {
+  const message = `Hello, ${name}`;
+  console.log(message);
+  return message.length;
+}
+```
+````
+
+```ts title="hello.ts" {2,4-5} showLineNumbers
+export function greet(name: string) {
+  const message = `Hello, ${name}`;
+  console.log(message);
+  return message.length;
+}
+```
+
+## Notations in comments
+
+```ts
+const kept = 1; // [!code highlight]
+const added = 2; // [!code ++]
+const removed = 3; // [!code --]
+const focused = 4; // [!code focus]
+```
+
+`[!code highlight]`, `[!code ++]`, `[!code --]` and `[!code focus]` work in any language that has comments.
+Removed lines are left out when someone copies the block.
+
+## Several blocks as tabs
+
+Wrap blocks in `<CodeGroup>`. Each tab is named by its block's `title`.
+
+<CodeGroup>
+
+```ts title="client.ts"
+import { connect } from './connect';
+```
+
+```js title="client.js"
+const { connect } = require('./connect');
+```
+
+</CodeGroup>
+
+## Package manager tabs
+
+Write the npm command once in a `package-install` block. Readers get tabs for npm, pnpm, yarn and bun,
+and the tab they pick is remembered across pages.
+
+````mdx
+```package-install
+npm install @dockudos/core -D
+```
+````
+
+```package-install
+npm install @dockudos/core -D
+```
+
+Supported: `install` (also `i`, with `-D` and `-g`), `uninstall`, `run`, `test`, `start`, `build`,
+`create`, `init`, `exec` and `npx`. Any other command is shown unchanged in every tab, so a typo is
+visible. Put several commands on separate lines.
+
+## TypeScript and JavaScript
+
+Add `ts-to-js` to a TypeScript fence and readers get both versions, with types removed from the
+JavaScript one. This needs the `typescript` package in your project.
+
+````mdx
+```ts ts-to-js
+interface User {
+  name: string;
+}
+export const greet = (user: User): string => `Hi ${user.name}`;
+```
+````
+
+```ts ts-to-js
+interface User {
+  name: string;
+}
+export const greet = (user: User): string => `Hi ${user.name}`;
+```
+
+## Type hints with Twoslash
+
+Add `twoslash` and hovering a name shows its type. The example is compiled, so a type error in it
+stops the build unless you expect it with a `// @errors: 2322` comment. This keeps examples honest.
+It needs `typescript` in your project, and only fences marked `twoslash` pay for it.
+
+```ts twoslash
+const point = { x: 1, y: 2 };
+const sum = point.x + point.y;
+```

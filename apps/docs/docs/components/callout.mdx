@@ -1,0 +1,40 @@
+---
+title: Callout
+description: Draw attention to a note, tip or warning.
+---
+
+<Callout type="note">A plain note.</Callout>
+<Callout type="info" title="Good to know">
+  Information the reader may not expect.
+</Callout>
+<Callout type="tip">A shortcut or a better way.</Callout>
+<Callout type="warning">Something that can go wrong.</Callout>
+<Callout type="danger">Something that cannot be undone.</Callout>
+
+```mdx
+<Callout type="info" title="Good to know">
+  Information the reader may not expect.
+</Callout>
+
+:::warning[Careful]
+The same thing, written with colons.
+:::
+```
+
+<TypeTable
+  type={{
+    type: {
+      type: '"note" | "info" | "tip" | "warning" | "danger"',
+      default: '"note"',
+      description:
+        'Sets the color and the icon. An unknown value renders as note.',
+    },
+    title: { type: 'string', description: 'Defaults to the name of the type.' },
+    children: {
+      type: 'ReactNode',
+      description: 'Content. Markdown works inside.',
+    },
+  }}
+/>
+
+A callout is a `role="note"` region; its icon is decorative and hidden from screen readers.

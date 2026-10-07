@@ -1,0 +1,30 @@
+---
+title: Tooltip and Banner
+description: An inline hint, and an announcement strip.
+---
+
+## Tooltip
+
+Hover or focus the word <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip> to see
+the hint.
+
+```mdx
+Hover <Tooltip tip="MDX is Markdown that can use components.">MDX</Tooltip>.
+```
+
+The term is focusable, so keyboard users get the hint on focus, and Escape closes it. Put essential
+information in the text, not only in a tooltip: touch screens have no hover.
+
+## Banner
+
+<Banner id="docs-example-banner">
+  dockudos 0.x is available. This banner can be dismissed.
+</Banner>
+
+```mdx
+<Banner id="v1-launch">Version 1 is out.</Banner>
+```
+
+With an `id` the banner has a dismiss button and stays dismissed for that visitor (it is stored in
+the browser). Without one it cannot be dismissed. `variant="rainbow"` gives it a gradient.
+A banner placed in a page shows in the page; to show one on every page, render it in your layout.

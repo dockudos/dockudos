@@ -1,0 +1,77 @@
+{
+  "$schema": "./node_modules/@dockudos/core/docs.schema.json",
+  "name": "dockudos",
+  "theme": { "primary": "#4f46e5" },
+  "navigation": [
+    {
+      "tab": "Guides",
+      "groups": [
+        {
+          "group": "Get started",
+          "pages": [
+            "index",
+            "getting-started/installation",
+            "getting-started/quickstart",
+            "getting-started/project-structure",
+            "getting-started/existing-project"
+          ]
+        },
+        {
+          "group": "Writing",
+          "pages": [
+            "guides/writing-content",
+            "guides/navigation",
+            "guides/includes",
+            "guides/code-blocks",
+            "guides/diagrams-and-math",
+            "guides/images"
+          ]
+        },
+        {
+          "group": "Site",
+          "pages": [
+            "guides/theming",
+            "guides/layouts",
+            "guides/redirects",
+            "guides/seo",
+            "guides/broken-links"
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Components",
+      "groups": [
+        {
+          "group": "Components",
+          "pages": [
+            "components/index",
+            "components/callout",
+            "components/tabs",
+            "components/accordion",
+            "components/steps-and-cards",
+            "components/tooltip-and-banner",
+            "components/files",
+            "components/type-tables",
+            "components/page-data",
+            "components/github-info"
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Reference",
+      "groups": [
+        {
+          "group": "Reference",
+          "pages": [
+            "reference/docs-json",
+            "reference/frontmatter",
+            "reference/cli",
+            "reference/headless-core"
+          ]
+        }
+      ]
+    }
+  ]
+}

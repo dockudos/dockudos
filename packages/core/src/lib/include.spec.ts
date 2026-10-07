@@ -41,6 +41,12 @@ describe('expandIncludes', () => {
     expect(await run({ 'index.mdx': src, 's.mdx': 'x' })).toBe(src);
   });
 
+  it('ignores includes inside an indented fence', async () => {
+    const src =
+      '<Step>\n    ```mdx\n    <include>./s.mdx</include>\n    ```\n</Step>';
+    expect(await run({ 'index.mdx': src, 's.mdx': 'x' })).toBe(src);
+  });
+
   it('names file and line for a missing file', async () => {
     const err = await run({
       'index.mdx': 'a\nb\n<include>./gone.mdx</include>',

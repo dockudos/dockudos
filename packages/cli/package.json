@@ -1,7 +1,26 @@
 {
   "name": "@dockudos/cli",
   "version": "0.0.1",
+  "description": "The dockudos command: init, dev, build and broken-links.",
   "license": "Apache-2.0",
+  "keywords": [
+    "docs",
+    "documentation",
+    "mdx",
+    "cli"
+  ],
+  "homepage": "https://github.com/dockudos/dockudos#readme",
+  "bugs": {
+    "url": "https://github.com/dockudos/dockudos/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dockudos/dockudos.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

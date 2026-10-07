@@ -1,0 +1,68 @@
+---
+title: Components
+description: What you can use in MDX without importing, and how to replace any of it.
+---
+
+Every component below is available in every MDX file. They work in light and dark mode, and the
+interactive ones work from the keyboard.
+
+<Cards columns={3}>
+  <Card title="Callout" href="/components/callout">
+    Note, info, tip, warning, danger.
+  </Card>
+  <Card title="Tabs" href="/components/tabs">
+    Tabbed content and code groups.
+  </Card>
+  <Card title="Accordion" href="/components/accordion">
+    Collapsible sections.
+  </Card>
+  <Card title="Steps and Cards" href="/components/steps-and-cards">
+    A procedure; a grid of links.
+  </Card>
+  <Card title="Tooltip and Banner" href="/components/tooltip-and-banner">
+    Inline hints; an announcement strip.
+  </Card>
+  <Card title="Files" href="/components/files">
+    A file tree.
+  </Card>
+  <Card title="Type tables" href="/components/type-tables">
+    Props tables, written or generated.
+  </Card>
+  <Card title="Page data" href="/components/page-data">
+    Inline table of contents; page graph.
+  </Card>
+  <Card title="GitHub info" href="/components/github-info">
+    A repository card.
+  </Card>
+</Cards>
+
+Also built in: [code blocks](../guides/code-blocks.mdx) (with `CodeGroup`), `<Mermaid>` for
+[diagrams](../guides/diagrams-and-math.mdx), and zoomable [images](../guides/images.mdx).
+
+## Replace a component
+
+Components are looked up by name in your `mdx-components.tsx`. Pass your own under the same name
+and every use in every page changes:
+
+```tsx title="mdx-components.tsx"
+import { defineMdxComponents } from '@dockudos/next/mdx-components';
+import type { MDXComponents } from 'mdx/types';
+import { MyCallout } from './components/my-callout';
+
+export function useMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...defineMdxComponents({
+      Callout: MyCallout, // replaces the built-in
+      Pricing: PricingTable, // a new component, available everywhere
+    }),
+    ...components,
+  };
+}
+```
+
+Standard elements can be replaced the same way: `a`, `img`, `pre`, `table`. The built-in `img` is the
+zoomable image and `pre` is the code block, so replacing them gives up zoom and the copy button.
+
+Your component receives the same props as the built-in one. The [headless
+core](../reference/headless-core.mdx) and `@dockudos/ui` export the originals, so you can wrap
+them instead of rewriting them.

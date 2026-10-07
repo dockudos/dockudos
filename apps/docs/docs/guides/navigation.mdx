@@ -1,0 +1,70 @@
+---
+title: Navigation
+description: Tabs, groups, nested groups, links, and the folder-based sidebar.
+---
+
+Navigation lives in `navigation` in `docs.json`. It is a list of tabs; each tab has groups; a group
+lists pages.
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "navigation": [
+    {
+      "tab": "Guides",
+      "groups": [
+        {
+          "group": "Get started",
+          "pages": ["index", "quickstart"]
+        },
+        {
+          "group": "Concepts",
+          "pages": [
+            "concepts/overview",
+            { "group": "Advanced", "pages": ["concepts/caching"] },
+            {
+              "title": "Changelog",
+              "href": "https://github.com/acme/acme/releases"
+            }
+          ]
+        }
+      ]
+    },
+    { "tab": "Blog", "href": "https://blog.acme.dev" }
+  ]
+}
+```
+
+## Page ids
+
+A page is named by its file path without the extension: `concepts/overview` for
+`docs/concepts/overview.mdx`. A folder name such as `concepts` also works when the folder has an
+`index` page. An id that matches no file stops the build:
+
+```text
+Invalid navigation in docs.json:
+  - Guides > Concepts: page "concepts/overviw" not found in the docs folder
+```
+
+## What each entry does
+
+| Entry                          | Result                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| A string                       | A page in the sidebar.                                                                                  |
+| `{ "group": …, "pages": […] }` | A group. Top-level groups start open. Nested groups start collapsed, unless they hold the current page. |
+| `{ "title": …, "href": … }`    | A link, opened in a new tab.                                                                            |
+| A tab with `groups`            | A tab in the navbar. The sidebar shows the active tab's groups.                                         |
+| A tab with `href`              | A link in the navbar only.                                                                              |
+
+On small screens the navbar tabs and the sidebar move into a drawer.
+
+## Without a navigation
+
+Leave `navigation` out (or empty) and dockudos builds one tab from your folders: pages first, then
+folders as groups, each in alphabetical order. A folder's `index` page leads its group. Pages with
+`hidden: true` are left out.
+
+## Previous and next, breadcrumbs
+
+Both follow the sidebar order inside the active tab, so you get them without extra configuration.
+A page that is not in the navigation shows the first tab's sidebar and has neither.

@@ -68,6 +68,12 @@ describe('firstHeading', () => {
     expect(firstHeading('```md\n# not me\n```\n\n# real')).toBe('real');
   });
 
+  it('ignores headings inside an indented fence', () => {
+    expect(
+      firstHeading('<Step>\n    ```md\n    # not me\n    ```\n</Step>\n# real'),
+    ).toBe('real');
+  });
+
   it('returns undefined when there is no h1', () => {
     expect(firstHeading('## only h2')).toBeUndefined();
   });

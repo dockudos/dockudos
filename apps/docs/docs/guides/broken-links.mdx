@@ -1,0 +1,40 @@
+---
+title: Broken links
+description: Find dead links and anchors before your readers do.
+---
+
+```package-install
+npx dockudos broken-links
+```
+
+It checks every link and image in every `.md` and `.mdx` file under `docs/` (including `_` partials):
+
+| What                      | Reported when                                              |
+| ------------------------- | ---------------------------------------------------------- |
+| Page link `./a.mdx`, `/a` | No page has that URL (and no redirect starts there).       |
+| Anchor `./a.mdx#setup`    | The page has no heading with that `id`.                    |
+| Same-page anchor `#setup` | This page has no such heading.                             |
+| Image or file link        | The file does not exist, in `public/` or next to the page. |
+
+Each problem is one line with the file and line number, and the command exits with status 1:
+
+```text
+error   guides/auth.mdx:14  ./keys.mdx#rotate  /guides/keys has no heading with id "rotate"
+error   index.mdx:3  ./nope.mdx  no page at /nope
+
+2 broken links.
+```
+
+`dockudos build` runs the same check and stops before `next build` on any error.
+
+## External links
+
+```bash
+npx dockudos broken-links --external
+```
+
+Requests each `http(s)` URL once, with a 10 second timeout. A 404 or 410 is an error. Anything else that
+goes wrong (a timeout, a host that cannot be reached, 403, 429, 5xx) is a **warning**, because it often
+means the server does not like automated requests, and it does not change the exit status.
+
+Links inside code fences and inline code are ignored.

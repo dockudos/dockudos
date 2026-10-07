@@ -1,0 +1,171 @@
+---
+title: docs.json
+description: Every key of the site configuration.
+---
+
+`docs.json` sits at the project root. Unknown keys are rejected, so a typo fails the build instead
+of being ignored. For editor completion and validation, point `$schema` at the bundled JSON Schema:
+
+```json
+{ "$schema": "./node_modules/@dockudos/core/docs.schema.json", "name": "Acme" }
+```
+
+Errors name the key and the file:
+
+```text
+Invalid docs config in /my-docs/docs.json:
+  - name: Invalid input: expected string, received undefined
+  - unknown key theem
+  - theme.layout: Invalid option: expected one of "docs"|"notebook"|"spacious"|"flux"|"glass"|"home"
+```
+
+## Top level
+
+<TypeTable
+  type={{
+    $schema: {
+      type: 'string',
+      description: 'Path or URL of the JSON Schema, for editors.',
+    },
+    name: {
+      type: 'string',
+      required: true,
+      description: 'Site name. Shown in the navbar and in page titles.',
+    },
+    urlPrefix: {
+      type: 'string',
+      description:
+        'Where the docs are mounted in the site, like "/docs". Must start with "/" and not end with one. See Add to a Next.js app.',
+    },
+    logo: {
+      type: 'string | { light: string; dark: string; href?: string }',
+      description:
+        'Logo image path. The object form gives a logo per color scheme.',
+    },
+    favicon: { type: 'string', description: 'Favicon path.' },
+    theme: {
+      type: 'object',
+      description: 'Colors, mode, layout, fonts. See below.',
+      default: '{}',
+    },
+    navigation: {
+      type: 'Tab[]',
+      description: 'Tabs, groups and pages. See below.',
+      default: '[]',
+    },
+    redirects: {
+      type: 'Redirect[]',
+      description: 'Old URL to new URL.',
+      default: '[]',
+    },
+    seo: {
+      type: 'object',
+      description: 'Metadata defaults. See below.',
+      default: '{}',
+    },
+  }}
+/>
+
+## theme
+
+<TypeTable
+  type={{
+    primary: {
+      type: 'string',
+      description:
+        'Brand color as a hex value, "#3b82f6" or "#38f". The palette for both color schemes is derived from it.',
+    },
+    mode: {
+      type: '"light" | "dark" | "system"',
+      default: '"system"',
+      description: 'Color scheme before the visitor chooses one.',
+    },
+    layout: {
+      type: '"docs" | "notebook" | "spacious" | "flux" | "glass" | "home"',
+      default: '"docs"',
+      description: 'Page layout. A page can override it.',
+    },
+    fonts: {
+      type: '{ sans?: string; mono?: string }',
+      description: 'CSS font-family values. The fonts are not loaded for you.',
+    },
+    radius: {
+      type: 'string',
+      description: 'CSS length for rounded corners, such as "0.5rem".',
+    },
+    css: {
+      type: 'string',
+      description:
+        'Stylesheet path relative to the project root, added after the theme.',
+    },
+  }}
+/>
+
+## navigation
+
+A list of tabs. Each tab is one of:
+
+<TypeTable
+  type={{
+    tab: {
+      type: 'string',
+      required: true,
+      description: 'Label in the navbar.',
+    },
+    groups: {
+      type: 'Group[]',
+      required: true,
+      description: 'Sidebar content of the tab.',
+    },
+    href: {
+      type: 'string',
+      required: true,
+      description: 'Instead of groups: makes the tab a link.',
+    },
+  }}
+/>
+
+A group is `{ group: string, pages: Item[] }`, and an item is a page id (string), a link
+`{ title: string, href: string }` or another group. See [navigation](../guides/navigation.mdx).
+
+## redirects
+
+<TypeTable
+  type={{
+    source: {
+      type: 'string',
+      required: true,
+      description: 'Path to redirect from. Starts with "/".',
+    },
+    destination: {
+      type: 'string',
+      required: true,
+      description: 'Path starting with "/", or an http(s) URL.',
+    },
+    permanent: {
+      type: 'boolean',
+      default: 'true',
+      description: '308 when true, 307 when false.',
+    },
+  }}
+/>
+
+## seo
+
+<TypeTable
+  type={{
+    siteUrl: {
+      type: 'string (URL)',
+      description: 'Public origin, for canonical URLs and the sitemap.',
+    },
+    description: {
+      type: 'string',
+      description: 'Default meta description for pages without their own.',
+    },
+    noindex: {
+      type: 'boolean',
+      default: 'false',
+      description: 'Ask search engines to skip the whole site.',
+    },
+  }}
+/>

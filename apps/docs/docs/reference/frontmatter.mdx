@@ -1,0 +1,41 @@
+---
+title: Frontmatter
+description: The keys at the top of a page.
+---
+
+<TypeTable
+  type={{
+    title: {
+      type: 'string',
+      description:
+        'Page title and heading. Falls back to the first # heading, then to the file name.',
+    },
+    description: {
+      type: 'string',
+      description: 'Shown under the title and used as the meta description.',
+    },
+    sidebarTitle: {
+      type: 'string',
+      description: 'A shorter label for the sidebar.',
+    },
+    hidden: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Leave out of the generated sidebar and the sitemap, and mark noindex. The URL still works.',
+    },
+    layout: {
+      type: '"docs" | "notebook" | "spacious" | "flux" | "glass" | "home"',
+      description: 'Override theme.layout for this page.',
+    },
+    icon: {
+      type: 'string',
+      description: 'Reserved. Read and validated, but not displayed yet.',
+    },
+  }}
+/>
+
+Any other key is kept as written, so you can add your own metadata. A value of the wrong type, or an
+empty `title`, stops the build with the file name and key.
+
+Frontmatter is YAML between two `---` lines at the very top of the file.

@@ -1,0 +1,30 @@
+---
+title: Includes
+description: Reuse a piece of content in several pages.
+---
+
+Put shared content in a file whose name or folder starts with `_` (so it is not a page), then include
+it on its own line:
+
+```mdx
+<include>./_snippets/install-note.mdx</include>
+```
+
+Here it is, included from this page:
+
+<include>../_snippets/install-note.mdx</include>
+
+## Rules
+
+- The path is relative to the file that includes. A path starting with `/` is relative to `docs/`.
+- Frontmatter in the included file is dropped.
+- Includes can include other files. A cycle stops the build and shows the chain:
+
+  ```text
+  guides/a.mdx:3: include cycle: guides/a.mdx -> _x.mdx -> _y.mdx -> _x.mdx
+  ```
+
+- A missing file stops the build and names the including file and line.
+- Headings in an included file appear in the page's table of contents, and links to them are checked.
+- An `<include>` inside a code fence is shown as written.
+- Editing an included file does not hot-reload the page that uses it in `dev`; save the page, or restart.

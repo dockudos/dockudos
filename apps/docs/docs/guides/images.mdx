@@ -1,0 +1,35 @@
+---
+title: Images
+description: Automatic sizing and zoom.
+---
+
+Images are written in Markdown and every image can be zoomed: click it (or press Enter on it) to
+see it full size, and press Escape to close.
+
+## Files next to your pages
+
+```mdx
+![A box](./images/box.svg)
+```
+
+A relative path is imported by the bundler, so the file is fingerprinted and the `<img>` gets its real
+width and height. The page does not jump when it loads.
+
+## Files in `public/`
+
+```mdx
+![Logo](/logo.png)
+```
+
+A path starting with `/` is looked up in `public/` while the page compiles, and its size is read from
+the file. A path that is not found, or an image format that cannot be read, is left as written.
+
+## Remote images
+
+`https://…` images are used as they are, without sizes. Add them with `<img width height>` if you
+know the size.
+
+## Alt text
+
+`![alt](…)` writes the alt text. dockudos does not invent one: an empty alt marks the image as
+decorative, and the zoom button is then labelled just "Zoom image".

@@ -1,0 +1,62 @@
+---
+title: Steps and Cards
+description: A numbered procedure, and a grid of links.
+---
+
+## Steps
+
+<Steps>
+  <Step title="Install">Add the packages.</Step>
+  <Step title="Configure">Create `docs.json`.</Step>
+  <Step title="Ship">Run the build.</Step>
+</Steps>
+
+```mdx
+<Steps>
+  <Step title="Install">Add the packages.</Step>
+  <Step title="Configure">Create `docs.json`.</Step>
+</Steps>
+```
+
+Steps render as an ordered list, so they are numbered for screen readers too. Any content, including
+code blocks, can go inside a step.
+
+## Cards
+
+<Cards>
+  <Card title="Navigation" href="/guides/navigation">
+    A card with an internal link.
+  </Card>
+  <Card title="Next.js" href="https://nextjs.org">
+    A card with an external link.
+  </Card>
+  <Card title="No link">A card that is only information.</Card>
+</Cards>
+
+```mdx
+<Cards columns={2}>
+  <Card title="Navigation" href="/guides/navigation">
+    Internal link.
+  </Card>
+  <Card title="Next.js" href="https://nextjs.org">
+    External link.
+  </Card>
+</Cards>
+```
+
+<TypeTable
+  type={{
+    columns: {
+      type: '1 | 2 | 3',
+      default: '2',
+      description: 'On Cards: columns on wide screens. One column on phones.',
+    },
+    title: { type: 'string', required: true, description: 'On Card.' },
+    href: {
+      type: 'string',
+      description:
+        'On Card: makes the whole card a link. External links open in a new tab.',
+    },
+    icon: { type: 'ReactNode', description: 'On Card: shown above the title.' },
+  }}
+/>

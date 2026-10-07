@@ -1,3 +1,4 @@
+import { FenceTracker } from './fence.ts';
 import { toUrlSegment } from './page-tree.ts';
 
 export type DocLink =
@@ -69,16 +70,10 @@ export interface FoundLink {
  */
 export function extractLinks(source: string): FoundLink[] {
   const found: FoundLink[] = [];
-  let fence: string | undefined;
+  const fence = new FenceTracker();
 
   for (const [i, raw] of source.split(/\r?\n/).entries()) {
-    const f = /^\s{0,3}(`{3,}|~{3,})/.exec(raw)?.[1];
-    if (f) {
-      if (!fence) fence = f;
-      else if (f[0] === fence[0] && f.length >= fence.length) fence = undefined;
-      continue;
-    }
-    if (fence) continue;
+    if (fence.inCode(raw)) continue;
 
     const line = raw.replace(/(`+)[^`]*?\1/g, (m) => ' '.repeat(m.length));
     const add = (href: string | undefined, kind: FoundLink['kind']) => {

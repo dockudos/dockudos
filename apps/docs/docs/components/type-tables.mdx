@@ -1,0 +1,46 @@
+---
+title: Type tables
+description: Document props and options, written by hand or generated from TypeScript.
+---
+
+## TypeTable
+
+<TypeTable
+  type={{
+    name: { type: 'string', required: true, description: 'The site name.' },
+    limit: {
+      type: 'number',
+      default: '10',
+      description: 'How many results to show.',
+    },
+  }}
+/>
+
+```mdx
+<TypeTable
+  type={{
+    name: { type: 'string', required: true, description: 'The site name.' },
+    limit: {
+      type: 'number',
+      default: '10',
+      description: 'How many results to show.',
+    },
+  }}
+/>
+```
+
+Each field takes `type` (shown as code), and optionally `description`, `default` and `required`.
+
+## AutoTypeTable
+
+Generate the table from your own TypeScript, so it cannot drift from the code:
+
+```mdx
+<AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
+```
+
+<AutoTypeTable path="src/example-types.ts" name="ExampleOptions" />
+
+`path` is relative to the project root. `name` is an interface or type alias. The table shows each
+property's type, whether it is required, its JSDoc description, and its `@default` tag. It runs when
+the page is built and needs `typescript` in your project.

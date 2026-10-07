@@ -1,3 +1,4 @@
+import { FenceTracker } from './fence.ts';
 import { parseFrontmatter } from './frontmatter.ts';
 
 export class IncludeError extends Error {
@@ -42,16 +43,12 @@ async function expand(
 ): Promise<string> {
   const lines = source.split('\n');
   const out: string[] = [];
-  let fence: string | undefined;
+  const fence = new FenceTracker();
 
   for (const [i, line] of lines.entries()) {
-    const f = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
-    if (f) {
-      if (!fence) fence = f;
-      else if (f[0] === fence[0] && f.length >= fence.length) fence = undefined;
-    }
-    const target =
-      fence || f ? undefined : INCLUDE.exec(line.replace(/\r$/, ''))?.[1];
+    const target = fence.inCode(line)
+      ? undefined
+      : INCLUDE.exec(line.replace(/\r$/, ''))?.[1];
     if (!target) {
       out.push(line);
       continue;

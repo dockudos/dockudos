@@ -1,0 +1,45 @@
+---
+title: Installation
+description: What you need and how to create a project.
+---
+
+## Requirements
+
+- Node.js 20.19 or newer
+- A package manager: npm, pnpm, yarn or bun
+- For an existing site: a Next.js 16 project using the App Router
+
+## Create a new site
+
+```package-install
+npx dockudos init my-docs
+```
+
+`init` asks for a folder, a site name and a package manager. Pass flags to skip the questions:
+
+```bash
+npx dockudos init my-docs --name "Acme Docs" --package-manager pnpm --yes
+```
+
+| Flag                                       | Meaning                                        |
+| ------------------------------------------ | ---------------------------------------------- |
+| `--name <text>`                            | Site name shown in the navbar and page titles. |
+| `--package-manager <npm\|pnpm\|yarn\|bun>` | Used in the printed next steps and the README. |
+| `--yes`, `-y`                              | Accept every default; ask nothing.             |
+
+`init` refuses a folder that already has files in it (an empty folder, or one holding only `.git`, is fine).
+It does not install dependencies. Do that next:
+
+<Steps>
+  <Step title="Install">```package-install npm install ```</Step>
+  <Step title="Start the dev server">
+    ```package-install npm run dev ``` Open
+    [http://localhost:3000](http://localhost:3000).
+  </Step>
+</Steps>
+
+Continue with the [quickstart](./quickstart.mdx), or read [what init created](./project-structure.mdx).
+
+## Add to an existing project
+
+See [Add to a Next.js app](./existing-project.mdx).

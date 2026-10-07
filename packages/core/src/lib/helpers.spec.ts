@@ -91,6 +91,11 @@ describe('extractToc', () => {
     ]);
   });
 
+  it('ignores headings inside a fence indented under JSX', () => {
+    const src = '<Step>\n    ```md\n    ## fake\n    ```\n</Step>\n## real';
+    expect(extractToc(src).map((e) => e.id)).toEqual(['real']);
+  });
+
   it('returns nothing for a page without headings', () => {
     expect(extractToc('just text')).toEqual([]);
   });

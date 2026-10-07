@@ -730,6 +730,9 @@
     text-align: center;
     font-size: 1.25rem;
   }
+  [data-layout='home'] .dk-breadcrumb {
+    display: none;
+  }
   [data-layout='home'] .dk-main {
     padding-top: 4rem;
   }

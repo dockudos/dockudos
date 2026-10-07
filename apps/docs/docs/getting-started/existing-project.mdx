@@ -1,0 +1,98 @@
+---
+title: Add to a Next.js app
+description: Mount the docs under a path in an app you already have.
+---
+
+Use this when you already have a Next.js App Router app, with its own home page, and want the
+documentation at `/docs`. If the whole site is documentation, use [`init`](./installation.mdx) instead.
+
+<Steps>
+  <Step title="Install the packages">
+    ```package-install
+    npm install @dockudos/core @dockudos/next @dockudos/ui
+    ```
+  </Step>
+  <Step title="Wrap your Next.js config">
+    ```js title="next.config.mjs"
+    import { withDocs } from '@dockudos/next';
+
+    export default withDocs(
+      {
+        // your existing Next.js config
+      },
+      { root: import.meta.dirname },
+    );
+    ```
+    `withDocs()` keeps every option you pass and adds `md` and `mdx` page extensions. It also reads
+    `docs.json` right away, so a mistake in it fails `next dev` and `next build`.
+
+  </Step>
+  <Step title="Create docs.json with a url prefix">
+    ```json title="docs.json"
+    {
+      "name": "Acme",
+      "urlPrefix": "/docs"
+    }
+    ```
+    `urlPrefix` is where the docs are mounted. It must match the folder of the route in the next step.
+  </Step>
+  <Step title="Add a docs folder and a page">
+    ```mdx title="docs/index.mdx"
+    ---
+    title: Documentation
+    ---
+
+    Hello from the docs.
+    ```
+
+  </Step>
+  <Step title="Make the MDX components available">
+    Put this at the project root, or in `src/` if your app uses a `src` folder.
+
+    ```tsx title="mdx-components.tsx"
+    import { defineMdxComponents } from '@dockudos/next/mdx-components';
+    import type { MDXComponents } from 'mdx/types';
+
+    export function useMDXComponents(components: MDXComponents): MDXComponents {
+      return { ...defineMdxComponents(), ...components };
+    }
+    ```
+
+  </Step>
+  <Step title="Add the docs route">
+    Create `src/app/docs/layout.tsx` for the styles and the theme script, and
+    `src/app/docs/[[...slug]]/page.tsx` to render pages. Copy both from the files `init` creates in a
+    new project, changing the dynamic import path to match where you put `docs/`.
+
+    ```tsx title="src/app/docs/layout.tsx"
+    import '@dockudos/ui/styles.css';
+    import { DocsRoot } from '@dockudos/next/client';
+    import { ThemeScript } from '@dockudos/ui';
+    import type { ReactNode } from 'react';
+
+    export default function DocsAppLayout({ children }: { children: ReactNode }) {
+      return (
+        <>
+          <ThemeScript />
+          <DocsRoot>{children}</DocsRoot>
+        </>
+      );
+    }
+    ```
+
+  </Step>
+</Steps>
+
+<Callout type="note" title="Dark mode and the root layout">
+  The theme script sets a `dark` class on `<html>` before the page paints. Add `suppressHydrationWarning`
+  to the `<html>` element in your root layout so React does not warn about it.
+</Callout>
+
+<Callout type="warning" title="Absolute links include the prefix">
+  With a `urlPrefix`, a relative link such as `./other.mdx` is resolved inside
+  the docs, but an absolute link is a full site path. Write `/docs/guides/auth`,
+  not `/guides/auth`.
+</Callout>
+
+Sitemap and robots routes belong at the root of the site. Copy `sitemap.xml/route.ts` and
+`robots.txt/route.ts` from a new project if you want them.

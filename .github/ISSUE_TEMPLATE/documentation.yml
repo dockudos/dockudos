@@ -1,0 +1,22 @@
+name: Documentation problem
+description: Something in the docs is wrong, missing or unclear.
+labels: [documentation]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The URL, or the file under `apps/docs/docs/`.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested wording
+      description: Optional, and a pull request is even better.

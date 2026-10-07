@@ -1,0 +1,67 @@
+---
+title: Quickstart
+description: Add a page, put it in the sidebar and build.
+---
+
+This assumes you ran [`init`](./installation.mdx) and have `npm run dev` going.
+
+<Steps>
+  <Step title="Edit the home page">
+    Open `docs/index.mdx` and change the text. The page updates when you save.
+  </Step>
+  <Step title="Add a page">
+    Create `docs/first-page.mdx`:
+
+    ```mdx title="docs/first-page.mdx"
+    ---
+    title: My first page
+    description: One sentence that shows under the title.
+    ---
+
+    ## A heading
+
+    Some text, with a [link to the home page](./index.mdx).
+    ```
+
+    It is served at `/first-page` straight away. The URL is the file path without the extension.
+
+  </Step>
+  <Step title="Put it in the sidebar">
+    List it in `docs.json`:
+
+    ```json title="docs.json" {7}
+    {
+      "name": "My Docs",
+      "navigation": [
+        {
+          "tab": "Docs",
+          "groups": [
+            { "group": "Start", "pages": ["index", "first-page"] }
+          ]
+        }
+      ]
+    }
+    ```
+
+    Page ids are file paths without the extension.
+
+  </Step>
+  <Step title="Check and build">
+    ```package-install
+    npm run build
+    ```
+    The build validates `docs.json`, checks every link, then runs `next build`.
+  </Step>
+</Steps>
+
+<Callout type="tip">
+  A page that is not in `docs.json` is still served; it is just not in the
+  sidebar. `dockudos build` does not warn about it. Leave `navigation` empty and
+  the sidebar is built from your folders instead.
+</Callout>
+
+## Next
+
+- [Navigation](../guides/navigation.mdx): tabs, groups, nested groups and external links.
+- [Writing content](../guides/writing-content.mdx): frontmatter, callouts and links.
+- [Theming](../guides/theming.mdx): brand color, dark mode and layouts.

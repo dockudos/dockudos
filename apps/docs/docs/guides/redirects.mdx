@@ -1,0 +1,38 @@
+---
+title: Redirects
+description: Send old URLs to new ones.
+---
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "redirects": [
+    { "source": "/old-guide", "destination": "/guides/new-guide" },
+    {
+      "source": "/blog/:slug*",
+      "destination": "https://blog.acme.dev/:slug*",
+      "permanent": false
+    }
+  ]
+}
+```
+
+| Key           | Meaning                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `source`      | Path to redirect from. Must start with `/`. Next.js path patterns such as `:slug*` work. |
+| `destination` | Path or `https://` URL to send visitors to.                                              |
+| `permanent`   | `true` (default) sends HTTP 308, `false` sends 307.                                      |
+
+`withDocs()` hands these to Next.js, after any `redirects()` you defined yourself.
+
+## Checks
+
+The build stops, naming each entry, when:
+
+- two entries have the same `source`;
+- a `source` is the URL of an existing page, because the redirect would hide it;
+- redirects form a loop (`/a` to `/b` to `/a`).
+
+Chains are flattened: if `/a` goes to `/b` and `/b` goes to `/c`, visitors to `/a` go straight to `/c`.
+
+The [link checker](./broken-links.mdx) treats a link to a redirected URL as valid.

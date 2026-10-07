@@ -1,0 +1,158 @@
+---
+title: The headless core
+description: Use dockudos without React.
+---
+
+`@dockudos/core` has no React and no Next.js. It does the work that is not about pixels, so you can
+build a different frontend, a script or a CI check on the same logic. It runs in Node and in the
+browser, except `@dockudos/core/node`, which reads files and spawns `git`.
+
+```ts
+import {
+  buildNavigation,
+  buildPageTree,
+  breadcrumb,
+  extractToc,
+  parseConfig,
+  prevNext,
+} from '@dockudos/core';
+
+const config = parseConfig({
+  name: 'Acme',
+  navigation: [
+    { tab: 'Docs', groups: [{ group: 'Start', pages: ['index', 'guide'] }] },
+  ],
+});
+const tree = buildPageTree(['index.mdx', 'guide.mdx']);
+const nav = buildNavigation(config, tree);
+
+breadcrumb(nav, '/guide'); // [{ title: 'Docs' }, { title: 'Start' }, { title: 'Guide', href: '/guide' }]
+prevNext(nav, '/guide'); // { prev: <page for /> }
+extractToc('## One\n### Two'); // [{ id: 'one', text: 'One', depth: 2 }, ...]
+```
+
+## `@dockudos/core`
+
+<TypeTable
+  type={{
+    'parseConfig(input, source?)': {
+      type: 'DocsConfig',
+      description:
+        'Validate a docs.json value. Throws DocsConfigError naming each bad key.',
+    },
+    'docsConfigJsonSchema()': {
+      type: 'object',
+      description: 'The JSON Schema for docs.json.',
+    },
+    'parseFrontmatter(source, file?)': {
+      type: '{ data, body, bodyOffset }',
+      description: 'Split and validate frontmatter.',
+    },
+    'buildPageTree(files, { prefix? })': {
+      type: 'PageTree',
+      description: 'Page paths, slugs and order from file paths.',
+    },
+    'buildNavigation(config, tree)': {
+      type: 'Navigation',
+      description:
+        'Tabs and sidebars, from config or from folders. Throws NavigationError.',
+    },
+    'breadcrumb(nav, path)': {
+      type: 'Crumb[]',
+      description: 'Tab, groups and page leading to a path.',
+    },
+    'prevNext(nav, path)': {
+      type: '{ prev?, next? }',
+      description: 'Neighbours within the tab.',
+    },
+    'extractToc(source, options?)': {
+      type: 'TocEntry[]',
+      description: 'Headings with the same ids the rendered page has.',
+    },
+    'resolveRedirects(redirects, pagePaths?)': {
+      type: 'Redirect[]',
+      description:
+        'Flatten chains; throws RedirectError on loops, duplicates and shadowed pages.',
+    },
+    'expandIncludes(source, { file, read })': {
+      type: 'Promise<string>',
+      description: 'Inline <include> lines. Throws IncludeError.',
+    },
+    'extractLinks(source)': {
+      type: 'FoundLink[]',
+      description: 'Links and images with line numbers.',
+    },
+    'resolveDocLink(from, href, { prefix? })': {
+      type: 'DocLink',
+      description: 'Classify a link and resolve it to a page path.',
+    },
+    'pageSeo(config, page)': {
+      type: 'PageSeo',
+      description: 'Title, description, canonical URL and noindex.',
+    },
+    'buildSitemap(config, pages, lastModified?)': {
+      type: 'string | undefined',
+      description: 'sitemap.xml, or undefined without seo.siteUrl.',
+    },
+    'buildRobots(config)': { type: 'string', description: 'robots.txt.' },
+    'generatePalette(hex)': {
+      type: '{ light, dark }',
+      description: 'CSS variable values for both color schemes.',
+    },
+    'themeCss(theme)': {
+      type: 'string',
+      description: 'CSS for the theme settings.',
+    },
+    'convertPackageCommand(npmCommand)': {
+      type: 'Record<PackageManager, string>',
+      description: 'The same command for npm, pnpm, yarn and bun.',
+    },
+  }}
+/>
+
+## `@dockudos/core/node`
+
+<TypeTable
+  type={{
+    'loadConfig(root)': {
+      type: 'Promise<DocsConfig>',
+      description: 'Read and validate root/docs.json.',
+    },
+    'loadConfigSync(root)': {
+      type: 'DocsConfig',
+      description: 'The same, synchronously.',
+    },
+    'discoverPages(docsDir, { prefix? })': {
+      type: 'Promise<PageTree>',
+      description:
+        'Walk the docs folder and read frontmatter. Throws ContentError listing every bad file.',
+    },
+    'checkLinks(options)': {
+      type: 'Promise<LinkProblem[]>',
+      description: 'Everything the broken-links command checks.',
+    },
+    'lastModified(file)': {
+      type: 'Promise<{ date, source }>',
+      description: 'Git commit date, else file modification time.',
+    },
+  }}
+/>
+
+A script that fails when a page is missing from the navigation, using nothing but the core:
+
+```ts title="check-nav.ts"
+import { buildNavigation } from '@dockudos/core';
+import { discoverPages, loadConfig } from '@dockudos/core/node';
+
+const config = await loadConfig(process.cwd());
+const tree = await discoverPages('docs', { prefix: config.urlPrefix });
+const { unlisted } = buildNavigation(config, tree);
+
+if (unlisted.length) {
+  console.error(
+    'Not in the navigation:',
+    unlisted.map((p) => p.file).join(', '),
+  );
+  process.exit(1);
+}
+```

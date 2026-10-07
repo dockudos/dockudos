@@ -1,4 +1,5 @@
 import GithubSlugger from 'github-slugger';
+import { FenceTracker } from './fence.ts';
 import { parseFrontmatter } from './frontmatter.ts';
 import { type Navigation, findTab, flattenSidebar } from './navigation.ts';
 import type { Page } from './page-tree.ts';
@@ -64,15 +65,9 @@ export function extractToc(
 ): TocEntry[] {
   const slugger = new GithubSlugger();
   const out: TocEntry[] = [];
-  let fence: string | undefined;
+  const fence = new FenceTracker();
   for (const line of parseFrontmatter(source).body.split(/\r?\n/)) {
-    const f = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
-    if (f) {
-      if (!fence) fence = f;
-      else if (f[0] === fence[0] && f.length >= fence.length) fence = undefined;
-      continue;
-    }
-    if (fence) continue;
+    if (fence.inCode(line)) continue;
     const m = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/.exec(line);
     if (!m) continue;
     const depth = m[1]?.length ?? 0;
