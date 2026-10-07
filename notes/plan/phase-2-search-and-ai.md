@@ -9,11 +9,11 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 ## Tasks
 
 ### 2A. Content index
-- [ ] P2.1 Types: `ContentIndex`, `PageRecord`, `ChunkRecord` in `core`.
-- [ ] P2.2 Extractor: title, description, headings, plain text, anchors per page.
-- [ ] P2.3 Chunker: split at heading boundaries with a size cap; stable chunk ids (hash of path + heading path + text).
-- [ ] P2.4 Index writer: emit JSON next to build output as part of `dockudos build`.
-- [ ] P2.5 Incremental rebuild: reuse unchanged pages and chunks from a cache.
+- [x] P2.1 Types: `ContentIndex`, `PageRecord`, `ChunkRecord` in `core`.
+- [x] P2.2 Extractor: title, description, headings, plain text, anchors per page.
+- [x] P2.3 Chunker: split at heading boundaries with a size cap; stable chunk ids (hash of path + heading path + text).
+- [x] P2.4 Index writer: emit JSON next to build output as part of `dockudos build`.
+- [x] P2.5 Incremental rebuild: reuse unchanged pages and chunks from a cache.
 
 ### 2B. Keyword search
 - [ ] P2.6 Keyword engine (BM25-style) with heading/title boost; runs in the browser from the index.
@@ -71,8 +71,8 @@ Design reference: [ai.md](../ai.md), [architecture.md](../architecture.md) secti
 ## Tests
 
 ### Unit
-- [ ] Chunker: size cap, heading path, anchors, stable ids, content change alters only affected chunks.
-- [ ] Extractor on fixtures with code blocks, tables, MDX components.
+- [x] Chunker: size cap, heading path, anchors, stable ids, content change alters only affected chunks.
+- [x] Extractor on fixtures with code blocks, tables, MDX components.
 - [ ] Keyword engine: exact API names, error codes, typos, ranking with heading boost.
 - [ ] RRF fusion with known rankings; keyword-only fallback.
 - [ ] Embedding cache: hit, miss, invalidation by content hash.

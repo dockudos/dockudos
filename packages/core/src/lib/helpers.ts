@@ -71,7 +71,7 @@ export function extractToc(
     const m = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/.exec(line);
     if (!m) continue;
     const depth = m[1]?.length ?? 0;
-    const text = plainText(m[2] ?? '');
+    const text = headingText(m[2] ?? '');
     const id = slugger.slug(text); // consume a slug for every heading so duplicates number like rehype-slug
     if (depth >= minDepth && depth <= maxDepth) out.push({ id, text, depth });
   }
@@ -79,7 +79,7 @@ export function extractToc(
 }
 
 /** Strip inline markdown/JSX to the visible text of a heading. */
-function plainText(heading: string): string {
+export function headingText(heading: string): string {
   return heading
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')

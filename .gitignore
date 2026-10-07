@@ -57,3 +57,6 @@ test-output
 
 # Tooling
 .serena.dockudos
+
+# dockudos build output (search index)
+.dockudos/index.json

@@ -13,3 +13,7 @@ export * from './lib/package-manager.ts';
 export * from './lib/kudos.ts';
 export * from './lib/access.ts';
 export * from './lib/svg.ts';
+export * from './lib/hash.ts';
+export * from './lib/extract.ts';
+export * from './lib/chunk.ts';
+export * from './lib/content-index.ts';

@@ -315,6 +315,31 @@ describe('build', () => {
     expect(await done).toBe(0);
   });
 
+  it('writes the content index before building, reusing unchanged pages next time', async () => {
+    await project(GOOD);
+    const first = makeEnv();
+    const done = run(['build'], first.env);
+    await vi.waitFor(() => expect(first.children).toHaveLength(1));
+    first.children[0]!.child.emit('exit', 0);
+    await done;
+    expect(first.text()).toContain('Indexed 2 pages into 1 chunk (0 reused).');
+    const index = JSON.parse(
+      await readFile(join(dir, '.dockudos', 'index.json'), 'utf8'),
+    );
+    expect(index.pages.map((p: { path: string }) => p.path)).toEqual([
+      '/',
+      '/a',
+    ]);
+
+    await writeFile(join(dir, 'docs', 'a.mdx'), '# A\n\nChanged.');
+    const second = makeEnv();
+    const again = run(['build'], second.env);
+    await vi.waitFor(() => expect(second.children).toHaveLength(1));
+    second.children[0]!.child.emit('exit', 0);
+    await again;
+    expect(second.text()).toContain('(1 reused)');
+  });
+
   it('returns the exit code of next build', async () => {
     await project(GOOD);
     const t = makeEnv();
