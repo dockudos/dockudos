@@ -30,7 +30,10 @@ export function GraphView({ data }: { data?: GraphData }) {
   if (!graph || graph.nodes.length === 0) return null;
 
   return (
-    <figure className="not-prose my-5 overflow-hidden rounded-lg border bg-card">
+    <figure
+      data-print="hide"
+      className="not-prose my-5 overflow-hidden rounded-lg border bg-card"
+    >
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         role="group"

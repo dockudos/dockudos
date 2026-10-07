@@ -43,6 +43,7 @@ export function Banner({ children, id, variant = 'default' }: BannerProps) {
         <button
           type="button"
           aria-label="Dismiss announcement"
+          data-print="hide"
           className="absolute right-2 inline-flex size-7 items-center justify-center rounded-md hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => {
             setHidden(true);

@@ -1,0 +1,37 @@
+---
+title: CopyText, Hero and LinkButton
+description: A copyable snippet, and a landing-page banner.
+---
+
+## CopyText
+
+Install it with <CopyText>npm install dockudos</CopyText> and open <CopyText value="http://localhost:3000">localhost:3000</CopyText>.
+
+```mdx
+Install it with <CopyText>npm install dockudos</CopyText>.
+
+<CopyText value="the real value">shown text</CopyText>
+```
+
+The button copies the text (or `value`) and announces "Copied to clipboard". It is left off printed pages.
+
+## Hero and LinkButton
+
+<Hero eyebrow="New" title="Docs that ship" description="Write MDX. Get a site.">
+  <LinkButton href="/getting-started/quickstart">Get started</LinkButton>
+  <LinkButton href="/components" variant="secondary">
+    Components
+  </LinkButton>
+</Hero>
+
+```mdx
+<Hero eyebrow="New" title="Docs that ship" description="Write MDX. Get a site.">
+  <LinkButton href="/quickstart">Get started</LinkButton>
+  <LinkButton href="https://github.com/acme/acme" variant="secondary">
+    GitHub
+  </LinkButton>
+</Hero>
+```
+
+Use a `Hero` at the top of a page with `layout: home`. Internal `LinkButton`s use the router; links to
+other sites open in a new tab. The page's own title is still the single `h1`; the hero headline is an `h2`.

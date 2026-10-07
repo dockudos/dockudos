@@ -84,7 +84,9 @@ describe('Frame and Columns', () => {
         <img alt="Screenshot" src="/s.png" />
       </Frame>,
     );
-    expect(screen.getByRole('figure')).toContainElement(screen.getByText('A screenshot'));
+    expect(screen.getByRole('figure')).toContainElement(
+      screen.getByText('A screenshot'),
+    );
     expect(screen.getByText('A screenshot').tagName).toBe('FIGCAPTION');
   });
 

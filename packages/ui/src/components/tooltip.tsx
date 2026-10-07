@@ -17,6 +17,7 @@ export function Tooltip({ tip, children }: TooltipProps) {
         <Primitive.Trigger asChild>
           <span
             tabIndex={0}
+            data-tip={tip}
             className="cursor-help underline decoration-dotted underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {children}

@@ -43,6 +43,7 @@ export function CopyButton() {
         onClick={copy}
         className="dk-copy inline-flex size-8 items-center justify-center rounded-md border bg-background/80 text-muted-foreground backdrop-blur hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         aria-label="Copy code"
+        data-print="hide"
       >
         {state === 'copied' ? (
           <Check className="size-4" aria-hidden="true" />

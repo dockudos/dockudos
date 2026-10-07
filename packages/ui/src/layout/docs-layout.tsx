@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from 'react';
 import { type GraphData, PageDataProvider } from '../docs-context.tsx';
 import { Kudos } from '../components/kudos.tsx';
+import { PrintExpander } from './print-expander.tsx';
 import { Navbar } from './navbar.tsx';
 import { tabLinks } from './tab-links.ts';
 import { Breadcrumb, PrevNext } from './page-nav.tsx';
@@ -79,6 +80,7 @@ export function DocsLayout({
           {sidebar}
         </aside>
         <main id="dk-content" className="dk-main" tabIndex={-1}>
+          <PrintExpander />
           <article className="dk-article">
             <Breadcrumb crumbs={breadcrumb(nav, page.path)} />
             <h1 className="dk-page-title">{page.title}</h1>

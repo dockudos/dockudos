@@ -37,3 +37,8 @@ export * from './components/columns.tsx';
 export * from './components/expandable.tsx';
 export * from './components/kudos.tsx';
 export * from './components/logo.tsx';
+export * from './components/param-field.tsx';
+export * from './components/endpoint.tsx';
+export * from './components/update.tsx';
+export * from './components/copy-text.tsx';
+export * from './components/hero.tsx';

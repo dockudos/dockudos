@@ -12,7 +12,8 @@ export interface VideoProps {
 
 /**
  * A video file with controls, or an embedded player. An embed must be `https://` and runs in a
- * sandbox; it loads only when scrolled into view.
+ * sandbox; it loads only when scrolled into view. On paper the player is replaced by the video's
+ * title and address.
  */
 export function Video({
   title,
@@ -28,33 +29,45 @@ export function Video({
       );
     }
     return (
-      <div
-        className="not-prose my-5 overflow-hidden rounded-lg border"
-        style={{ aspectRatio: ratio }}
-      >
-        <iframe
-          src={embed}
-          title={title}
-          loading="lazy"
-          allowFullScreen
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
-          referrerPolicy="strict-origin-when-cross-origin"
-          className="size-full border-0"
-        />
-      </div>
+      <>
+        <p className="dk-print-only">
+          Video: {title} ({embed})
+        </p>
+        <div
+          data-print="hide"
+          className="not-prose my-5 overflow-hidden rounded-lg border"
+          style={{ aspectRatio: ratio }}
+        >
+          <iframe
+            src={embed}
+            title={title}
+            loading="lazy"
+            allowFullScreen
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+            referrerPolicy="strict-origin-when-cross-origin"
+            className="size-full border-0"
+          />
+        </div>
+      </>
     );
   }
   if (!src) throw new Error('<Video> needs a `src` file or an `embed` URL');
   return (
-    <video
-      controls
-      preload="metadata"
-      poster={poster}
-      aria-label={title}
-      className="my-5 w-full rounded-lg border"
-    >
-      <source src={src} />
-      <a href={src}>{title}</a>
-    </video>
+    <>
+      <p className="dk-print-only">
+        Video: {title} ({src})
+      </p>
+      <video
+        data-print="hide"
+        controls
+        preload="metadata"
+        poster={poster}
+        aria-label={title}
+        className="my-5 w-full rounded-lg border"
+      >
+        <source src={src} />
+        <a href={src}>{title}</a>
+      </video>
+    </>
   );
 }

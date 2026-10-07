@@ -37,6 +37,7 @@
             "guides/layouts",
             "guides/redirects",
             "guides/seo",
+            "guides/printing",
             "guides/broken-links"
           ]
         }
@@ -61,6 +62,9 @@
             "components/type-tables",
             "components/page-data",
             "components/github-info",
+            "components/api-blocks",
+            "components/update",
+            "components/copy-text-and-hero",
             "components/kudos"
           ]
         }

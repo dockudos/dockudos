@@ -1,0 +1,46 @@
+---
+title: Printing and PDF
+description: Every page prints cleanly, and every component has a paper form.
+---
+
+Use the browser's Print command (Ctrl+P or Cmd+P), and choose "Save as PDF" to make a PDF. No setup is needed.
+
+## What changes on paper
+
+- Navigation, sidebar, table of contents, previous and next links, the feedback widget and the theme
+  button are left out. The page title, content and "Last updated" stay.
+- The page is white with dark text, whatever theme the screen was using. Code uses the light theme.
+- Everything collapsed is opened, and every tab is shown.
+- Code wraps instead of scrolling. Headings stay with the text that follows them, and callouts, code
+  blocks, tables rows, images and steps are not split across pages where it can be avoided.
+- Links to other sites show their address after the text.
+
+## Component by component
+
+| Component                                   | On paper                                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Callout, Badge                              | Keeps its color and border; never split across pages.                              |
+| Tabs, CodeGroup, package tabs               | Every panel is printed, each under its tab's name.                                 |
+| Accordion, Expandable, Files                | Opened.                                                                            |
+| Steps                                       | Numbered as on screen.                                                             |
+| Code block                                  | Light colors, wrapped, no copy button. Highlighted and diff lines keep their tint. |
+| Tooltip                                     | The tip is printed in brackets after the term.                                     |
+| Video                                       | Replaced by "Video: title (address)".                                              |
+| Mermaid, math, images, Frame                | Printed, scaled to the page width.                                                 |
+| TypeTable, ParamField, Endpoint, Update     | Printed in full; table headers repeat across pages.                                |
+| Cards, Columns, Hero                        | Printed, without hover effects; links show their address.                          |
+| Banner, CopyText buttons, Graph view, Kudos | Left out.                                                                          |
+
+Your own components follow the same rules: add `data-print="hide"` to something that is only useful on
+screen, and put anything meant for paper in an element with the class `dk-print-only`.
+
+```tsx
+<button data-print="hide">Share</button>
+<p className="dk-print-only">Printed from docs.acme.dev</p>
+```
+
+## Tips
+
+- In the print dialog, turn on "Background graphics" to keep the tinted callouts and badges.
+- Collapsed `<details>` are opened by script while printing, and by CSS in browsers that support
+  `::details-content`.

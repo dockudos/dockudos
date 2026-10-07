@@ -634,18 +634,24 @@
   }
   @keyframes dk-accordion-up {
     from {
-      height: var(--radix-accordion-content-height);
+      height: var(--radix-accordion-content-height, 0px);
       opacity: 1;
     }
     to {
       height: 0;
       opacity: 0;
+      visibility: hidden;
     }
   }
   .dk-accordion-content[data-state='open'] {
     animation: dk-accordion-down 0.2s ease-out;
   }
+  /* Closed content stays in the page (so it can be printed) but takes no room and cannot be reached. */
   .dk-accordion-content[data-state='closed'] {
+    height: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    visibility: hidden;
     animation: dk-accordion-up 0.2s ease-out;
   }
 
@@ -805,6 +811,214 @@
     color: var(--dk-callout-danger);
   }
 
+  /* --------------------------------------------------- more components */
+  .dk-print-only {
+    display: none;
+  }
+  .dk-param {
+    margin: 1rem 0;
+    padding: 0.75rem 0 0;
+    border-top: 1px solid var(--border);
+  }
+  .dk-param-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    font-size: 0.875rem;
+  }
+  .dk-param-name {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+  .dk-param-type,
+  .dk-param-default code {
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    font-size: 0.8125rem;
+  }
+  .dk-param-tag,
+  .dk-param-default {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-param-required {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dk-callout-danger);
+  }
+  .dk-param-body {
+    margin-top: 0.4rem;
+    font-size: 0.9375rem;
+  }
+  .dk-param-body > :first-child {
+    margin-top: 0;
+  }
+  .dk-param-body > :last-child {
+    margin-bottom: 0;
+  }
+
+  .dk-endpoint {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    overflow-x: auto;
+  }
+  .dk-endpoint-method {
+    flex: none;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in oklch, var(--c) 45%, transparent);
+    background: color-mix(in oklch, var(--c) 14%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .dk-endpoint-path {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  .dk-endpoint-base {
+    color: var(--muted-foreground);
+  }
+
+  .dk-update {
+    display: grid;
+    gap: 0.5rem 2rem;
+    margin: 2rem 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .dk-update-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+  .dk-update-label {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 650;
+    color: var(--foreground);
+  }
+  .dk-update-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .dk-update-body > :first-child {
+    margin-top: 0;
+  }
+  @media (min-width: 768px) {
+    .dk-update {
+      grid-template-columns: 12rem minmax(0, 1fr);
+    }
+    .dk-update-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      align-self: start;
+      position: sticky;
+      top: calc(var(--dk-navbar-h) + 1rem);
+    }
+  }
+
+  .dk-copytext {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding-right: 0.125rem;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    vertical-align: baseline;
+  }
+  .dk-copytext code {
+    background: none !important;
+  }
+  .dk-copytext button {
+    display: inline-flex;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    color: var(--muted-foreground);
+  }
+  .dk-copytext button:hover {
+    color: var(--foreground);
+  }
+  .dk-copytext button:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  .dk-hero {
+    margin: 1rem 0 2.5rem;
+    text-align: center;
+  }
+  .dk-hero-eyebrow {
+    display: inline-block;
+    margin: 0 0 1rem;
+    padding: 0.2rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-hero-title {
+    margin: 0 auto;
+    max-width: 22ch;
+    border: 0 !important;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.1;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+  }
+  .dk-hero-description {
+    margin: 1rem auto 0;
+    max-width: 52ch;
+    font-size: 1.125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+  .dk-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 1.1rem;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-lg);
+    background: var(--primary);
+    color: var(--primary-foreground) !important;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none !important;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s;
+  }
+  .dk-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+  .dk-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-button-secondary {
+    border-color: var(--border);
+    background: var(--background);
+    color: var(--foreground) !important;
+  }
+
   /* ---------------------------------------------------------------- layouts */
   /* Notebook: compact, card-like surfaces. */
   [data-layout='notebook'] {
@@ -919,5 +1133,219 @@
   }
   [data-layout='home'] .dk-main {
     padding-top: 4rem;
+  }
+
+  /* ---------------------------------------------------------------- print */
+  /* Paper: white page, black text, no chrome, nothing collapsed, every tab shown.
+     The variables are !important because the theme's own :root and .dark blocks are not in a layer. */
+  @page {
+    margin: 18mm 16mm;
+  }
+  @media print {
+    :root,
+    .dark {
+      color-scheme: light;
+      --background: oklch(1 0 0) !important;
+      --foreground: oklch(0.15 0 0) !important;
+      --card: oklch(1 0 0) !important;
+      --card-foreground: oklch(0.15 0 0) !important;
+      --muted: oklch(0.96 0 0) !important;
+      --muted-foreground: oklch(0.4 0 0) !important;
+      --border: oklch(0.8 0 0) !important;
+      --input: oklch(0.8 0 0) !important;
+      --accent: oklch(0.96 0 0) !important;
+      --accent-foreground: oklch(0.15 0 0) !important;
+      --dk-callout-note: oklch(0.55 0.02 260) !important;
+      --dk-callout-info: oklch(0.5 0.15 250) !important;
+      --dk-callout-tip: oklch(0.5 0.15 150) !important;
+      --dk-callout-warning: oklch(0.6 0.15 80) !important;
+      --dk-callout-danger: oklch(0.5 0.22 25) !important;
+    }
+    html,
+    body,
+    .dk-shell {
+      background: #fff !important;
+      color: #111 !important;
+    }
+    body {
+      font-size: 11pt;
+    }
+
+    /* Chrome that has no use on paper. */
+    .dk-skip,
+    .dk-navbar,
+    .dk-sidebar,
+    .dk-toc,
+    .dk-pager,
+    .dk-breadcrumb,
+    [data-print='hide'],
+    [role='tablist'],
+    .dk-copy,
+    .dk-kudos {
+      display: none !important;
+    }
+    .dk-print-only {
+      display: block;
+      margin: 1rem 0;
+      font-style: italic;
+    }
+
+    /* One column, full width, no sticky positioning, no motion. */
+    .dk-body,
+    [data-layout] .dk-body {
+      display: block !important;
+      max-width: none;
+    }
+    .dk-main {
+      padding: 0 !important;
+    }
+    .dk-article {
+      max-width: none !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
+    .dk-update-meta {
+      position: static !important;
+    }
+    .dk-page-title {
+      font-size: 24pt !important;
+      text-align: left !important;
+    }
+
+    /* Keep things together. */
+    :where(.dk-prose) h2,
+    :where(.dk-prose) h3,
+    :where(.dk-prose) h4 {
+      break-after: avoid;
+    }
+    :where(.dk-prose) p,
+    :where(.dk-prose) li {
+      orphans: 3;
+      widows: 3;
+    }
+    [role='note'],
+    .dk-code,
+    .dk-param,
+    .dk-endpoint,
+    .dk-update,
+    figure,
+    pre,
+    tr,
+    img,
+    .dk-step,
+    .dk-hero {
+      break-inside: avoid;
+    }
+    thead {
+      display: table-header-group;
+    }
+    /* A table wider than the page would scroll on screen; paper cannot scroll. */
+    :where(.dk-prose) table {
+      display: table;
+    }
+
+    /* Colour that carries meaning stays; ink-heavy fills do not. */
+    [role='note'],
+    [data-badge],
+    .dk-endpoint-method,
+    .dk-pre .highlighted,
+    .dk-pre .diff {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    /* Code is light, whatever the screen theme, and wraps instead of scrolling. */
+    .dk-pre,
+    .dk-pre span,
+    .dark .dk-pre.shiki,
+    .dark .dk-pre.shiki span {
+      color: var(--shiki-light) !important;
+      background: transparent !important;
+    }
+    .dk-pre {
+      white-space: pre-wrap !important;
+      overflow: visible !important;
+    }
+    .dk-pre code {
+      min-width: 0 !important;
+    }
+    .dk-code {
+      background: #fafafa !important;
+    }
+    .dk-code,
+    .dk-code-body {
+      overflow: visible !important;
+    }
+
+    /* Links: show where external ones go. */
+    :where(.dk-prose) a[href^='http']:not(.dk-button)::after {
+      content: ' (' attr(href) ')';
+      font-size: 0.85em;
+      color: var(--muted-foreground);
+      word-break: break-all;
+    }
+    :where(.dk-prose) a {
+      color: inherit;
+    }
+    .dk-button {
+      color: #111 !important;
+      background: none !important;
+      border: 1px solid #111 !important;
+    }
+
+    /* Collapsed content is printed, open. */
+    details::details-content {
+      content-visibility: visible !important;
+      block-size: auto !important;
+      overflow: visible !important;
+    }
+    .dk-accordion-content,
+    [data-state='closed'][hidden] {
+      display: block !important;
+      height: auto !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      padding-bottom: 1rem !important;
+    }
+    .dk-chevron {
+      display: none;
+    }
+
+    /* Tabs: every panel, each under its own label. */
+    [role='tabpanel'][data-label] {
+      content-visibility: visible !important;
+      display: block !important;
+    }
+    [role='tabpanel'][data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--muted-foreground);
+    }
+    .dk-tabs {
+      overflow: visible !important;
+    }
+
+    /* A tooltip's text is not on screen until hovered; on paper it follows the term. */
+    [data-tip]::after {
+      content: ' [' attr(data-tip) ']';
+      font-size: 0.85em;
+      color: var(--muted-foreground);
+    }
+
+    /* Diagrams and media fit the page. */
+    svg,
+    img,
+    video {
+      max-width: 100% !important;
+    }
   }
 }

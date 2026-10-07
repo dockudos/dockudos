@@ -1,0 +1,77 @@
+---
+title: Endpoint and ParamField
+description: Document an HTTP endpoint, a function or a config file.
+---
+
+<Endpoint method="POST" path="/v1/users" baseUrl="https://api.acme.dev" />
+
+<ParamField name="email" type="string" location="body" required>
+  The user's email address.
+</ParamField>
+<ParamField
+  name="role"
+  type="'admin' | 'member'"
+  location="body"
+  default="'member'"
+>
+  Access level of the new user.
+</ParamField>
+<ParamField name="X-Request-Id" type="string" location="header">
+  Optional. Echoed back in the response so you can match logs.
+</ParamField>
+
+<ResponseField name="id" type="string">
+  The id of the new user.
+</ResponseField>
+<ResponseField name="created_at" type="string (ISO 8601)">
+  When the user was created.
+</ResponseField>
+
+```mdx
+<Endpoint method="POST" path="/v1/users" baseUrl="https://api.acme.dev" />
+
+<ParamField name="email" type="string" location="body" required>
+  The user's email address.
+</ParamField>
+
+<ResponseField name="id" type="string">
+  The id of the new user.
+</ResponseField>
+```
+
+<TypeTable
+  type={{
+    'Endpoint.method': {
+      type: '"GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS"',
+      required: true,
+      description: 'Colored by kind; the name is always written out.',
+    },
+    'Endpoint.path': {
+      type: 'string',
+      required: true,
+      description: 'Keep {placeholders} as written.',
+    },
+    'Endpoint.baseUrl': {
+      type: 'string',
+      description: 'Shown dimmed before the path.',
+    },
+    'ParamField.name': {
+      type: 'string',
+      required: true,
+      description: 'Parameter, property or header name.',
+    },
+    'ParamField.type': { type: 'string', description: 'Shown as code.' },
+    'ParamField.location': {
+      type: 'string',
+      description: 'query, path, body, header or anything you like.',
+    },
+    'ParamField.required': {
+      type: 'boolean',
+      description: 'Marks it "required".',
+    },
+    'ParamField.default': { type: 'string', description: 'Shown as code.' },
+  }}
+/>
+
+These are the building blocks for hand-written API pages. Generated API reference pages from an OpenAPI
+file are planned for a later release and will use the same components.

@@ -1,10 +1,14 @@
 'use client';
 
 import { Tabs as Primitive } from 'radix-ui';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { cn } from '../lib/utils.ts';
 
 const EVENT = 'dockudos:tabs';
+
+/** The selected tab's value, so panels can hide themselves while staying in the page for printing. */
+const SelectedTab = createContext<string | undefined>(undefined);
+export const useSelectedTab = () => useContext(SelectedTab);
 const storageKey = (groupId: string) => `dockudos-tabs-${groupId}`;
 
 export interface TabsRootProps {
@@ -79,7 +83,7 @@ export function TabsRoot({
           </Primitive.Trigger>
         ))}
       </Primitive.List>
-      {children}
+      <SelectedTab.Provider value={value}>{children}</SelectedTab.Provider>
     </Primitive.Root>
   );
 }

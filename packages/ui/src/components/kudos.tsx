@@ -25,9 +25,14 @@ const MAX_COMMENT = 1000;
 
 function remembered(path: string): { id: string; vote: Vote } | undefined {
   try {
-    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, { id: string; vote: Vote }>;
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<
+      string,
+      { id: string; vote: Vote }
+    >;
     const entry = all[path];
-    return entry && (entry.vote === 'up' || entry.vote === 'down') ? entry : undefined;
+    return entry && (entry.vote === 'up' || entry.vote === 'down')
+      ? entry
+      : undefined;
   } catch {
     return undefined;
   }
@@ -35,8 +40,14 @@ function remembered(path: string): { id: string; vote: Vote } | undefined {
 
 function remember(path: string, value: { id: string; vote: Vote }) {
   try {
-    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, unknown>;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...all, [path]: value }));
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<
+      string,
+      unknown
+    >;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...all, [path]: value }),
+    );
   } catch {
     // storage unavailable: the visitor can vote again, which is harmless
   }
@@ -56,7 +67,11 @@ async function send(endpoint: string, body: object): Promise<{ id: string }> {
  * "Was this page helpful?" with a thumbs up or down, then an optional comment.
  * One vote per page per browser (remembered locally). Nothing that identifies the visitor is sent.
  */
-export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page helpful?' }: KudosProps) {
+export function Kudos({
+  path,
+  endpoint = '/api/kudos',
+  prompt = 'Was this page helpful?',
+}: KudosProps) {
   const [stage, setStage] = useState<Stage>({ name: 'ask' });
   const [error, setError] = useState<string>();
   const [comment, setComment] = useState('');
@@ -66,7 +81,11 @@ export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page h
   // Read the remembered vote after mount so server and first client render agree.
   useEffect(() => {
     const prior = remembered(path);
-    setStage(prior ? { name: 'done', vote: prior.vote, commented: true } : { name: 'ask' });
+    setStage(
+      prior
+        ? { name: 'done', vote: prior.vote, commented: true }
+        : { name: 'ask' },
+    );
     setComment('');
     setError(undefined);
   }, [path]);
@@ -99,13 +118,17 @@ export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page h
   const chosen = stage.name === 'ask' ? undefined : stage.vote;
 
   return (
-    <section aria-labelledby={headingId} className="dk-kudos">
+    <section aria-labelledby={headingId} className="dk-kudos" data-print="hide">
       <h2 id={headingId} className="dk-kudos-title">
         {stage.name === 'done' ? 'Thanks for your feedback' : prompt}
       </h2>
 
       {stage.name !== 'done' && (
-        <div className="dk-kudos-votes" role="group" aria-labelledby={headingId}>
+        <div
+          className="dk-kudos-votes"
+          role="group"
+          aria-labelledby={headingId}
+        >
           {(['up', 'down'] as const).map((value) => {
             const Icon = value === 'up' ? ThumbsUp : ThumbsDown;
             const active = chosen === value;
@@ -127,9 +150,14 @@ export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page h
       )}
 
       {stage.name === 'comment' && (
-        <form className="dk-kudos-form" onSubmit={(e) => void submit(e, stage.id, stage.vote)}>
+        <form
+          className="dk-kudos-form"
+          onSubmit={(e) => void submit(e, stage.id, stage.vote)}
+        >
           <label htmlFor={commentId}>
-            {stage.vote === 'up' ? 'Glad it helped. Anything we could do better?' : 'What was missing or wrong?'}{' '}
+            {stage.vote === 'up'
+              ? 'Glad it helped. Anything we could do better?'
+              : 'What was missing or wrong?'}{' '}
             <span className="text-muted-foreground">(optional)</span>
           </label>
           <textarea
@@ -140,10 +168,20 @@ export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page h
             onChange={(e) => setComment(e.target.value)}
           />
           <div className="dk-kudos-actions">
-            <button type="submit" className="dk-kudos-send" disabled={!comment.trim()}>
+            <button
+              type="submit"
+              className="dk-kudos-send"
+              disabled={!comment.trim()}
+            >
               Send comment
             </button>
-            <button type="button" className="dk-kudos-skip" onClick={() => setStage({ name: 'done', vote: stage.vote, commented: false })}>
+            <button
+              type="button"
+              className="dk-kudos-skip"
+              onClick={() =>
+                setStage({ name: 'done', vote: stage.vote, commented: false })
+              }
+            >
               No thanks
             </button>
             <span className="dk-kudos-count" aria-hidden="true">
@@ -155,11 +193,16 @@ export function Kudos({ path, endpoint = '/api/kudos', prompt = 'Was this page h
 
       {stage.name === 'done' && (
         <p className="dk-kudos-thanks">
-          <Check className="size-4" aria-hidden="true" /> Your feedback helps us improve these docs.
+          <Check className="size-4" aria-hidden="true" /> Your feedback helps us
+          improve these docs.
         </p>
       )}
 
-      <p role="status" aria-live="polite" className={cn('dk-kudos-error', !error && 'sr-only')}>
+      <p
+        role="status"
+        aria-live="polite"
+        className={cn('dk-kudos-error', !error && 'sr-only')}
+      >
         {error}
       </p>
     </section>

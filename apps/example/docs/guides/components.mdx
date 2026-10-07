@@ -114,3 +114,34 @@ and <Kbd>Ctrl+K</Kbd> or <Kbd>Esc</Kbd>.
     <File name="app.ts" icon={<span>🟦</span>} />
   </Folder>
 </Files>
+
+## API building blocks
+
+<Endpoint method="POST" path="/v1/users" baseUrl="https://api.example.com" />
+
+<ParamField name="email" type="string" location="body" required>
+  The user's email address.
+</ParamField>
+<ParamField name="role" type="'admin' | 'member'" default="'member'">
+  Access level.
+</ParamField>
+<ResponseField name="id" type="string">
+  The new user's id.
+</ResponseField>
+
+## Changelog and copy
+
+<Update label="1.2.0" date="2026-03-05" tags={['Added', 'Fixed']}>
+  Added kudos. Fixed the sidebar.
+</Update>
+
+Install with <CopyText>npm install dockudos</CopyText>.
+
+## Hero
+
+<Hero eyebrow="v0.1" title="Docs that ship" description="From a folder of MDX.">
+  <LinkButton href="/guides/hello">Get started</LinkButton>
+  <LinkButton href="https://github.com" variant="secondary">
+    GitHub
+  </LinkButton>
+</Hero>

@@ -41,3 +41,22 @@ for (const scheme of ['light', 'dark'] as const) {
     }
   });
 }
+
+test.describe('print', () => {
+  // The screen theme must not leak into print: both start from a dark page.
+  test.use({ colorScheme: 'dark' });
+
+  for (const [name, path] of Object.entries(pages)) {
+    test(`print: ${name}`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForLoadState('networkidle');
+      if (name === 'code')
+        await page.locator('figure[aria-label="Diagram"] svg').waitFor();
+      await page.emulateMedia({ media: 'print' });
+      await expect(page).toHaveScreenshot(`print-${name}.png`, {
+        fullPage: true,
+        mask: [page.locator('.dk-last-modified')],
+      });
+    });
+  }
+});

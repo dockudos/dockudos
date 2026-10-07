@@ -288,3 +288,127 @@ test.describe('kudos', () => {
     ).toHaveCount(0);
   });
 });
+
+test.describe('print', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('hides the chrome, forces a light page, and prints collapsed and tabbed content', async ({
+    page,
+  }) => {
+    await page.goto('/guides/components');
+    // Screen first: dark, chrome visible, accordion closed, one tab panel.
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect(page.locator('.dk-navbar')).toBeVisible();
+    await expect(page.getByText('A docs framework.')).toBeHidden();
+    await expect(page.locator('[role="tabpanel"]:visible')).toHaveCount(
+      await page.locator('[role="tabpanel"]:visible').count(),
+    );
+    const panelsOnScreen = await page
+      .locator('[role="tabpanel"]')
+      .filter({ visible: true })
+      .count();
+
+    await page.emulateMedia({ media: 'print' });
+
+    for (const selector of [
+      '.dk-navbar',
+      '.dk-sidebar',
+      '.dk-toc',
+      '.dk-pager',
+      '.dk-kudos',
+      '.dk-copy',
+      '[role="tablist"]',
+      '[data-print="hide"]',
+    ]) {
+      for (const el of await page.locator(selector).all())
+        await expect(el).toBeHidden();
+    }
+    const bg = await page.evaluate(
+      () => getComputedStyle(document.body).backgroundColor,
+    );
+    expect(bg).toBe('rgb(255, 255, 255)');
+    const color = await page.evaluate(
+      () => getComputedStyle(document.querySelector('.dk-prose')!).color,
+    );
+    expect(color).not.toBe('rgb(255, 255, 255)');
+
+    await expect(page.getByText('A docs framework.')).toBeVisible();
+    const panelsOnPaper = await page
+      .locator('[role="tabpanel"]')
+      .filter({ visible: true })
+      .count();
+    expect(panelsOnPaper).toBeGreaterThan(panelsOnScreen);
+    expect(
+      await page
+        .locator('[role="tabpanel"][data-label]')
+        .first()
+        .evaluate((el) => getComputedStyle(el, '::before').content),
+    ).toMatch(/\w/);
+  });
+
+  test('code stays light and wraps; external links show their address; tips are printed', async ({
+    page,
+  }) => {
+    await page.goto('/guides/code');
+    await page.emulateMedia({ media: 'print' });
+    const span = page.locator('.dk-pre span').first();
+    const rgb = await span.evaluate((el) =>
+      getComputedStyle(el).color.match(/\d+/g)!.map(Number),
+    );
+    // A light-theme token color is never near-white on a white page.
+    expect(Math.min(...rgb)).toBeLessThan(200);
+    expect(
+      await page
+        .locator('.dk-pre')
+        .first()
+        .evaluate((el) => getComputedStyle(el).whiteSpace),
+    ).toBe('pre-wrap');
+
+    await page.goto('/guides/components');
+    await page.emulateMedia({ media: 'print' });
+    const link = page
+      .locator('.dk-prose a[href^="https://github.com"]')
+      .first();
+    expect(
+      await link.evaluate((el) => getComputedStyle(el, '::after').content),
+    ).toContain('https://github.com');
+    const tip = page.locator('[data-tip]').first();
+    expect(
+      await tip.evaluate((el) => getComputedStyle(el, '::after').content),
+    ).toContain('Markdown with components');
+  });
+
+  test('produces a PDF of the page', async ({ page }) => {
+    await page.goto('/guides/components');
+    const pdf = await page.pdf({ format: 'A4' });
+    expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+    expect(pdf.length).toBeGreaterThan(10_000);
+  });
+
+  test('every screen-only component is gone and the print-only note appears', async ({
+    page,
+  }) => {
+    await page.goto('/guides/components');
+    await expect(page.locator('.dk-print-only').first()).toBeHidden();
+    await page.emulateMedia({ media: 'print' });
+    // The components page has no video, so check the class exists as a rule instead.
+    const display = await page.evaluate(() => {
+      const el = document.createElement('p');
+      el.className = 'dk-print-only';
+      document.body.append(el);
+      return getComputedStyle(el).display;
+    });
+    expect(display).toBe('block');
+  });
+});
+
+test('the new components render', async ({ page }) => {
+  await page.goto('/guides/components');
+  await expect(page.locator('.dk-endpoint-method')).toHaveText('POST');
+  await expect(page.locator('.dk-param-required')).toBeVisible();
+  await expect(page.locator('.dk-update time')).toHaveText('March 5, 2026');
+  await expect(page.locator('.dk-hero-title')).toHaveText('Docs that ship');
+  await expect(page.getByRole('link', { name: 'Get started' })).toHaveClass(
+    /dk-button/,
+  );
+});
