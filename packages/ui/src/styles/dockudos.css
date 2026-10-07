@@ -691,6 +691,120 @@
     animation: dk-rise 0.35s ease-out both;
   }
 
+  /* ---------------------------------------------------------------- kudos */
+  .dk-kudos {
+    margin-top: 3rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklch, var(--muted) 40%, transparent);
+  }
+  .dk-kudos-title {
+    margin: 0 0 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .dk-kudos-votes {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .dk-kudos-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    background: var(--background);
+    font-size: 0.875rem;
+    transition:
+      transform 0.15s,
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+  .dk-kudos-button:hover:not(:disabled) {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .dk-kudos-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-kudos-button.is-active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .dk-kudos-button:disabled:not(.is-active) {
+    opacity: 0.5;
+  }
+  .dk-kudos-form {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    animation: dk-rise 0.25s ease-out both;
+  }
+  .dk-kudos-form textarea {
+    width: 100%;
+    resize: vertical;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    font: inherit;
+  }
+  .dk-kudos-form textarea:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+  .dk-kudos-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dk-kudos-send {
+    padding: 0.375rem 0.9rem;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .dk-kudos-send:disabled {
+    opacity: 0.5;
+  }
+  .dk-kudos-skip {
+    padding: 0.375rem 0.6rem;
+    border-radius: var(--radius-md);
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+  .dk-kudos-send:focus-visible,
+  .dk-kudos-skip:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-kudos-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+  .dk-kudos-thanks {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    animation: dk-rise 0.25s ease-out both;
+  }
+  .dk-kudos-error {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--dk-callout-danger);
+  }
+
   /* ---------------------------------------------------------------- layouts */
   /* Notebook: compact, card-like surfaces. */
   [data-layout='notebook'] {

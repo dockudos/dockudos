@@ -8,19 +8,32 @@ import { useLink } from '../provider.tsx';
 import { ThemeToggle } from '../theme/theme-toggle.tsx';
 import type { TabLink } from './tab-links.ts';
 
-function Brand({ name, logo }: { name: string; logo: DocsConfig['logo'] }) {
+function Brand({
+  name,
+  logo,
+  brand,
+}: {
+  name: string;
+  logo: DocsConfig['logo'];
+  brand?: ReactNode;
+}) {
   const Link = useLink();
   const href = typeof logo === 'object' ? (logo.href ?? '/') : '/';
   return (
     <Link href={href} className="dk-navbar-brand">
-      {typeof logo === 'string' && <img src={logo} alt="" />}
-      {typeof logo === 'object' && (
+      {brand ?? (
         <>
-          <img src={logo.light} alt="" className="dark:hidden" />
-          <img src={logo.dark} alt="" className="hidden dark:block" />
+          {typeof logo === 'string' && <img src={logo} alt="" />}
+          {typeof logo === 'object' && (
+            <>
+              <img src={logo.light} alt="" className="dark:hidden" />
+              <img src={logo.dark} alt="" className="hidden dark:block" />
+            </>
+          )}
+          {/* With a logo the name is still read out, just not shown twice. */}
+          <span className={logo ? 'sr-only' : undefined}>{name}</span>
         </>
       )}
-      <span>{name}</span>
     </Link>
   );
 }
@@ -67,6 +80,7 @@ export function Navbar({
   tabs,
   defaultMode,
   drawer,
+  brand,
 }: {
   name: string;
   logo: DocsConfig['logo'];
@@ -74,11 +88,13 @@ export function Navbar({
   defaultMode: 'light' | 'dark' | 'system';
   /** Sidebar content shown in the mobile drawer. */
   drawer: ReactNode;
+  /** Replaces the logo and name. */
+  brand?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <header className="dk-navbar">
-      <Brand name={name} logo={logo} />
+      <Brand name={name} logo={logo} brand={brand} />
       <TabList tabs={tabs} className="dk-navbar-tabs" />
       <div className="dk-navbar-spacer" />
       <ThemeToggle defaultMode={defaultMode} />

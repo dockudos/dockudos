@@ -87,7 +87,15 @@ export async function discoverPages(
       const text = await readFile(join(docsDir, file), 'utf8');
       try {
         const { data, body } = parseFrontmatter(text, file);
-        const { title, description, icon, hidden, sidebarTitle, layout } = data;
+        const {
+          title,
+          description,
+          icon,
+          hidden,
+          sidebarTitle,
+          layout,
+          kudos,
+        } = data;
         return {
           file,
           title: title ?? firstHeading(body),
@@ -96,6 +104,7 @@ export async function discoverPages(
           hidden,
           sidebarTitle,
           layout,
+          kudos,
         };
       } catch (e) {
         if (e instanceof FrontmatterError) errors.push(e);

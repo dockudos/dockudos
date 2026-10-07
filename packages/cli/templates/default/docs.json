@@ -2,6 +2,7 @@
   "$schema": "./node_modules/@dockudos/core/docs.schema.json",
   "name": "{{name}}",
   "theme": { "primary": "#3b82f6" },
+  "kudos": { "enabled": true },
   "navigation": [
     {
       "tab": "Docs",

@@ -416,3 +416,61 @@ describe('layoutGraph', () => {
     ).not.toThrow();
   });
 });
+
+describe('DocsLayout: kudos and brand', () => {
+  const base = { nav, page: page('/start'), toc: [] };
+
+  it('shows the kudos widget only when enabled, and not on pages that opt out', () => {
+    const off = render(
+      <DocsLayout {...base} config={config}>
+        x
+      </DocsLayout>,
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'Was this page helpful?' }),
+    ).not.toBeInTheDocument();
+    off.unmount();
+    const on = parseConfig({ name: 'A', kudos: { enabled: true } });
+    const view = render(
+      <DocsLayout {...base} config={on}>
+        x
+      </DocsLayout>,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Was this page helpful?' }),
+    ).toBeInTheDocument();
+    view.unmount();
+    render(
+      <DocsLayout {...base} page={{ ...base.page, kudos: false }} config={on}>
+        x
+      </DocsLayout>,
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'Was this page helpful?' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('replaces the logo and name with a custom brand', () => {
+    render(
+      <DocsLayout
+        {...base}
+        config={config}
+        brand={<b data-testid="brand">B</b>}
+      >
+        x
+      </DocsLayout>,
+    );
+    expect(screen.getByTestId('brand')).toBeInTheDocument();
+  });
+
+  it('keeps the site name for screen readers when a logo image is used, without showing it twice', () => {
+    const { container } = render(
+      <DocsLayout {...base} config={config}>
+        x
+      </DocsLayout>,
+    );
+    const name = container.querySelector('.dk-navbar-brand span')!;
+    expect(name).toHaveTextContent('Acme');
+    expect(name).toHaveClass('sr-only');
+  });
+});

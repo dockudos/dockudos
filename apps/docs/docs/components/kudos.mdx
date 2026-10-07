@@ -1,0 +1,137 @@
+---
+title: Kudos
+description: Let readers vote on a page and tell you what was missing.
+kudos: false
+---
+
+dockudos = doc + kudos. The kudos widget asks "Was this page helpful?" under every page, takes a
+thumbs up or down, and then invites an optional comment. You read the answers with one command.
+
+## Turn it on
+
+<Steps>
+  <Step title="Enable it in docs.json">
+    ```json title="docs.json"
+    { "name": "Acme", "kudos": { "enabled": true } }
+    ```
+    Sites made with `dockudos init` already have this, and the route below.
+  </Step>
+  <Step title="Add the route that receives votes">
+    ```ts title="src/app/api/kudos/route.ts"
+    import { createKudosHandler } from '@dockudos/next/kudos';
+
+    export const POST = createKudosHandler();
+    ```
+
+  </Step>
+  <Step title="Read the feedback">
+    ```bash
+    npx dockudos kudos
+    ```
+  </Step>
+</Steps>
+
+```text
+12 helpful, 3 not helpful, on 5 pages.
+
+/guides/auth     5 up   2 down
+  - Step 2 is missing the header name
+  + Clear and short, thanks
+/quickstart      4 up   1 down
+```
+
+`--path /guides/auth` shows one page, `--json` prints everything for a script, and `--file` points at a
+different log.
+
+## What a visitor sees
+
+1. A question with **Yes** and **No** buttons.
+2. After a vote, an optional comment box. "No thanks" skips it.
+3. A thank-you. The vote is remembered in the browser for that page, so the question is not asked again.
+
+The widget is keyboard operable and announces errors to screen readers. If sending fails, the visitor
+is told and can try again; a comment that failed to send is kept in the box.
+
+## Where feedback goes
+
+`createKudosHandler()` appends one JSON line per vote or comment to `.dockudos/kudos.jsonl` in your project. Add
+`.dockudos` to `.gitignore` (the template does). That suits one server with a disk. Anywhere else, give it
+your own store:
+
+```ts title="src/app/api/kudos/route.ts"
+import { createKudosHandler, type KudosStore } from '@dockudos/next/kudos';
+
+const store: KudosStore = {
+  async add(entry) {
+    // entry: { id, at, path, vote? , comment? }
+    await db.insert('kudos', entry);
+  },
+};
+
+export const POST = createKudosHandler({ store });
+```
+
+The site must run a server for the route: a fully static export has nowhere to send votes.
+
+## Privacy and abuse
+
+- Nothing that identifies the visitor is stored: no IP address, user agent or cookie. Only the page,
+  the vote, the optional comment and a timestamp.
+- Votes for pages that do not exist, requests from another origin, bodies over 8 KB and comments over
+  1,000 characters are refused.
+- Each client is limited to 20 requests a minute, counted in server memory. The client is identified by
+  the first `x-forwarded-for` address, so run behind a proxy you control, and add your own limit if you need a
+  hard guarantee. There is no login, so anyone can vote more than once: treat counts as a signal, not a poll.
+- Comments are plain text. If you show them anywhere, escape them.
+
+## Options
+
+<TypeTable
+  type={{
+    'kudos.enabled': {
+      type: 'boolean',
+      default: 'false',
+      description: 'In docs.json. Show the widget under each page.',
+    },
+    'kudos.endpoint': {
+      type: 'string',
+      default: '"/api/kudos"',
+      description: 'In docs.json. Path of the route that receives votes.',
+    },
+    'kudos: false': {
+      type: 'frontmatter',
+      description: 'Hide the widget on one page, like this one.',
+    },
+    store: {
+      type: 'KudosStore',
+      description: 'createKudosHandler option. Default: a file in .dockudos.',
+    },
+    isKnownPath: {
+      type: '(path) => boolean',
+      description:
+        'createKudosHandler option. Default: the page must exist in docs/.',
+    },
+    maxCommentLength: {
+      type: 'number',
+      default: '1000',
+      description: 'createKudosHandler option.',
+    },
+    rateLimitPerMinute: {
+      type: 'number',
+      default: '20',
+      description: 'createKudosHandler option.',
+    },
+  }}
+/>
+
+## Using the component yourself
+
+```tsx
+import { Kudos } from '@dockudos/ui';
+
+<Kudos
+  path="/pricing"
+  endpoint="/api/kudos"
+  prompt="Did this answer your question?"
+/>;
+```

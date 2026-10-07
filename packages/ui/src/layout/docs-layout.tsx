@@ -11,6 +11,7 @@ import {
 } from '@dockudos/core';
 import type { ReactNode } from 'react';
 import { type GraphData, PageDataProvider } from '../docs-context.tsx';
+import { Kudos } from '../components/kudos.tsx';
 import { Navbar } from './navbar.tsx';
 import { tabLinks } from './tab-links.ts';
 import { Breadcrumb, PrevNext } from './page-nav.tsx';
@@ -18,7 +19,8 @@ import { Sidebar } from './sidebar.tsx';
 import { Toc } from './toc.tsx';
 
 export interface DocsLayoutProps {
-  config: Pick<DocsConfig, 'name' | 'logo' | 'theme'>;
+  config: Pick<DocsConfig, 'name' | 'logo' | 'theme'> &
+    Partial<Pick<DocsConfig, 'kudos'>>;
   nav: Navigation;
   page: Page;
   toc: readonly TocEntry[];
@@ -26,6 +28,8 @@ export interface DocsLayoutProps {
   lastModified?: Date;
   /** Pages and links between them, for `<GraphView />`. */
   graph?: GraphData;
+  /** Replaces the logo and name in the navbar, for example `<Logo />`. */
+  brand?: ReactNode;
   children: ReactNode;
 }
 
@@ -45,6 +49,7 @@ export function DocsLayout({
   toc,
   lastModified,
   graph,
+  brand,
   children,
 }: DocsLayoutProps) {
   const layout: LayoutName = page.layout ?? config.theme.layout;
@@ -64,6 +69,7 @@ export function DocsLayout({
       <Navbar
         name={config.name}
         logo={config.logo}
+        brand={brand}
         tabs={tabLinks(nav.tabs, first, activeTab)}
         defaultMode={config.theme.mode}
         drawer={sidebar}
@@ -91,6 +97,9 @@ export function DocsLayout({
                   {dateFormat.format(lastModified)}
                 </time>
               </p>
+            )}
+            {config.kudos?.enabled && page.kudos !== false && (
+              <Kudos path={page.path} endpoint={config.kudos.endpoint} />
             )}
             <PrevNext prev={prev} next={next} />
           </article>

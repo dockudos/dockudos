@@ -9,3 +9,4 @@ export * from './lib/seo.ts';
 export * from './lib/links.ts';
 export * from './lib/theme.ts';
 export * from './lib/package-manager.ts';
+export * from './lib/kudos.ts';

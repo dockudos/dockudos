@@ -28,5 +28,8 @@
   ],
   "theme": {
     "primary": "#3b82f6"
+  },
+  "kudos": {
+    "enabled": true
   }
 }

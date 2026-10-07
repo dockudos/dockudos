@@ -22,6 +22,7 @@ describe('parseConfig', () => {
       redirects: [],
       theme: { mode: 'system', layout: 'docs' },
       seo: { noindex: false },
+      kudos: { enabled: false, endpoint: '/api/kudos' },
     });
   });
 
@@ -182,6 +183,25 @@ describe('parseConfig: theme values that reach CSS', () => {
     });
     expect(theme.fonts?.sans).toContain('Helvetica Neue');
     expect(theme.radius).toBe('calc(0.5rem + 2px)');
+  });
+});
+
+describe('parseConfig: kudos', () => {
+  it('is off by default and takes an endpoint', () => {
+    expect(parseConfig({ name: 'A' }).kudos).toEqual({
+      enabled: false,
+      endpoint: '/api/kudos',
+    });
+    expect(
+      parseConfig({ name: 'A', kudos: { enabled: true, endpoint: '/fb' } })
+        .kudos,
+    ).toEqual({ enabled: true, endpoint: '/fb' });
+  });
+
+  it('rejects an endpoint that is not a path, naming the key', () => {
+    expect(
+      messageOf({ name: 'A', kudos: { endpoint: 'https://x.dev' } }),
+    ).toContain('kudos.endpoint');
   });
 });
 

@@ -398,3 +398,55 @@ describe('dev', () => {
     await done;
   });
 });
+
+describe('kudos', () => {
+  const log = (rows: object[]) =>
+    rows.map((r) => JSON.stringify(r)).join('\n') + '\n';
+  const at = '2026-01-01T00:00:00.000Z';
+
+  async function withLog(rows: object[], extra = '') {
+    await mkdir(join(dir, '.dockudos'), { recursive: true });
+    await writeFile(join(dir, '.dockudos', 'kudos.jsonl'), log(rows) + extra);
+  }
+
+  it('summarizes votes and comments per page', async () => {
+    await withLog([
+      { id: 'a', at, path: '/guide', vote: 'down' },
+      { id: 'b', at, path: '/guide', vote: 'up' },
+      { id: 'a', at, path: '/guide', comment: 'Step 2\nis wrong' },
+      { id: 'c', at, path: '/other', vote: 'up' },
+    ]);
+    const t = makeEnv();
+    expect(await run(['kudos'], t.env)).toBe(0);
+    expect(t.text()).toContain('2 helpful, 1 not helpful, on 2 pages.');
+    expect(t.text()).toMatch(/\/guide\s+1 up\s+1 down/);
+    expect(t.text()).toContain('- Step 2 is wrong');
+  });
+
+  it('filters by page, prints JSON, and reports unreadable lines', async () => {
+    await withLog(
+      [
+        { id: 'a', at, path: '/guide', vote: 'up' },
+        { id: 'b', at, path: '/other', vote: 'up' },
+      ],
+      'garbage\n',
+    );
+    const one = makeEnv();
+    await run(['kudos', '--path', '/other'], one.env);
+    expect(one.text()).not.toContain('/guide');
+    expect(one.text()).toContain('1 unreadable line');
+    const json = makeEnv();
+    await run(['kudos', '--json'], json.env);
+    expect(JSON.parse(json.text()).skipped).toBe(1);
+  });
+
+  it('says so when there is nothing yet or no log', async () => {
+    const t = makeEnv();
+    expect(await run(['kudos'], t.env)).toBe(1);
+    expect(t.errText()).toContain('No feedback log');
+    await withLog([]);
+    const u = makeEnv();
+    expect(await run(['kudos'], u.env)).toBe(0);
+    expect(u.text()).toBe('No feedback yet.\n');
+  });
+});

@@ -170,3 +170,23 @@ A group is `{ group: string, pages: Item[] }`, and an item is a page id (string)
     },
   }}
 />
+
+## kudos
+
+<TypeTable
+  type={{
+    enabled: {
+      type: 'boolean',
+      default: 'false',
+      description: 'Show "Was this page helpful?" under each page.',
+    },
+    endpoint: {
+      type: 'string',
+      default: '"/api/kudos"',
+      description:
+        'Path of the route that receives votes. Must start with "/".',
+    },
+  }}
+/>
+
+See [Kudos](../components/kudos.mdx).

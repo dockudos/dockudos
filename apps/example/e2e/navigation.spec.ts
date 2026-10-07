@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 
 test('navigates with the sidebar and keeps the current page marked', async ({
   page,
@@ -223,4 +225,66 @@ test('the new components render and the custom file icons show', async ({
   await expect(page.getByText('Optional detail')).toBeVisible();
   await expect(page.getByText('📂')).toBeVisible();
   await expect(page.getByText('🟦')).toBeVisible();
+});
+
+test.describe('kudos', () => {
+  const log = join(process.cwd(), '.dockudos', 'kudos.jsonl');
+  test.beforeEach(() => rmSync(log, { force: true }));
+
+  test('a visitor can vote and leave a comment, and it is stored without identifying them', async ({
+    page,
+  }) => {
+    await page.goto('/guides/hello');
+    await expect(
+      page.getByRole('heading', { name: 'Was this page helpful?' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'No' }).click();
+    await page
+      .getByLabel(/What was missing or wrong/)
+      .fill('The first step needs a command.');
+    await page.getByRole('button', { name: 'Send comment' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Thanks for your feedback' }),
+    ).toBeVisible();
+
+    const lines = readFileSync(log, 'utf8')
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l));
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatchObject({ path: '/guides/hello', vote: 'down' });
+    expect(lines[1]).toMatchObject({
+      id: lines[0].id,
+      comment: 'The first step needs a command.',
+    });
+    expect(Object.keys(lines[0]).sort()).toEqual(['at', 'id', 'path', 'vote']);
+
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { name: 'Thanks for your feedback' }),
+    ).toBeVisible();
+  });
+
+  test('the endpoint refuses an unknown page and a cross-origin post', async ({
+    request,
+    baseURL,
+  }) => {
+    const bad = await request.post('/api/kudos', {
+      data: { path: '/nope', vote: 'up' },
+    });
+    expect(bad.status()).toBe(400);
+    const cross = await request.post('/api/kudos', {
+      data: { path: '/', vote: 'up' },
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(cross.status()).toBe(403);
+    expect(baseURL).toBeTruthy();
+  });
+
+  test('a page can opt out with kudos: false', async ({ page }) => {
+    await page.goto('/layouts/home');
+    await expect(
+      page.getByRole('heading', { name: 'Was this page helpful?' }),
+    ).toHaveCount(0);
+  });
 });

@@ -10,6 +10,8 @@ export const frontmatterSchema = z.looseObject({
   icon: z.string().min(1).optional(),
   /** Hidden pages are routable but left out of generated navigation. */
   hidden: z.boolean().default(false),
+  /** `false` hides the kudos (feedback) widget on this page. */
+  kudos: z.boolean().optional(),
   /** Overrides `theme.layout` for this page. */
   layout: z.enum(LAYOUTS).optional(),
   /** Shorter label for the sidebar. */

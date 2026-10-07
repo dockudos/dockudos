@@ -175,6 +175,26 @@
         }
       },
       "additionalProperties": false
+    },
+    "kudos": {
+      "default": {
+        "enabled": false,
+        "endpoint": "/api/kudos"
+      },
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "endpoint": {
+          "default": "/api/kudos",
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/.*"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": ["name"],

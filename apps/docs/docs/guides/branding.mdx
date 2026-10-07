@@ -1,0 +1,47 @@
+---
+title: Logo and brand
+description: Use the dockudos logo, or your own, in the navbar.
+---
+
+## Your own logo
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "logo": { "light": "/logo-light.svg", "dark": "/logo-dark.svg" },
+  "favicon": "/icon.svg"
+}
+```
+
+With a logo the site name is no longer shown next to it, but it stays in the page for screen
+readers. Give the dark version enough contrast against the dark background.
+
+## The dockudos wordmark
+
+dockudos is **doc** plus **kudos**, written in two colors: "doc" in the text color and "kudos" in the
+brand color. `@dockudos/ui` exports the logo as components, so it follows your theme:
+
+```tsx title="src/app/[[...slug]]/page.tsx"
+import { DocsLayout, Logo } from '@dockudos/ui';
+
+<DocsLayout brand={<Logo />} /* … */ />;
+```
+
+<Frame caption="Logo, mark and wordmark, in your brand color">
+  <img
+    src="/logo-light.svg"
+    alt="dockudos logo: a page with a folded corner and a check badge, then 'doc' in black and 'kudos' in indigo"
+    width="210"
+    height="48"
+  />
+</Frame>
+
+| Export     | What it is                                                                 |
+| ---------- | -------------------------------------------------------------------------- |
+| `Logo`     | Mark and wordmark. Reads as "dockudos". `showMark={false}` drops the mark. |
+| `LogoMark` | The page-with-a-check mark alone. The check badge uses the brand color.    |
+| `Wordmark` | Just the two-color text.                                                   |
+
+`brand` replaces the logo and name in the navbar completely, so any element works.
+
+Static SVGs of the logo (light, dark, and a square icon) are in the repository under `.github/assets/`.

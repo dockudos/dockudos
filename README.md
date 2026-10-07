@@ -1,4 +1,9 @@
-# dockudos
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.svg" />
+    <img src=".github/assets/logo-light.svg" alt="dockudos" height="48" />
+  </picture>
+</p>
 
 An AI-native documentation platform you can fully self-host. dockudos turns a folder of MDX files into a documentation site built on Next.js, with search, cited AI answers, AI navigation, `llms.txt` and an MCP server planned as core features.
 

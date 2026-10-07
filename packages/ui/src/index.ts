@@ -35,3 +35,5 @@ export * from './components/frame.tsx';
 export * from './components/video.tsx';
 export * from './components/columns.tsx';
 export * from './components/expandable.tsx';
+export * from './components/kudos.tsx';
+export * from './components/logo.tsx';

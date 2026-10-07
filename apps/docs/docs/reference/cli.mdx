@@ -47,6 +47,16 @@ dockudos broken-links [--external]
 
 See [broken links](../guides/broken-links.mdx). Exit status 0 when there are no errors, 1 otherwise.
 
+## kudos
+
+```bash
+dockudos kudos [--path <page>] [--json] [--file <log>]
+```
+
+Prints the votes and comments collected by the [kudos widget](../components/kudos.mdx), per page,
+busiest first. Reads `.dockudos/kudos.jsonl` unless `--file` says otherwise, and reports lines it could
+not read instead of dropping them silently.
+
 ## Exit status
 
 | Status | Meaning                                                        |

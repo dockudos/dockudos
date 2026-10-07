@@ -51,6 +51,12 @@
       "types": "./dist/mdx-components.d.ts",
       "import": "./dist/mdx-components.js",
       "default": "./dist/mdx-components.js"
+    },
+    "./kudos": {
+      "@dockudos/source": "./src/kudos.ts",
+      "types": "./dist/kudos.d.ts",
+      "import": "./dist/kudos.js",
+      "default": "./dist/kudos.js"
     }
   },
   "files": [

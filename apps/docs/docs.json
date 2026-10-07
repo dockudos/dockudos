@@ -33,6 +33,7 @@
           "group": "Site",
           "pages": [
             "guides/theming",
+            "guides/branding",
             "guides/layouts",
             "guides/redirects",
             "guides/seo",
@@ -59,7 +60,8 @@
             "components/video",
             "components/type-tables",
             "components/page-data",
-            "components/github-info"
+            "components/github-info",
+            "components/kudos"
           ]
         }
       ]
@@ -78,5 +80,13 @@
         }
       ]
     }
-  ]
+  ],
+  "logo": {
+    "light": "/logo-light.svg",
+    "dark": "/logo-dark.svg"
+  },
+  "favicon": "/icon.svg",
+  "kudos": {
+    "enabled": true
+  }
 }

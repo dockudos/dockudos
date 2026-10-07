@@ -102,6 +102,16 @@ const seoSchema = z.strictObject({
   noindex: z.boolean().default(false),
 });
 
+const kudosSchema = z.strictObject({
+  /** Show "Was this page helpful?" under each page. */
+  enabled: z.boolean().default(false),
+  /** Where votes and comments are sent. The route is created in your app; see the docs. */
+  endpoint: z
+    .string()
+    .startsWith('/', 'must start with "/"')
+    .default('/api/kudos'),
+});
+
 /**
  * Shape of `docs.json`. Strict: unknown keys are rejected so typos fail the
  * build instead of being silently ignored. Later phases add keys.
@@ -126,6 +136,7 @@ export const docsConfigSchema = z.strictObject({
   navigation: z.array(tabSchema).default([]),
   redirects: z.array(redirectSchema).default([]),
   seo: seoSchema.default(() => seoSchema.parse({})),
+  kudos: kudosSchema.default(() => kudosSchema.parse({})),
 });
 
 /** JSON Schema for `docs.json`, for editor autocomplete. */

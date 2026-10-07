@@ -17,6 +17,8 @@ export interface Page {
   sidebarTitle?: string;
   /** Per-page override of `theme.layout`. */
   layout?: LayoutName;
+  /** `false` hides the kudos widget on this page. */
+  kudos?: boolean;
 }
 
 /** A discovered file plus whatever metadata was read from it. */
@@ -28,6 +30,7 @@ export interface PageSource {
   hidden?: boolean;
   sidebarTitle?: string;
   layout?: LayoutName;
+  kudos?: boolean;
 }
 
 export interface Folder {
@@ -100,6 +103,7 @@ export function buildPageTree(
     if (meta.icon) page.icon = meta.icon;
     if (meta.sidebarTitle) page.sidebarTitle = meta.sidebarTitle;
     if (meta.layout) page.layout = meta.layout;
+    if (meta.kudos !== undefined) page.kudos = meta.kudos;
 
     if (isIndex) folder.index = page;
     else folder.children.push(page);

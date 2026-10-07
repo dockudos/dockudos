@@ -2,6 +2,7 @@ import { brokenLinks } from './broken-links.ts';
 import { build } from './build.ts';
 import { dev } from './dev.ts';
 import { init } from './init.ts';
+import { kudos } from './kudos.ts';
 import { type Env, CliError } from './io.ts';
 
 const HELP = `dockudos: documentation sites for Next.js
@@ -13,6 +14,7 @@ Commands:
   dev [next args]   Start the dev server; restarts when docs.json changes
   build [next args] Validate docs.json, check links, then build the site
   broken-links      Check internal links and anchors (--external also checks http links)
+  kudos             Show page feedback collected by the kudos widget (--path, --json, --file)
 
 Options:
   -h, --help        Show this help
@@ -25,6 +27,7 @@ const COMMANDS: Record<string, (env: Env, args: string[]) => Promise<number>> =
     dev,
     build,
     'broken-links': brokenLinks,
+    kudos,
   };
 
 /** Run the CLI. Returns the process exit code; never throws for expected failures. */
