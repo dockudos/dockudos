@@ -61,3 +61,38 @@ jobs:
           name: playwright-report-node${{ matrix.node }}
           path: apps/example/playwright-report
           if-no-files-found: ignore
+
+  # Publishes the built packages to a local registry and proves a stranger could use them:
+  # `npx @dockudos/cli init`, install, build. This is the "published packages install" check.
+  packages:
+    name: Packages install and build a new site
+    runs-on: ubuntu-latest
+    needs: main
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm nx run-many -t build
+
+      - name: Start the local registry
+        run: |
+          pnpm nx local-registry &
+          for i in $(seq 1 30); do curl -sf http://localhost:4873/-/ping && exit 0; sleep 1; done
+          echo "registry did not start" && exit 1
+
+      - name: Publish to the local registry
+        run: |
+          npm config set //localhost:4873/:_authToken local-registry-token
+          pnpm nx release publish --registry http://localhost:4873/
+
+      - run: pnpm verify:packages
+
+      - run: pnpm verify:init

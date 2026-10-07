@@ -291,9 +291,15 @@ describe('CodeBlock', () => {
   );
 
   it('leaves a pre without a language as a plain pre (hand-written, or inside a Twoslash popup)', () => {
-    const { container } = render(<CodeBlock><code>plain</code></CodeBlock>);
+    const { container } = render(
+      <CodeBlock>
+        <code>plain</code>
+      </CodeBlock>,
+    );
     expect(container.querySelector('figure')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Copy code' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Copy code' }),
+    ).not.toBeInTheDocument();
     expect(container.querySelector('pre')).toHaveTextContent('plain');
   });
 
