@@ -252,3 +252,18 @@ See [Page actions](../guides/page-actions.mdx) and [Keyboard shortcuts](../guide
 />
 
 See [Protecting pages](../guides/protecting-pages.mdx).
+
+## icons
+
+<TypeTable
+  type={{
+    packs: {
+      type: 'Record<string, string | { dir: string; monochrome?: boolean }>',
+      default: '{}',
+      description:
+        'Folders of SVG files by the name used before the icon: { "acme": "icons/acme" } gives acme:logo. Names are lowercase letters, digits and dashes.',
+    },
+  }}
+/>
+
+Each pack is a folder, or `{ dir, monochrome }`; `monochrome` makes fixed colors follow the text color. See [Icons](../components/icons.mdx#your-own-icons).

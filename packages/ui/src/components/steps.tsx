@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { renderIcon } from './icon.tsx';
+import { renderIcon } from './render-icon.tsx';
 
 /** A numbered procedure: `<Steps><Step title="Install">…</Step></Steps>`. */
 export function Steps({ children }: { children: ReactNode }) {

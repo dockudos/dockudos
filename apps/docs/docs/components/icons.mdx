@@ -44,6 +44,120 @@ An unknown name stops the build and suggests close ones, so a typo never leaves 
   }}
 />
 
+## Your own icons
+
+Bring your own in three ways. They work anywhere a built-in icon does: `<Icon>`, the `icon` of cards, steps,
+accordions and callouts, and `icon:` in a page's frontmatter (sidebar and search).
+
+### SVG files in a folder
+
+Put `.svg` files in a folder of your project and name the folder in `docs.json`. The name you give is the prefix:
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "icons": {
+    "packs": {
+      "acme": "icons/acme",
+      "brand": { "dir": "icons/brand", "monochrome": true }
+    }
+  }
+}
+```
+
+`icons/acme/logo.svg` is now `acme:logo`, and `icons/acme/social/github.svg` is `acme:social-github`
+(folders are joined with a dash, names are lowercased and anything but letters, digits, `-` and `_` becomes a dash).
+
+```mdx
+<Icon name="acme:logo" size={24} />
+<Card title="Brand" icon="acme:logo" href="/brand">
+  …
+</Card>
+```
+
+<Icon name="dockudos:mark" size={28} /> <Icon name="dockudos:kudos" size={28} />
+are two icons from a pack in this site's own `icons/dockudos` folder.
+
+<TypeTable
+  type={{
+    dir: {
+      type: 'string',
+      required: true,
+      description:
+        'Folder of .svg files, inside the project. A plain string is the same as { dir }.',
+    },
+    monochrome: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Turn every fixed color into the text color, so the icons suit light and dark mode. Leave off to keep brand colors.',
+    },
+  }}
+/>
+
+Each file is read and cleaned when the site is built. Only drawing is kept: shapes, paths, gradients, clip paths and their
+colors and strokes. Scripts, event handlers, `<style>` blocks, embedded HTML, external links and anything else are removed, so a
+pack from anywhere cannot put code on your pages. Ids inside a file are made unique, so two icons that both use `clip0`
+do not clash. Text inside the SVG (a `<title>`) is dropped; label the icon where you use it with `label="Acme logo"`.
+
+A file that cannot be used stops the build and says why, for every file at once:
+
+```text
+Invalid icons in docs.json:
+  - icons/acme/old.svg: needs a viewBox, or a width and a height
+  - icons/acme/Logo.svg: becomes "acme:logo", the same as icons/acme/logo.svg
+```
+
+Files must be under 100 kB and have a `viewBox` (or a `width` and `height`).
+
+### An image address
+
+A path in `public/`, or an `https://` address, shows as an image:
+
+```mdx
+<Icon name="/partners/acme.png" size={32} />
+<Card title="Partner" icon="https://cdn.acme.dev/mark.svg">
+  …
+</Card>
+```
+
+An image keeps its own colors and cannot follow the theme the way an icon can.
+
+### React components and icon libraries
+
+Pass components to the provider, named however you like. Functions cannot cross from a server component to
+a client one, so put this in a small client file of your own:
+
+```tsx title="src/app-docs-root.tsx"
+'use client';
+
+import { DocsRoot } from '@dockudos/next/client';
+import { iconPack } from '@dockudos/ui';
+import { IconCloud, IconRocket } from '@tabler/icons-react';
+import type { ComponentProps } from 'react';
+import { AcmeLogo } from './acme-logo';
+
+const iconComponents = {
+  'acme:logo': AcmeLogo,
+  ...iconPack('tabler', { IconCloud, IconRocket }, { strip: 'Icon' }), // tabler:cloud, tabler:rocket
+};
+
+export function AppDocsRoot(props: ComponentProps<typeof DocsRoot>) {
+  return <DocsRoot {...props} iconComponents={iconComponents} />;
+}
+```
+
+Use `AppDocsRoot` in `src/app/layout.tsx` in place of `DocsRoot` (keep `icons={site.icons}`). A component receives
+`width`, `height`, `className` and the accessibility attributes; spread them onto its `<svg>`.
+
+`iconPack(prefix, exports, { strip })` names a library's components for you: export names become kebab-case after the prefix.
+List only the icons you use. Every icon you import is part of what visitors download, so do not pass a whole library.
+
+### Order of lookup
+
+1. Your components, 2. your SVG packs, 3. the built-in icons. So a name you define replaces a built-in one of the same name.
+   An unknown name stops the build with suggestions, naming your own packs first.
+
 ## All icons
 
 The names come from [Lucide](https://lucide.dev) (kebab-case), plus a few aliases such as `home`, `docs`, `api`

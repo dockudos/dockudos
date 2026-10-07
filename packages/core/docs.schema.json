@@ -229,6 +229,46 @@
       "default": true,
       "type": "boolean"
     },
+    "icons": {
+      "default": {
+        "packs": {}
+      },
+      "type": "object",
+      "properties": {
+        "packs": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "dir": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "monochrome": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": ["dir"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "access": {
       "default": {
         "rules": []

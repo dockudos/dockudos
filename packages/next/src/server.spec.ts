@@ -311,3 +311,31 @@ describe('createMarkdownHandler', () => {
     }
   });
 });
+
+describe('icons', () => {
+  const svg =
+    '<svg viewBox="0 0 8 8"><path d="M0 0h8v8z" fill="#336699"/></svg>';
+
+  it('reads the packs named in docs.json, cleaned, as site.icons', async () => {
+    await mkdir(join(root, 'icons', 'acme'), { recursive: true });
+    await writeFile(join(root, 'icons', 'acme', 'logo.svg'), svg);
+    await writeFile(
+      join(root, 'icons', 'acme', 'evil.svg'),
+      '<svg viewBox="0 0 8 8"><script>x()</script><path d="M0 0" onclick="y()"/></svg>',
+    );
+    await config({ icons: { packs: { acme: 'icons/acme' } } });
+    const { icons } = await getSite({ root });
+    expect(Object.keys(icons).sort()).toEqual(['acme:evil', 'acme:logo']);
+    expect(icons['acme:evil']!.body).toBe('<path d="M0 0"/>');
+  });
+
+  it('has no icons without packs, and fails the site with the file and reason when a pack is broken', async () => {
+    expect((await getSite({ root })).icons).toEqual({});
+    await mkdir(join(root, 'icons'), { recursive: true });
+    await writeFile(join(root, 'icons', 'bad.svg'), '<svg><g/></svg>');
+    await config({ icons: { packs: { acme: 'icons' } } });
+    await expect(getSite({ root })).rejects.toThrow(
+      /icons\/bad\.svg: needs a viewBox/,
+    );
+  });
+});

@@ -412,3 +412,63 @@ test('the new components render', async ({ page }) => {
     /dk-button/,
   );
 });
+
+test.describe('custom icons', () => {
+  test('icons from a pack render inline, in the sidebar, cards and text', async ({
+    page,
+  }) => {
+    await page.goto('/guides/components');
+    const sidebarIcon = page
+      .getByRole('complementary', { name: 'Sidebar' })
+      .getByRole('link', { name: 'API example' })
+      .locator('svg');
+    await expect(sidebarIcon).toBeVisible();
+    await expect(
+      page.locator('svg[viewBox="0 0 24 24"] circle[fill="#7c3aed"]').first(),
+    ).toBeVisible();
+    await expect(
+      page.locator('img[src="/example.png"][width="24"]'),
+    ).toBeVisible();
+  });
+
+  test('a monochrome pack follows the text color', async ({ page }) => {
+    await page.goto('/guides/components');
+    const star = page
+      .locator('svg path[fill="currentColor"][stroke="currentColor"]')
+      .first();
+    await expect(star).toBeAttached();
+  });
+
+  test('a hostile SVG is cleaned: no script runs and no handler or style reaches the page', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto('/guides/components');
+    await page.waitForLoadState('networkidle');
+    await page.locator('.dk-prose svg rect').first().hover();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __pwned?: boolean }).__pwned,
+      ),
+    ).toBeUndefined();
+    const html = await page.content();
+    expect(html).not.toMatch(
+      /__pwned|onmouseover|onload=|evil\.example|foreignObject|javascript:/i,
+    );
+    // The page's own content is still showing: the SVG's <style> did not hide the body.
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Components' }),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('the command palette shows the page icon too', async ({ page }) => {
+    await page.goto('/guides/hello');
+    await page.keyboard.press('/');
+    await page.getByRole('combobox').fill('API');
+    await expect(
+      page.getByRole('option', { name: /API example/ }).locator('svg'),
+    ).toBeVisible();
+  });
+});

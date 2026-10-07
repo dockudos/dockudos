@@ -104,5 +104,10 @@
     "copyPage": true,
     "assistants": true,
     "editUrl": "https://github.com/dockudos/dockudos/edit/main/apps/docs/docs/{file}"
+  },
+  "icons": {
+    "packs": {
+      "dockudos": "icons/dockudos"
+    }
   }
 }

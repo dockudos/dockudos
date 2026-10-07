@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import { Accordion as Primitive } from 'radix-ui';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
-import { renderIcon } from './icon.tsx';
+import { renderIcon } from './render-icon.tsx';
 
 export interface AccordionsProps {
   /** Allow several items open at once. Default: one at a time. */

@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { Shortcut } from '../components/shortcut.tsx';
 import { useHotkey } from '../hooks/use-hotkey.ts';
-import { renderIcon } from '../components/icon.tsx';
+import { renderIcon } from '../components/render-icon.tsx';
 import { useNavigate } from '../provider.tsx';
 
 export interface PaletteEntry {

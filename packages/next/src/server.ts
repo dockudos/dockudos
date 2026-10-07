@@ -15,9 +15,15 @@ import {
   extractToc,
   pageSeo,
   themeCss,
+  type SvgIcon,
   type TocEntry,
 } from '@dockudos/core';
-import { discoverPages, lastModified, loadConfig } from '@dockudos/core/node';
+import {
+  discoverPages,
+  lastModified,
+  loadConfig,
+  loadIconPacks,
+} from '@dockudos/core/node';
 import type { Metadata } from 'next';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -56,6 +62,8 @@ export interface Site {
   markdown(page: Page): Promise<string>;
   /** Is a page covered by an `access` rule? Protected pages stay out of the sitemap, graph and the public book. */
   isProtected(page: Page): boolean;
+  /** Your icons, read from the SVG packs in docs.json and cleaned. Pass to `DocsRoot` as `icons`. */
+  icons: Record<string, SvgIcon>;
 }
 
 export interface PageGraph {
@@ -97,7 +105,9 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
     ...built,
     unlisted: built.unlisted.filter((p) => !isProtected(p.path)),
   };
+  const icons = await loadIconPacks(root, config);
   const site: Site = {
+    icons,
     root,
     config,
     tree,

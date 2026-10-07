@@ -168,6 +168,16 @@ const accessRuleSchema = z.strictObject({
   realm: z.string().min(1).max(100).optional(),
 });
 
+const iconPackSchema = z.union([
+  z.string().min(1),
+  z.strictObject({
+    /** Folder of `.svg` files, relative to the project root. */
+    dir: z.string().min(1),
+    /** Make every fixed color follow the text color, so the icons suit light and dark mode. */
+    monochrome: z.boolean().default(false),
+  }),
+]);
+
 /**
  * Shape of `docs.json`. Strict: unknown keys are rejected so typos fail the
  * build instead of being silently ignored. Later phases add keys.
@@ -197,6 +207,26 @@ export const docsConfigSchema = z.strictObject({
   /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
   shortcuts: z.boolean().default(true),
   /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */
+  /** Your own icons. */
+  icons: z
+    .strictObject({
+      /**
+       * Folders of SVG files, by the name you use in front of the icon: `{ "acme": "icons/acme" }` makes
+       * `icons/acme/logo.svg` available as `acme:logo`.
+       */
+      packs: z
+        .record(
+          z
+            .string()
+            .regex(
+              /^[a-z][a-z0-9-]*$/,
+              'must be lowercase letters, digits and dashes, like "acme"',
+            ),
+          iconPackSchema,
+        )
+        .default({}),
+    })
+    .default(() => ({ packs: {} })),
   access: z
     .strictObject({ rules: z.array(accessRuleSchema).default([]) })
     .default(() => ({ rules: [] })),

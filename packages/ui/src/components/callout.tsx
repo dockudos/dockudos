@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
-import { renderIcon } from './icon.tsx';
+import { renderIcon } from './render-icon.tsx';
 
 export const CALLOUT_TYPES = [
   'note',

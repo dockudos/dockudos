@@ -1,6 +1,11 @@
 'use client';
 
 import {
+  type IconComponent,
+  IconsProvider,
+} from './components/icons-context.tsx';
+import type { SvgIcon } from '@dockudos/core';
+import {
   type AnchorHTMLAttributes,
   type ComponentType,
   type ReactNode,
@@ -39,14 +44,26 @@ const HostContext = createContext<Host>({
 export function DocsProvider({
   Link = DefaultLink,
   navigate = defaultNavigate,
+  icons,
+  iconComponents,
   children,
 }: {
   Link?: ComponentType<LinkProps>;
   navigate?: (href: string) => void;
+  /** Icons read from your SVG packs (`site.icons`). */
+  icons?: Record<string, SvgIcon>;
+  /** Your icons as React components, by name. Only from a client component (functions cannot cross the server boundary). */
+  iconComponents?: Record<string, IconComponent>;
   children: ReactNode;
 }) {
   const value = useMemo(() => ({ Link, navigate }), [Link, navigate]);
-  return <HostContext.Provider value={value}>{children}</HostContext.Provider>;
+  return (
+    <HostContext.Provider value={value}>
+      <IconsProvider icons={icons} components={iconComponents}>
+        {children}
+      </IconsProvider>
+    </HostContext.Provider>
+  );
 }
 
 export const useLink = () => useContext(HostContext).Link;

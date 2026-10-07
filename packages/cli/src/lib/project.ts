@@ -10,6 +10,7 @@ import {
   discoverPages,
   formatLinkProblems,
   loadConfig,
+  loadIconPacks,
 } from '@dockudos/core/node';
 import { join } from 'node:path';
 import { CliError } from './io.ts';
@@ -32,6 +33,7 @@ export async function loadProject(root: string): Promise<Project> {
     const config = await loadConfig(root);
     const tree = await discoverPages(docsDir, { prefix: config.urlPrefix });
     const nav = buildNavigation(config, tree);
+    await loadIconPacks(root, config);
     resolveRedirects(
       config.redirects,
       tree.pages.map((p) => p.path),

@@ -55,5 +55,14 @@
         "require": "token"
       }
     ]
+  },
+  "icons": {
+    "packs": {
+      "acme": "icons/acme",
+      "mono": {
+        "dir": "icons/mono",
+        "monochrome": true
+      }
+    }
   }
 }

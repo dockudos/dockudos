@@ -22,7 +22,7 @@ export default async function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: await siteCss(site) }} />
       </head>
       <body>
-        <DocsRoot>{children}</DocsRoot>
+        <DocsRoot icons={site.icons}>{children}</DocsRoot>
       </body>
     </html>
   );

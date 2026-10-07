@@ -3,7 +3,7 @@
 import type { SidebarItem } from '@dockudos/core';
 import { ChevronRight } from 'lucide-react';
 import { type RefObject, useEffect, useRef } from 'react';
-import { renderIcon } from '../components/icon.tsx';
+import { renderIcon } from '../components/render-icon.tsx';
 import { useLink } from '../provider.tsx';
 
 const hasActive = (items: readonly SidebarItem[], path: string): boolean =>

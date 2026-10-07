@@ -61,3 +61,6 @@ export * from './lib/icons.ts';
 export * from './components/tile.tsx';
 export * from './components/colors.tsx';
 export * from './components/panel.tsx';
+export * from './components/icons-context.tsx';
+export * from './components/render-icon.tsx';
+export * from './lib/icon-pack.ts';

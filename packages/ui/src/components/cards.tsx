@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { useLink } from '../provider.tsx';
-import { renderIcon } from './icon.tsx';
+import { renderIcon } from './render-icon.tsx';
 
 export function Cards({
   children,

@@ -29,6 +29,7 @@ describe('parseConfig', () => {
         endpoint: '/api/markdown',
       },
       shortcuts: true,
+      icons: { packs: {} },
       access: { rules: [] },
     });
   });
@@ -293,6 +294,38 @@ describe('parseConfig: access', () => {
     expect(messageOf({ name: 'A', access: { rules: [ruleValue] } })).toContain(
       key,
     );
+  });
+});
+
+describe('parseConfig: icons', () => {
+  it('accepts a folder or an object per pack', () => {
+    const c = parseConfig({
+      name: 'A',
+      icons: {
+        packs: {
+          acme: 'icons/acme',
+          brand: { dir: 'icons/brand', monochrome: true },
+        },
+      },
+    });
+    expect(c.icons.packs['acme']).toBe('icons/acme');
+    expect(c.icons.packs['brand']).toEqual({
+      dir: 'icons/brand',
+      monochrome: true,
+    });
+  });
+
+  it.each([
+    ['an uppercase prefix', { Acme: 'x' }, 'icons.packs'],
+    ['a prefix with a colon', { 'a:b': 'x' }, 'icons.packs'],
+    ['an empty folder', { acme: '' }, 'icons.packs.acme'],
+    [
+      'an unknown pack key',
+      { acme: { dir: 'x', colour: true } },
+      'icons.packs.acme',
+    ],
+  ])('rejects %s, naming the key', (_name, packs, key) => {
+    expect(messageOf({ name: 'A', icons: { packs } })).toContain(key);
   });
 });
 
