@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "Apache-2.0",
   "scripts": {
+    "schema": "node tools/generate-schema.mjs",
     "check:boundaries": "node tools/check-boundaries.mjs",
     "lint:commits": "commitlint --from origin/main --to HEAD",
     "verify:packages": "node tools/verify-packages.mjs",

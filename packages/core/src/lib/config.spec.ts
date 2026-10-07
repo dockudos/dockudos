@@ -1,4 +1,8 @@
-import { DocsConfigError, parseConfig } from './config.ts';
+import {
+  DocsConfigError,
+  docsConfigJsonSchema,
+  parseConfig,
+} from './config.ts';
 
 const messageOf = (input: unknown) => {
   try {
@@ -15,6 +19,9 @@ describe('parseConfig', () => {
     expect(parseConfig({ name: 'Acme Docs' })).toEqual({
       name: 'Acme Docs',
       navigation: [],
+      redirects: [],
+      theme: { mode: 'system', layout: 'docs' },
+      seo: { noindex: false },
     });
   });
 
@@ -28,7 +35,7 @@ describe('parseConfig', () => {
         },
       ],
     };
-    expect(parseConfig(config)).toEqual(config);
+    expect(parseConfig(config).navigation).toEqual(config.navigation);
   });
 
   it('names the key when `name` is missing', () => {
@@ -65,5 +72,97 @@ describe('parseConfig', () => {
 
   it('rejects non-object input', () => {
     expect(messageOf('nope')).toContain('(root)');
+  });
+});
+
+describe('parseConfig: full schema', () => {
+  it('accepts every top-level key', () => {
+    const config = parseConfig({
+      $schema: './docs.schema.json',
+      name: 'Acme',
+      logo: { light: '/l.svg', dark: '/d.svg', href: '/' },
+      favicon: '/favicon.ico',
+      theme: {
+        primary: '#3b82f6',
+        mode: 'dark',
+        layout: 'notebook',
+        fonts: { sans: 'Inter' },
+        radius: '0.5rem',
+        css: 'custom.css',
+      },
+      navigation: [
+        {
+          tab: 'Guides',
+          groups: [
+            {
+              group: 'Start',
+              pages: [
+                'index',
+                { title: 'GitHub', href: 'https://github.com/acme' },
+                { group: 'Nested', pages: ['a/b'] },
+              ],
+            },
+          ],
+        },
+        { tab: 'Blog', href: 'https://blog.acme.com' },
+      ],
+      redirects: [{ source: '/old', destination: '/new' }],
+      seo: { siteUrl: 'https://docs.acme.com', noindex: true },
+    });
+    expect(config.redirects[0]?.permanent).toBe(true);
+    expect(config.theme.layout).toBe('notebook');
+  });
+
+  it.each([
+    ['theme.primary', { theme: { primary: 'blue' } }],
+    ['theme.layout', { theme: { layout: 'wide' } }],
+    ['theme.mode', { theme: { mode: 'auto' } }],
+    [
+      'redirects[0].source',
+      { redirects: [{ source: 'old', destination: '/n' }] },
+    ],
+    [
+      'redirects[0].destination',
+      { redirects: [{ source: '/o', destination: 'new' }] },
+    ],
+    ['seo.siteUrl', { seo: { siteUrl: 'not a url' } }],
+    ['logo', { logo: 42 }],
+    [
+      'navigation[0].groups[0].group',
+      { navigation: [{ tab: 'T', groups: [{ pages: [] }] }] },
+    ],
+  ])('names %s when invalid', (key, patch) => {
+    expect(messageOf({ name: 'A', ...patch })).toContain(key);
+  });
+
+  it('names an unknown nested key', () => {
+    expect(messageOf({ name: 'A', theme: { colour: 'red' } })).toContain(
+      'unknown key theme.colour',
+    );
+  });
+
+  it('exports a JSON Schema that describes the keys', () => {
+    const schema = docsConfigJsonSchema() as {
+      properties: Record<string, unknown>;
+    };
+    expect(Object.keys(schema.properties)).toEqual(
+      expect.arrayContaining([
+        'name',
+        'theme',
+        'navigation',
+        'redirects',
+        'seo',
+      ]),
+    );
+  });
+});
+
+describe('docs.schema.json', () => {
+  it('is in sync with the zod schema (run `pnpm schema` to update)', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const file = new URL('../../docs.schema.json', import.meta.url);
+    expect(JSON.parse(await readFile(file, 'utf8'))).toEqual(
+      docsConfigJsonSchema(),
+    );
   });
 });

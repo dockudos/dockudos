@@ -19,14 +19,18 @@
       "types": "./dist/node.d.ts",
       "import": "./dist/node.js",
       "default": "./dist/node.js"
-    }
+    },
+    "./docs.schema.json": "./docs.schema.json"
   },
   "files": [
     "dist",
+    "docs.schema.json",
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
+    "github-slugger": "^2.0.0",
     "tslib": "^2.3.0",
+    "yaml": "^2.9.1",
     "zod": "^4.6.5"
   },
   "nx": {

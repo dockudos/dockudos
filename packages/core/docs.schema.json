@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "logo": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "light": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dark": {
+              "type": "string",
+              "minLength": 1
+            },
+            "href": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["light", "dark"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "favicon": {
+      "type": "string",
+      "minLength": 1
+    },
+    "theme": {
+      "default": {
+        "mode": "system",
+        "layout": "docs"
+      },
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+        },
+        "mode": {
+          "default": "system",
+          "type": "string",
+          "enum": ["light", "dark", "system"]
+        },
+        "layout": {
+          "default": "docs",
+          "type": "string",
+          "enum": ["docs", "notebook", "spacious", "flux", "glass", "home"]
+        },
+        "fonts": {
+          "type": "object",
+          "properties": {
+            "sans": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mono": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "radius": {
+          "type": "string",
+          "minLength": 1
+        },
+        "css": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "navigation": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "tab": {
+                "type": "string",
+                "minLength": 1
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/__schema0"
+                }
+              }
+            },
+            "required": ["tab", "groups"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tab": {
+                "type": "string",
+                "minLength": 1
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["tab", "href"],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "redirects": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "format": "starts_with",
+            "pattern": "^\\/.*"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "permanent": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": ["source", "destination"],
+        "additionalProperties": false
+      }
+    },
+    "seo": {
+      "default": {
+        "noindex": false
+      },
+      "type": "object",
+      "properties": {
+        "siteUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string"
+        },
+        "noindex": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["name"],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "href": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["title", "href"],
+                "additionalProperties": false
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ]
+          }
+        }
+      },
+      "required": ["group", "pages"],
+      "additionalProperties": false
+    }
+  }
+}

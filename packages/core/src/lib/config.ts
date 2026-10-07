@@ -1,13 +1,99 @@
 import { z } from 'zod';
 
-const groupSchema = z.strictObject({
-  group: z.string().min(1),
-  pages: z.array(z.string().min(1)),
+const LAYOUTS = [
+  'docs',
+  'notebook',
+  'spacious',
+  'flux',
+  'glass',
+  'home',
+] as const;
+
+export type LayoutName = (typeof LAYOUTS)[number];
+
+const hexColor = z
+  .string()
+  .regex(
+    /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/,
+    'must be a hex color like #3b82f6',
+  );
+
+const linkSchema = z.strictObject({
+  title: z.string().min(1),
+  href: z.string().min(1),
 });
 
-const tabSchema = z.strictObject({
-  tab: z.string().min(1),
-  groups: z.array(groupSchema),
+export interface NavGroup {
+  group: string;
+  pages: NavItem[];
+}
+
+/** A sidebar entry: a page id (file path without extension), an external link, or a nested group. */
+export type NavItem = string | { title: string; href: string } | NavGroup;
+
+const groupSchema: z.ZodType<NavGroup> = z.lazy(() =>
+  z.strictObject({
+    group: z.string().min(1),
+    pages: z.array(navItemSchema),
+  }),
+);
+
+const navItemSchema: z.ZodType<NavItem> = z.lazy(() =>
+  z.union([z.string().min(1), linkSchema, groupSchema]),
+);
+
+const tabSchema = z.union([
+  z.strictObject({
+    tab: z.string().min(1),
+    groups: z.array(groupSchema),
+  }),
+  z.strictObject({
+    tab: z.string().min(1),
+    href: z.string().min(1),
+  }),
+]);
+
+const logoSchema = z.union([
+  z.string().min(1),
+  z.strictObject({
+    light: z.string().min(1),
+    dark: z.string().min(1),
+    href: z.string().min(1).optional(),
+  }),
+]);
+
+const themeSchema = z.strictObject({
+  /** Brand color; the palette is derived from it. */
+  primary: hexColor.optional(),
+  mode: z.enum(['light', 'dark', 'system']).default('system'),
+  layout: z.enum(LAYOUTS).default('docs'),
+  fonts: z
+    .strictObject({
+      sans: z.string().min(1).optional(),
+      mono: z.string().min(1).optional(),
+    })
+    .optional(),
+  radius: z.string().min(1).optional(),
+  /** Path to a CSS file loaded after the theme, relative to the project root. */
+  css: z.string().min(1).optional(),
+});
+
+const redirectSchema = z.strictObject({
+  source: z.string().startsWith('/', 'must start with "/"'),
+  destination: z
+    .string()
+    .refine(
+      (v) => v.startsWith('/') || /^https?:\/\//.test(v),
+      'must start with "/" or "http(s)://"',
+    ),
+  permanent: z.boolean().default(true),
+});
+
+const seoSchema = z.strictObject({
+  /** Origin used for canonical URLs and the sitemap, e.g. `https://docs.acme.com`. */
+  siteUrl: z.url().optional(),
+  description: z.string().optional(),
+  noindex: z.boolean().default(false),
 });
 
 /**
@@ -15,9 +101,23 @@ const tabSchema = z.strictObject({
  * build instead of being silently ignored. Later phases add keys.
  */
 export const docsConfigSchema = z.strictObject({
+  $schema: z.string().optional(),
   name: z.string().min(1),
+  logo: logoSchema.optional(),
+  favicon: z.string().min(1).optional(),
+  theme: themeSchema.default(() => themeSchema.parse({})),
   navigation: z.array(tabSchema).default([]),
+  redirects: z.array(redirectSchema).default([]),
+  seo: seoSchema.default(() => seoSchema.parse({})),
 });
+
+/** JSON Schema for `docs.json`, for editor autocomplete. */
+export function docsConfigJsonSchema(): Record<string, unknown> {
+  return z.toJSONSchema(docsConfigSchema, { io: 'input' }) as Record<
+    string,
+    unknown
+  >;
+}
 
 export type DocsConfig = z.output<typeof docsConfigSchema>;
 
@@ -38,16 +138,30 @@ export class DocsConfigError extends Error {
 export function parseConfig(input: unknown, source?: string): DocsConfig {
   const result = docsConfigSchema.safeParse(input);
   if (result.success) return result.data;
-  throw new DocsConfigError(
-    result.error.issues.map((issue) => {
-      if (issue.code === 'unrecognized_keys') {
-        const extra = issue.keys.map((k) => formatPath([...issue.path, k]));
-        return `unknown key ${extra.join(', ')}`;
-      }
-      return `${formatPath(issue.path) || '(root)'}: ${issue.message}`;
-    }),
-    source,
-  );
+  throw new DocsConfigError(result.error.issues.flatMap(describe), source);
+}
+
+type Issue = z.core.$ZodIssue;
+
+function describe(issue: Issue): string[] {
+  if (issue.code === 'unrecognized_keys') {
+    const extra = issue.keys.map((k) => formatPath([...issue.path, k]));
+    return [`unknown key ${extra.join(', ')}`];
+  }
+  if (issue.code === 'invalid_union') {
+    // Report the branch that got furthest, not a generic "Invalid input".
+    const branches = issue.errors.filter((b) => b.length > 0);
+    const best = branches.sort((a, b) => depth(b) - depth(a))[0];
+    if (best)
+      return best.flatMap((i) =>
+        describe({ ...i, path: [...issue.path, ...i.path] }),
+      );
+  }
+  return [`${formatPath(issue.path) || '(root)'}: ${issue.message}`];
+}
+
+function depth(issues: readonly Issue[]): number {
+  return Math.max(...issues.map((i) => i.path.length));
 }
 
 function formatPath(path: readonly PropertyKey[]): string {
