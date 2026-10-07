@@ -57,6 +57,12 @@
       "types": "./dist/kudos.d.ts",
       "import": "./dist/kudos.js",
       "default": "./dist/kudos.js"
+    },
+    "./markdown": {
+      "@dockudos/source": "./src/markdown.ts",
+      "types": "./dist/markdown.d.ts",
+      "import": "./dist/markdown.js",
+      "default": "./dist/markdown.js"
     }
   },
   "files": [

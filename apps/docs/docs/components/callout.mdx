@@ -8,6 +8,7 @@ description: Draw attention to a note, tip or warning.
   Information the reader may not expect.
 </Callout>
 <Callout type="tip">A shortcut or a better way.</Callout>
+<Callout type="check">It worked, or this is done.</Callout>
 <Callout type="warning">Something that can go wrong.</Callout>
 <Callout type="danger">Something that cannot be undone.</Callout>
 
@@ -30,6 +31,11 @@ The same thing, written with colons.
         'Sets the color and the icon. An unknown value renders as note.',
     },
     title: { type: 'string', description: 'Defaults to the name of the type.' },
+    icon: {
+      type: 'string | ReactNode',
+      description:
+        'Replaces the icon: a name from the icon list, or an element.',
+    },
     children: {
       type: 'ReactNode',
       description: 'Content. Markdown works inside.',
@@ -38,3 +44,13 @@ The same thing, written with colons.
 />
 
 A callout is a `role="note"` region; its icon is decorative and hidden from screen readers.
+
+## Shorthands
+
+`Note`, `Info`, `Tip`, `Check`, `Warning` and `Danger` are the same callouts under shorter names, so content written for
+other documentation tools works unchanged:
+
+```mdx
+<Warning>This deletes the project.</Warning>
+<Check title="Done">Everything is set up.</Check>
+```

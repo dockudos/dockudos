@@ -1,0 +1,36 @@
+---
+title: API example
+description: A page with a side panel of examples.
+icon: braces
+---
+
+<Panel>
+  <RequestExample>
+
+```bash title="curl"
+curl https://api.example.com/v1/users -d '{"email":"a@b.c"}'
+```
+
+```js title="Node"
+await fetch('https://api.example.com/v1/users', { method: 'POST' });
+```
+
+  </RequestExample>
+  <ResponseExample>
+
+```json title="200"
+{ "id": "usr_123" }
+```
+
+  </ResponseExample>
+</Panel>
+
+<Endpoint method="POST" path="/v1/users" />
+
+## Create a user
+
+<ParamField name="email" type="string" required location="body">
+  The email.
+</ParamField>
+
+Text here wraps beside the panel on wide screens.

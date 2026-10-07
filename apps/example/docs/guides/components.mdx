@@ -145,3 +145,36 @@ Install with <CopyText>npm install dockudos</CopyText>.
     GitHub
   </LinkButton>
 </Hero>
+
+## Icons, tiles and colors
+
+<Icon name="rocket" /> <Icon name="shield-check" size={20} />
+
+<Cards cols={3}>
+  <Card title="Fast" icon="zap">
+    Icon by name.
+  </Card>
+  <Tile title="Starter" description="A small site" href="/guides/hello">
+    <img src="/example.png" alt="A blue preview" width={120} height={60} />
+  </Tile>
+  <Card title="Safe" icon="lock">
+    Another icon.
+  </Card>
+</Cards>
+
+<Colors
+  items={[
+    { name: 'Primary', value: '#3b82f6' },
+    { name: 'Ink', value: '#111827' },
+  ]}
+/>
+
+<Check>A check callout.</Check>
+<Warning>A warning from the shorthand.</Warning>
+
+<Steps>
+  <Step title="Open" icon="key">
+    A step with an icon.
+  </Step>
+  <Step title="Go">A step with a number.</Step>
+</Steps>

@@ -1,0 +1,67 @@
+---
+title: Keyboard shortcuts
+description: Every page is usable from the keyboard, and the shortcuts are built in.
+icon: keyboard
+---
+
+Press <Kbd>?</Kbd> on any page to see the shortcuts that are active there. The list is built from what is
+registered, so it is always accurate, including shortcuts you add yourself.
+
+## Built in
+
+| Keys                                      | Does                                                                                             | Where                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------- |
+| <Shortcut keys="mod+k" /> or <Kbd>/</Kbd> | Search pages. Type, move with the arrow keys, <Kbd>Enter</Kbd> to open, <Kbd>Esc</Kbd> to close. | everywhere                    |
+| <Kbd>?</Kbd>                              | Show the shortcuts.                                                                              | everywhere                    |
+| <Kbd>[</Kbd> and <Kbd>]</Kbd>             | Previous and next page.                                                                          | pages with a neighbour        |
+| <Shortcut keys="g h" />                   | Go to the first page.                                                                            | everywhere                    |
+| <Kbd>t</Kbd>                              | Switch theme: light, dark, system.                                                               | everywhere                    |
+| <Kbd>c</Kbd>                              | Copy the page as Markdown.                                                                       | when `actions.copyPage` is on |
+| <Kbd>e</Kbd>                              | Edit the page.                                                                                   | when `actions.editUrl` is set |
+
+Shortcuts never fire while you type in a field, so you can use letters in the search box, the feedback
+comment or your own forms. <Kbd>Ctrl+K</Kbd> or <Kbd>Cmd+K</Kbd> is the one exception: it also works in a field, and closes the
+search again. Combinations with Ctrl, Cmd or Alt are left to the browser unless a shortcut asks for them.
+
+On a Mac the keys are shown as <Kbd>⌘</Kbd> and <Kbd>⌥</Kbd>; elsewhere as Ctrl and Alt. `mod` in a shortcut means Cmd
+on a Mac and Ctrl elsewhere.
+
+## Turn them off
+
+```json title="docs.json"
+{ "name": "Acme", "shortcuts": false }
+```
+
+That removes the search button, the shortcuts and the dialog. Controls that work with the mouse still work.
+
+## Add your own
+
+`useHotkey` registers a shortcut for as long as a component is on the page. It appears in the <Kbd>?</Kbd> dialog if
+you give it a description. See [React hooks](./hooks.mdx).
+
+```tsx
+'use client';
+import { useHotkey } from '@dockudos/ui';
+
+export function Feedback({ open }: { open: () => void }) {
+  useHotkey('f', open, { description: 'Send feedback', group: 'Page' });
+  return null;
+}
+```
+
+Keys are written as:
+
+| Written             | Means                                                                  |
+| ------------------- | ---------------------------------------------------------------------- |
+| `'t'`, `'?'`, `'['` | That key, with no Ctrl, Cmd or Alt held. Shift is allowed for symbols. |
+| `'shift+k'`         | Shift and K.                                                           |
+| `'mod+k'`           | Cmd+K on a Mac, Ctrl+K elsewhere.                                      |
+| `'g h'`             | Press G, then H within a second.                                       |
+| `['mod+k', '/']`    | Either.                                                                |
+
+If two shortcuts use the same keys, the one added last wins, so you can replace a built-in one.
+
+## Accessibility
+
+Controls that have a shortcut say so with `aria-keyshortcuts`, and the shortcut is also in their tooltip.
+Nothing depends on a shortcut: every action has a button or link too.

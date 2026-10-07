@@ -2,6 +2,8 @@
 
 import type { SidebarItem } from '@dockudos/core';
 import { ChevronRight } from 'lucide-react';
+import { type RefObject, useEffect, useRef } from 'react';
+import { renderIcon } from '../components/icon.tsx';
 import { useLink } from '../provider.tsx';
 
 const hasActive = (items: readonly SidebarItem[], path: string): boolean =>
@@ -33,6 +35,11 @@ function Items({
                 className="dk-nav-link"
                 aria-current={active ? 'page' : undefined}
               >
+                {item.page.icon && (
+                  <span className="dk-nav-icon">
+                    {renderIcon(item.page.icon, 15)}
+                  </span>
+                )}
                 {item.page.sidebarTitle ?? item.page.title}
               </Link>
             </li>
@@ -76,6 +83,26 @@ function Items({
 }
 
 /** The sidebar tree of the active tab. `path` marks the current page. */
+/**
+ * Keep the current page in view when a long sidebar opens scrolled to the top. Only the sidebar
+ * scrolls; the page itself stays where it is.
+ */
+function useScrollActiveIntoView(
+  ref: RefObject<HTMLElement | null>,
+  path: string,
+) {
+  useEffect(() => {
+    const active = ref.current?.querySelector('[aria-current="page"]');
+    const panel = ref.current?.closest<HTMLElement>('.dk-sidebar');
+    if (!active || !panel) return;
+    const a = active.getBoundingClientRect();
+    const p = panel.getBoundingClientRect();
+    if (a.top < p.top || a.bottom > p.bottom) {
+      panel.scrollTop += a.top - p.top - p.height / 3;
+    }
+  }, [ref, path]);
+}
+
 export function Sidebar({
   items,
   path,
@@ -83,8 +110,10 @@ export function Sidebar({
   items: readonly SidebarItem[];
   path: string;
 }) {
+  const ref = useRef<HTMLElement>(null);
+  useScrollActiveIntoView(ref, path);
   return (
-    <nav aria-label="Documentation">
+    <nav ref={ref} aria-label="Documentation">
       <Items items={items} path={path} depth={0} />
     </nav>
   );

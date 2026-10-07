@@ -1,10 +1,31 @@
 import type { ComponentType } from 'react';
-import { Accordion, Accordions } from '../components/accordion.tsx';
+import {
+  Accordion,
+  AccordionGroup,
+  Accordions,
+} from '../components/accordion.tsx';
 import { Banner } from '../components/banner.tsx';
+import { Colors } from '../components/colors.tsx';
+import { Icon } from '../components/icon.tsx';
+import {
+  Panel,
+  RequestExample,
+  ResponseExample,
+} from '../components/panel.tsx';
+import { Shortcut } from '../components/shortcut.tsx';
+import { Tile } from '../components/tile.tsx';
 import { CodeBlock, CodeGroup } from '../components/code-block.tsx';
 import { Badge } from '../components/badge.tsx';
-import { Callout } from '../components/callout.tsx';
-import { Card, Cards } from '../components/cards.tsx';
+import {
+  Callout,
+  Check,
+  Danger,
+  Info,
+  Note,
+  Tip,
+  Warning,
+} from '../components/callout.tsx';
+import { Card, CardGroup, Cards } from '../components/cards.tsx';
 import { Columns } from '../components/columns.tsx';
 import { Expandable } from '../components/expandable.tsx';
 import { File, Files, Folder } from '../components/files.tsx';
@@ -48,6 +69,21 @@ export const mdxComponents = {
   GraphView,
   CodeGroup,
   Badge,
+  Icon,
+  Note,
+  Info,
+  Tip,
+  Check,
+  Warning,
+  Danger,
+  CardGroup,
+  AccordionGroup,
+  Shortcut,
+  Tile,
+  Colors,
+  Panel,
+  RequestExample,
+  ResponseExample,
   Kbd,
   Frame,
   Video,

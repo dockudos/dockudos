@@ -112,6 +112,29 @@ const kudosSchema = z.strictObject({
     .default('/api/kudos'),
 });
 
+const actionsSchema = z.strictObject({
+  /** "Copy page" (as Markdown) in the page header. Needs the markdown route. */
+  copyPage: z.boolean().default(false),
+  /** "Open in ChatGPT" and "Open in Claude" in the page menu. Needs `seo.siteUrl`. */
+  assistants: z.boolean().default(false),
+  /** Where the Markdown comes from. */
+  endpoint: z
+    .string()
+    .startsWith('/', 'must start with "/"')
+    .default('/api/markdown'),
+  /**
+   * Link to edit a page's source. `{file}` is the page's file inside `docs/`, `{path}` its URL path:
+   * `https://github.com/acme/site/edit/main/docs/{file}`.
+   */
+  editUrl: z
+    .string()
+    .regex(
+      /^https?:\/\/.*\{(file|path)\}/,
+      'must be an http(s) URL containing {file} or {path}',
+    )
+    .optional(),
+});
+
 /**
  * Shape of `docs.json`. Strict: unknown keys are rejected so typos fail the
  * build instead of being silently ignored. Later phases add keys.
@@ -137,6 +160,9 @@ export const docsConfigSchema = z.strictObject({
   redirects: z.array(redirectSchema).default([]),
   seo: seoSchema.default(() => seoSchema.parse({})),
   kudos: kudosSchema.default(() => kudosSchema.parse({})),
+  actions: actionsSchema.default(() => actionsSchema.parse({})),
+  /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
+  shortcuts: z.boolean().default(true),
 });
 
 /** JSON Schema for `docs.json`, for editor autocomplete. */

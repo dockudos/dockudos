@@ -1,0 +1,55 @@
+---
+title: Tile and Colors
+description: Cards with a preview, and a palette that copies on click.
+icon: palette
+---
+
+## Tile
+
+<Cards cols={3}>
+  <Tile
+    title="Starter"
+    description="A small site"
+    href="/getting-started/quickstart"
+  >
+    <img
+      src="/example.png"
+      alt="A blue rectangle standing in for a screenshot"
+      width={120}
+      height={60}
+    />
+  </Tile>
+  <Tile title="Docs" description="With tabs" href="/guides/navigation">
+    <img src="/example.png" alt="" width={120} height={60} />
+  </Tile>
+  <Tile title="Plain" description="No link" />
+</Cards>
+
+```mdx
+<Cards cols={3}>
+  <Tile title="Starter" description="A small site" href="/starter">
+    <img src="/starter.png" alt="Screenshot of the starter" />
+  </Tile>
+</Cards>
+```
+
+The preview has a fixed 16:10 shape and crops the image to fill it. With an `href` the whole tile is a link; external
+links open in a new tab.
+
+## Colors
+
+<Colors
+  title="Brand"
+  items={[
+    { name: 'Primary', value: '#4f46e5' },
+    { name: 'Ink', value: '#18181b' },
+    { name: 'Success', value: '#16a34a' },
+    { name: 'Warning', value: '#d97706' },
+  ]}
+/>
+
+```mdx
+<Colors title="Brand" items={[{ name: 'Primary', value: '#4f46e5' }]} />
+```
+
+Click a swatch to copy its value. Any CSS color works. Each swatch names its color for screen readers.

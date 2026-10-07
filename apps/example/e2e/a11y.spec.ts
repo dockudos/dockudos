@@ -7,6 +7,7 @@ const pages = [
   '/guides/features',
   '/guides/components',
   '/guides/code',
+  '/guides/api',
   '/layouts/docs',
   '/layouts/notebook',
   '/layouts/spacious',

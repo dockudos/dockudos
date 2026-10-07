@@ -8,10 +8,14 @@ export interface GraphData {
   edges: { from: string; to: string }[];
 }
 
-interface PageData {
+export interface PageData {
   toc: readonly TocEntry[];
   graph?: GraphData;
   path: string;
+  /** The page's title. */
+  title?: string;
+  prev?: { path: string; title: string };
+  next?: { path: string; title: string };
 }
 
 const PageContext = createContext<PageData>({ toc: [], path: '/' });

@@ -8,6 +8,7 @@ import {
   buildSitemap,
   expandIncludes,
   flattenSidebar,
+  parseFrontmatter,
   extractLinks,
   resolveDocLink,
   extractToc,
@@ -47,6 +48,11 @@ export interface Site {
    * navigation order, then visible pages the navigation does not list.
    */
   book(): Promise<{ page: Page; toc: TocEntry[] }[]>;
+  /**
+   * The page as plain Markdown: title and description, then the content with `<include>`s expanded and
+   * frontmatter removed. For "copy page", `llms.txt`-style exports and AI assistants.
+   */
+  markdown(page: Page): Promise<string>;
 }
 
 export interface PageGraph {
@@ -98,6 +104,21 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
       return extractToc(source);
     },
     graph: () => (graph ??= buildGraph(tree, dir, config.urlPrefix)),
+    markdown: async (page) => {
+      const read = (file: string) => readFile(join(dir, file), 'utf8');
+      const expanded = await expandIncludes(await read(page.file), {
+        file: page.file,
+        read,
+      });
+      const { body } = parseFrontmatter(expanded, page.file);
+      const head = [
+        `# ${page.title}`,
+        page.description && `> ${page.description}`,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+      return `${head}\n\n${body.trim()}\n`;
+    },
     book: async () => {
       const ordered = [
         ...nav.tabs.flatMap((t) => flattenSidebar(t.sidebar)),

@@ -190,3 +190,33 @@ A group is `{ group: string, pages: Item[] }`, and an item is a page id (string)
 />
 
 See [Kudos](../components/kudos.mdx).
+
+## actions
+
+<TypeTable
+  type={{
+    copyPage: {
+      type: 'boolean',
+      default: 'false',
+      description: 'Show "Copy page" (as Markdown). Needs the markdown route.',
+    },
+    assistants: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Add "Open in ChatGPT" and "Open in Claude" to the page menu. Needs seo.siteUrl and copyPage.',
+    },
+    endpoint: {
+      type: 'string',
+      default: '"/api/markdown"',
+      description: 'Path of the route that returns a page as Markdown.',
+    },
+    editUrl: {
+      type: 'string',
+      description:
+        'Link to edit a page: an http(s) URL containing {file} or {path}.',
+    },
+  }}
+/>
+
+See [Page actions](../guides/page-actions.mdx) and [Keyboard shortcuts](../guides/keyboard-shortcuts.mdx).

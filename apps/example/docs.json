@@ -20,7 +20,8 @@
             "guides/hello",
             "guides/features",
             "guides/components",
-            "guides/code"
+            "guides/code",
+            "guides/api"
           ]
         }
       ]
@@ -31,5 +32,10 @@
   },
   "kudos": {
     "enabled": true
+  },
+  "actions": {
+    "copyPage": true,
+    "assistants": true,
+    "editUrl": "https://github.com/example/site/edit/main/docs/{file}"
   }
 }

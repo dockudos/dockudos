@@ -1,0 +1,52 @@
+---
+title: Icons
+description: Icons by name, for cards, steps, accordions, callouts, the sidebar and your own text.
+icon: sparkles
+---
+
+An icon is a name: <Icon name="rocket" /> `rocket`. Use it on its own, or as the `icon` of other components.
+
+```mdx
+<Icon name="rocket" size={20} />
+
+<Card title="Quickstart" icon="rocket" href="/quickstart">
+  Start here.
+</Card>
+<Step title="Install" icon="download">
+  …
+</Step>
+<Accordion title="Security" icon="shield-check">
+  …
+</Accordion>
+<Callout type="tip" icon="sparkles">
+  …
+</Callout>
+```
+
+In a page's frontmatter, `icon: rocket` puts the icon beside the page in the sidebar and in search.
+
+An unknown name stops the build and suggests close ones, so a typo never leaves a blank space. Anywhere an
+`icon` is accepted you can also give an element: `icon={<MyLogo />}`.
+
+<TypeTable
+  type={{
+    name: {
+      type: 'string',
+      required: true,
+      description: 'Icon name. Lowercase, with dashes.',
+    },
+    size: { type: 'number', default: '16', description: 'Pixels.' },
+    label: {
+      type: 'string',
+      description:
+        'Read out by screen readers. Without it the icon is decorative.',
+    },
+  }}
+/>
+
+## All icons
+
+The names come from [Lucide](https://lucide.dev) (kebab-case), plus a few aliases such as `home`, `docs`, `api`
+and `security`. Click one to copy its name.
+
+<IconGallery />

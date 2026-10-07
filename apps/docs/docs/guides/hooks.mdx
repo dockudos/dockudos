@@ -1,0 +1,127 @@
+---
+title: React hooks
+description: Build your own components on the same pieces the built-in ones use.
+icon: code
+---
+
+The hooks are exported from `@dockudos/ui`. They need `'use client'` at the top of your component file.
+
+```tsx title="components/helpful.tsx"
+'use client';
+
+import { useCopyToClipboard, useHotkey, usePageData } from '@dockudos/ui';
+```
+
+## useHotkey
+
+Run a function when keys are pressed, for as long as the component is mounted.
+
+```tsx
+useHotkey('mod+shift+l', () => setOpen(true), {
+  description: 'Open the changelog', // shown in the ? dialog; leave out to keep it unlisted
+  group: 'Page',
+  enabled: open === false,
+  allowInInputs: false,
+});
+```
+
+| Option          | Default     | Meaning                           |
+| --------------- | ----------- | --------------------------------- |
+| `description`   | none        | Lists the shortcut in the dialog. |
+| `group`         | `"General"` | Heading in the dialog.            |
+| `enabled`       | `true`      | Turn it off without unmounting.   |
+| `allowInInputs` | `false`     | Fire while typing in a field.     |
+
+See [Keyboard shortcuts](./keyboard-shortcuts.mdx) for the key syntax. `useRegisteredHotkeys()` returns the listed
+shortcuts if you want to show your own help.
+
+## useCopyToClipboard
+
+```tsx
+const { copy, state } = useCopyToClipboard(); // state: 'idle' | 'copied' | 'failed'
+<button onClick={() => copy('npm install dockudos')}>
+  {state === 'copied' ? 'Copied' : 'Copy'}
+</button>;
+```
+
+`state` goes back to `idle` after two seconds (pass another number to change it). If the Clipboard API is
+blocked it falls back to the older method before giving up.
+
+## useTheme
+
+```tsx
+const { mode, resolved, setMode, cycle } = useTheme();
+// mode: 'light' | 'dark' | 'system'    resolved: 'light' | 'dark'
+```
+
+Every component using it stays in step with the theme button, and the choice is remembered.
+Use `resolved` to pick an image or a chart palette.
+
+## usePageData
+
+The page being shown: `path`, `title`, `toc` (its headings), `prev` and `next`, and `graph` when the layout has it.
+
+```tsx
+const { toc, next } = usePageData();
+```
+
+## useNavigate and useLink
+
+`useNavigate()` returns a function that goes to a path with the site's router (a client-side navigation in
+Next.js). `useLink()` returns the router's link component, so your links get prefetching and no page reload.
+
+## useLocalStorage
+
+```tsx
+const [compact, setCompact] = useLocalStorage('my-density', false);
+```
+
+Like `useState`, but remembered, and shared between components using the same key and between tabs.
+The first render always uses the initial value, so there is no hydration mismatch. Blocked or full storage
+never throws; the value then lasts for the page view.
+
+## useMediaQuery
+
+```tsx
+const wide = useMediaQuery('(min-width: 1024px)');
+const reduceMotion = usePrefersReducedMotion();
+```
+
+`false` on the server and until the page has loaded.
+
+## useActiveHeading
+
+`useActiveHeading(ids)` returns the id of the heading currently at the top of the screen, from a list of ids. It is
+what the "On this page" list uses.
+
+## Putting it together
+
+A custom component that adds a "copy link to this page" button with a shortcut:
+
+```tsx title="components/copy-link.tsx"
+'use client';
+
+import { useCopyToClipboard, useHotkey } from '@dockudos/ui';
+
+export function CopyLink() {
+  const { copy, state } = useCopyToClipboard();
+  const copyLink = () => copy(window.location.href);
+  useHotkey('l', copyLink, {
+    description: 'Copy a link to this page',
+    group: 'Page',
+  });
+  return (
+    <button onClick={copyLink}>
+      {state === 'copied' ? 'Link copied' : 'Copy link'}
+    </button>
+  );
+}
+```
+
+Register it in `mdx-components.tsx`, and write `<CopyLink />` in any page:
+
+```tsx
+defineMdxComponents({ CopyLink });
+```
+
+The [icon gallery](../components/icons.mdx) in these docs is a real example of this.

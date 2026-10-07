@@ -493,6 +493,23 @@
     font-size: 0.8125rem;
     font-weight: 600;
   }
+  .dk-step-icon {
+    position: absolute;
+    left: -0.875rem;
+    top: 0;
+    z-index: 1;
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  .dk-step[data-has-icon]::before {
+    content: none;
+  }
   .dk-step-title {
     margin: 0.125rem 0 0.5rem;
     font-size: 1.0625rem;
@@ -610,6 +627,10 @@
     .dk-copy {
       opacity: 1;
     }
+  }
+  /* The tab already shows the block's title. */
+  .dk-code-group .dk-code-title {
+    display: none;
   }
   .dk-code-group .dk-code,
   .dk-tabs .dk-code {
@@ -1109,6 +1130,297 @@
     }
   }
 
+  /* ------------------------------------------------- shortcuts and actions */
+  .dk-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    white-space: nowrap;
+  }
+  .dk-shortcut kbd {
+    min-width: 1.35em;
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .dk-shortcut-then {
+    margin: 0 0.15rem;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+  }
+  .dk-search-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2rem;
+    padding: 0 0.5rem 0 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--muted);
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .dk-search-button:hover {
+    border-color: var(--primary);
+    color: var(--foreground);
+  }
+  .dk-search-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+  .dk-search-button .dk-shortcut {
+    display: none;
+  }
+  .dk-search-label {
+    display: none;
+  }
+  @media (min-width: 640px) {
+    .dk-search-button {
+      min-width: 11rem;
+    }
+    .dk-search-label {
+      display: inline;
+      margin-right: auto;
+    }
+    .dk-search-button .dk-shortcut {
+      display: inline-flex;
+    }
+  }
+  .dk-article-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .dk-article-footer .dk-last-modified {
+    margin: 0;
+  }
+  .dk-shortcuts-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .dk-shortcuts-hint:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+  .dk-shortcuts-hint:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+  .dk-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .dk-split {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .dk-split-main,
+  .dk-split-more,
+  .dk-page-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    background: var(--background);
+  }
+  .dk-split-more {
+    padding-inline: 0.4rem;
+    border-left: 1px solid var(--border);
+  }
+  .dk-split-main:hover,
+  .dk-split-more:hover,
+  .dk-page-edit:hover {
+    color: var(--foreground);
+    background: var(--muted);
+  }
+  .dk-split-main:focus-visible,
+  .dk-split-more:focus-visible,
+  .dk-page-edit:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+  .dk-page-edit {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .dk-nav-icon {
+    flex: none;
+    opacity: 0.8;
+  }
+
+  /* ----------------------------------------------------- tiles, colors, panel */
+  .dk-tile {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    color: var(--card-foreground);
+    text-decoration: none;
+  }
+  .dk-tile-link {
+    transition:
+      transform 0.2s,
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .dk-tile-link:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 6px 18px
+      color-mix(in oklch, var(--foreground) 10%, transparent);
+  }
+  .dk-tile-link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-tile-preview {
+    display: flex;
+    aspect-ratio: 16 / 10;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: var(--muted);
+  }
+  .dk-tile-preview > img,
+  .dk-tile-preview > svg,
+  .dk-tile-preview > video {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    object-fit: cover;
+  }
+  .dk-tile-text {
+    padding: 0.75rem 1rem;
+  }
+
+  .dk-colors {
+    margin: 1.25rem 0;
+  }
+  .dk-colors-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .dk-colors ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dk-colors button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border-radius: var(--radius-lg);
+  }
+  .dk-colors button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-swatch {
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: white;
+    mix-blend-mode: normal;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .dk-swatch-name {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .dk-swatch-value {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .dk-panel {
+    margin: 1.25rem 0;
+  }
+  .dk-example + .dk-example {
+    margin-top: 1rem;
+  }
+  .dk-example-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .dk-example .dk-tabs {
+    margin: 0;
+  }
+  @media (min-width: 1280px) {
+    /* The panel takes the table of contents' column and follows the reader down the page. */
+    .dk-shell:has(.dk-panel) .dk-toc {
+      display: none;
+    }
+    .dk-panel {
+      position: sticky;
+      top: calc(var(--dk-navbar-h) + 1rem);
+      float: right;
+      clear: right;
+      width: calc(var(--dk-toc-w) + 9rem);
+      max-height: calc(100dvh - var(--dk-navbar-h) - 2rem);
+      margin: 0 calc(-1 * (var(--dk-toc-w) + 9rem + 2.5rem)) 1rem 1.5rem;
+      overflow-y: auto;
+    }
+    .dk-shell:has(.dk-panel) .dk-body {
+      grid-template-columns: var(--dk-sidebar-w) minmax(0, 1fr) calc(
+          var(--dk-toc-w) + 9rem
+        );
+    }
+  }
+  @media print {
+    .dk-panel {
+      position: static !important;
+      float: none !important;
+      width: auto !important;
+      margin: 1rem 0 !important;
+      max-height: none !important;
+    }
+    .dk-swatch {
+      color: transparent;
+    }
+  }
+
   /* ---------------------------------------------------------------- layouts */
   /* Notebook: compact, card-like surfaces. */
   [data-layout='notebook'] {
@@ -1271,7 +1583,10 @@
     [data-print='hide'],
     [role='tablist'],
     .dk-copy,
-    .dk-kudos {
+    .dk-kudos,
+    .dk-page-actions,
+    .dk-shortcuts-hint,
+    .dk-search-button {
       display: none !important;
     }
     .dk-print-only {

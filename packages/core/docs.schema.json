@@ -195,6 +195,39 @@
         }
       },
       "additionalProperties": false
+    },
+    "actions": {
+      "default": {
+        "copyPage": false,
+        "assistants": false,
+        "endpoint": "/api/markdown"
+      },
+      "type": "object",
+      "properties": {
+        "copyPage": {
+          "default": false,
+          "type": "boolean"
+        },
+        "assistants": {
+          "default": false,
+          "type": "boolean"
+        },
+        "endpoint": {
+          "default": "/api/markdown",
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/.*"
+        },
+        "editUrl": {
+          "type": "string",
+          "pattern": "^https?:\\/\\/.*\\{(file|path)\\}"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shortcuts": {
+      "default": true,
+      "type": "boolean"
     }
   },
   "required": ["name"],

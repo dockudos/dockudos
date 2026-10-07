@@ -267,3 +267,47 @@ describe('book', () => {
     ).toEqual(['one', 'two']);
   });
 });
+
+describe('markdown', () => {
+  it('returns title, description and the content without frontmatter, includes expanded', async () => {
+    await mkdir(join(root, 'docs', '_parts'));
+    await writeFile(
+      join(root, 'docs', '_parts', 'p.mdx'),
+      '---\ntitle: P\n---\nShared text',
+    );
+    await writeFile(
+      join(root, 'docs', 'md.mdx'),
+      '---\ntitle: The Page\ndescription: About it.\n---\nIntro\n\n<include>./_parts/p.mdx</include>\n',
+    );
+    const site = await getSite({ root });
+    expect(await site.markdown(site.find(['md']) as never)).toBe(
+      '# The Page\n\n> About it.\n\nIntro\n\nShared text\n',
+    );
+  });
+});
+
+describe('createMarkdownHandler', () => {
+  it('serves a page as markdown and 404s for an unknown or missing path', async () => {
+    const { createMarkdownHandler } = await import('./markdown.ts');
+    const prev = process.cwd();
+    process.chdir(root);
+    try {
+      const GET = createMarkdownHandler();
+      const ok = await GET(
+        new Request('http://x.test/api/markdown?path=/guides/auth'),
+      );
+      expect(ok.status).toBe(200);
+      expect(ok.headers.get('content-type')).toContain('text/markdown');
+      expect(await ok.text()).toContain('# Auth');
+      expect(
+        (await GET(new Request('http://x.test/api/markdown?path=/nope')))
+          .status,
+      ).toBe(404);
+      expect(
+        (await GET(new Request('http://x.test/api/markdown'))).status,
+      ).toBe(404);
+    } finally {
+      process.chdir(prev);
+    }
+  });
+});

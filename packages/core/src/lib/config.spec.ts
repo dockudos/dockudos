@@ -23,6 +23,12 @@ describe('parseConfig', () => {
       theme: { mode: 'system', layout: 'docs' },
       seo: { noindex: false },
       kudos: { enabled: false, endpoint: '/api/kudos' },
+      actions: {
+        copyPage: false,
+        assistants: false,
+        endpoint: '/api/markdown',
+      },
+      shortcuts: true,
     });
   });
 
@@ -203,6 +209,31 @@ describe('parseConfig: kudos', () => {
       messageOf({ name: 'A', kudos: { endpoint: 'https://x.dev' } }),
     ).toContain('kudos.endpoint');
   });
+});
+
+describe('parseConfig: actions and shortcuts', () => {
+  it('accepts actions and an edit link with a placeholder', () => {
+    const c = parseConfig({
+      name: 'A',
+      actions: {
+        copyPage: true,
+        assistants: true,
+        editUrl: 'https://github.com/a/b/edit/main/docs/{file}',
+      },
+      shortcuts: false,
+    });
+    expect(c.actions.copyPage).toBe(true);
+    expect(c.shortcuts).toBe(false);
+  });
+
+  it.each(['https://github.com/a/b', 'github.com/{file}', 'ftp://x/{file}'])(
+    'rejects editUrl %j',
+    (editUrl) => {
+      expect(messageOf({ name: 'A', actions: { editUrl } })).toContain(
+        'actions.editUrl',
+      );
+    },
+  );
 });
 
 describe('parseConfig: urlPrefix', () => {

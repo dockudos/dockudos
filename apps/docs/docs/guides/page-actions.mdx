@@ -1,0 +1,42 @@
+---
+title: Page actions
+description: Copy a page as Markdown, ask an AI assistant about it, and edit its source.
+icon: copy
+---
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "seo": { "siteUrl": "https://docs.acme.dev" },
+  "actions": {
+    "copyPage": true,
+    "assistants": true,
+    "editUrl": "https://github.com/acme/site/edit/main/docs/{file}"
+  }
+}
+```
+
+Each page then has, under its description:
+
+- **Copy page**: copies the page as clean Markdown (the title, the description, then the content with
+  includes filled in and frontmatter removed). Useful for pasting into an AI chat. Shortcut <Kbd>c</Kbd>.
+- A menu next to it with **View as Markdown**, and, with `actions.assistants` and `seo.siteUrl` set, **Open in
+  ChatGPT** and **Open in Claude**. They open a new chat asking the assistant to read the page's public address,
+  so they only work for pages that are on the internet.
+- **Edit**: a link to the page's source, shortcut <Kbd>e</Kbd>. In `editUrl`, `{file}` is the page's file inside `docs/`
+  and `{path}` is its URL path.
+
+All of it is left off printed pages and the PDF.
+
+## The Markdown route
+
+"Copy page" needs a route that serves the Markdown. `dockudos init` adds it; in an existing app add:
+
+```ts title="src/app/api/markdown/route.ts"
+import { createMarkdownHandler } from '@dockudos/next/markdown';
+
+export const GET = createMarkdownHandler();
+```
+
+`GET /api/markdown?path=/guides/auth` returns that page as `text/markdown`, or 404 for a page that does not exist.
+To serve it from another path, set `actions.endpoint`. It needs a server, like [Kudos](../components/kudos.mdx).

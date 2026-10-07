@@ -3,14 +3,19 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { useLink } from '../provider.tsx';
+import { renderIcon } from './icon.tsx';
 
 export function Cards({
   children,
-  columns = 2,
+  columns: columnsProp,
+  cols,
 }: {
   children: ReactNode;
   columns?: 1 | 2 | 3;
+  /** The same as `columns`, spelled as in other tools. */
+  cols?: 1 | 2 | 3;
 }) {
+  const columns = columnsProp ?? cols ?? 2;
   return (
     <div
       className={cn(
@@ -29,7 +34,8 @@ export interface CardProps {
   title: string;
   /** Makes the whole card a link. */
   href?: string;
-  icon?: ReactNode;
+  /** A name from the icon list (`rocket`) or an element. */
+  icon?: string | ReactNode;
   children?: ReactNode;
 }
 
@@ -38,7 +44,11 @@ export function Card({ title, href, icon, children }: CardProps) {
   const external = !!href && /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href);
   const body = (
     <>
-      {icon && <div className="mb-2 text-primary [&_svg]:size-5">{icon}</div>}
+      {icon && (
+        <div className="mb-2 text-primary [&_svg]:size-5">
+          {renderIcon(icon, 20)}
+        </div>
+      )}
       <h3 className="m-0 text-base font-semibold text-foreground">{title}</h3>
       {children && (
         <div className="mt-1 text-sm text-muted-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0">
@@ -68,3 +78,6 @@ export function Card({ title, href, icon, children }: CardProps) {
     </Link>
   );
 }
+
+/** The same as `Cards`, under the name other tools use. */
+export const CardGroup = Cards;
