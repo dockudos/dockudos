@@ -100,7 +100,14 @@ export async function discoverPages(docsDir: string): Promise<PageTree> {
       }
     }),
   );
-  if (errors.length) throw new ContentError(errors);
+  if (errors.length) {
+    // Reads run in parallel; report in file order so the output is stable.
+    throw new ContentError(
+      errors.sort((a, b) =>
+        (a as FrontmatterError).file < (b as FrontmatterError).file ? -1 : 1,
+      ),
+    );
+  }
   return buildPageTree(sources);
 }
 export * from './lib/last-modified.ts';
