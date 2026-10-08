@@ -1,3 +1,5 @@
+import { md, type ToMarkdown } from '@dockudos/core';
+
 export interface VideoProps {
   /** Title for screen readers. Required for embeds. */
   title: string;
@@ -71,3 +73,8 @@ export function Video({
     </>
   );
 }
+
+Video.toMarkdown = ((props) => {
+  const href = md.text(props.src) ?? md.text(props.embed);
+  return md.block(href ? `[Video: ${props.title}](${href})` : `Video: ${props.title}`);
+}) satisfies ToMarkdown<{ title: string; src?: string; embed?: string }>;

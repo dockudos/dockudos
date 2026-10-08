@@ -1,4 +1,8 @@
-import { buildLlmsFullTxt, buildLlmsTxt } from '@dockudos/core';
+import {
+  type MarkdownComponents,
+  buildLlmsFullTxt,
+  buildLlmsTxt,
+} from '@dockudos/core';
 import { getSite } from './server.ts';
 
 const headers = {
@@ -22,12 +26,14 @@ export function createLlmsHandler() {
 }
 
 /** `GET` handler for `llms-full.txt`: the text of every public page in one file. Same exclusions as `llms.txt`. */
-export function createLlmsFullHandler() {
+export function createLlmsFullHandler({
+  components,
+}: { components?: MarkdownComponents } = {}) {
   return async function GET(): Promise<Response> {
     const site = await getSite();
     return new Response(
       await buildLlmsFullTxt(site.config, site.nav, (page) =>
-        site.markdown(page),
+        site.markdown(page, components),
       ),
       { headers },
     );

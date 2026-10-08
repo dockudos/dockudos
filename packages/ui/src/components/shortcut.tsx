@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { formatHotkey, isApple } from '../hooks/hotkeys.ts';
 import { KeyCap } from './kbd.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ShortcutProps {
   /** A chord or sequence in the format `useHotkey` takes: `mod+k`, `?`, `g h`. */
@@ -30,3 +31,5 @@ export function Shortcut({ keys }: ShortcutProps) {
     </span>
   );
 }
+
+Shortcut.toMarkdown = ((props) => (props.keys ? md.code(props.keys) : '')) satisfies ToMarkdown<{ keys?: string }>;

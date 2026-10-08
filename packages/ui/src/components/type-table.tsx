@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface TypeField {
   /** The TypeScript type, shown as code. */
@@ -69,3 +70,15 @@ export function TypeTable({ type }: { type: Record<string, TypeField> }) {
     </div>
   );
 }
+
+TypeTable.toMarkdown = ((props) => {
+  const fields = props.type;
+  if (!fields || typeof fields !== 'object') return undefined;
+  const rows = Object.entries(fields).map(([name, f]) => [
+    `${md.code(name)}${f.required ? ' (required)' : ''}`,
+    f.type ? md.code(f.type) : '',
+    f.default !== undefined ? md.code(String(f.default)) : '',
+    typeof f.description === 'string' ? f.description : '',
+  ]);
+  return md.block(md.table(['Name', 'Type', 'Default', 'Description'], rows));
+}) satisfies ToMarkdown<{ type: Record<string, TypeField> }>;

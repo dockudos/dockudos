@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface FrameProps {
   /** Shown under the content and used as its caption. */
@@ -28,3 +29,8 @@ export function Frame({ caption, hint, children }: FrameProps) {
     </figure>
   );
 }
+
+Frame.toMarkdown = ((props, children) =>
+  md.section(undefined, `${children.trim()}${props.caption ? `\n\n${md.italic(String(props.caption))}` : ''}`)) satisfies ToMarkdown<{
+  caption?: string;
+}>;

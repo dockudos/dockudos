@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { renderIcon } from './render-icon.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /** A numbered procedure: `<Steps><Step title="Install">…</Step></Steps>`. */
 export function Steps({ children }: { children: ReactNode }) {
@@ -24,3 +25,9 @@ export function Step({
     </li>
   );
 }
+
+Steps.toMarkdown = md.container;
+Step.toMarkdown = ((props, children, { index }) =>
+  md.section(md.bold(props.title ? `${index + 1}. ${props.title}` : `Step ${index + 1}`), children)) satisfies ToMarkdown<{
+  title?: string;
+}>;

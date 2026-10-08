@@ -3,6 +3,7 @@
 import { Tabs as Primitive } from 'radix-ui';
 import type { ReactNode } from 'react';
 import { useSelectedTab } from './tabs-root.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /**
  * One panel of `<Tabs>`. Every panel is in the page; the ones not selected are `display: none`, which
@@ -33,3 +34,8 @@ export function Tab({
     </Primitive.Content>
   );
 }
+
+Tab.toMarkdown = ((props, children) => {
+  const label = md.text(props.value) ?? md.text(props.title) ?? md.text(props.label);
+  return md.section(label && md.bold(label), children);
+}) satisfies ToMarkdown<{ value?: string; title?: string; label?: string }>;

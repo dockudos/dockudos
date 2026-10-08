@@ -191,9 +191,9 @@ describe('ApiPlayground', () => {
   it('shows code in the chosen language, with what has been typed', async () => {
     page(data(), <ApiPlayground />);
     await userEvent.type(screen.getByLabelText(/^id/), '42');
-    expect(screen.getByText(/--url 'https:\/\/api\.test\/v1\/nodes\/42'/)).toBeInTheDocument();
+    await waitFor(() => expect(document.body).toHaveTextContent("--url 'https://api.test/v1/nodes/42'"));
     await userEvent.click(screen.getByRole('tab', { name: 'Go' }));
-    expect(screen.getByText(/http\.NewRequest\("GET", "https:\/\/api\.test\/v1\/nodes\/42"/)).toBeInTheDocument();
+    await waitFor(() => expect(document.body).toHaveTextContent('http.NewRequest("GET", "https://api.test/v1/nodes/42"'));
   });
 
   it('keeps credentials in this tab only, and shares them between endpoints', async () => {
@@ -221,6 +221,71 @@ describe('ApiPlayground', () => {
     expect(url).toBe('https://api.test/v1/nodes/42');
     expect(init.credentials).toBe('omit');
     expect(init.headers).toEqual([['X-Key', 'k1']]);
+  });
+
+  const withBody = () =>
+    data(
+      {
+        method: 'post',
+        path: '/nodes',
+        parameters: [],
+        security: [],
+        requestBody: { required: true, content: { 'application/json': { examples: { example: { value: { name: 'a' } } } } } },
+      },
+      { securitySchemes: {} },
+    );
+
+  it('edits a JSON body in the editor and sends what is in it', async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } }));
+    page(withBody(), <ApiPlayground />);
+    const body = await screen.findByRole('textbox', { name: /Body/ });
+    await waitFor(() => expect(body.closest('.dk-cm')?.querySelector('.cm-content')).not.toBeNull());
+    expect(screen.getByRole('tab', { name: /Body/ })).toHaveAttribute('aria-selected', 'true');
+    // the example is there; Beautify indents what was typed on one line
+    const editor = document.querySelector('.dk-api-pane .cm-content') as HTMLElement;
+    expect(editor).toHaveTextContent('"name": "a"');
+    await userEvent.click(screen.getByRole('button', { name: /Beautify/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Send request' }));
+    await screen.findByRole('region', { name: 'Response' });
+    const init = (fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(init.body as string)).toEqual({ name: 'a' });
+  });
+
+  it('opens the tab with the problem when sending fails validation, and marks it', async () => {
+    const d = data({}, {});
+    d.operation.parameters = [
+      ...d.operation.parameters,
+      { name: 'X-Trace', in: 'header', required: true, schema: { type: 'string' } },
+    ];
+    d.operation.security = [];
+    page(d, <ApiPlayground />);
+    expect(screen.getByRole('tab', { name: /Params/ })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.type(screen.getByLabelText(/^id/), '5');
+    await userEvent.click(screen.getByRole('button', { name: 'Send request' }));
+    const headers = screen.getByRole('tab', { name: /Headers/ });
+    expect(headers).toHaveAttribute('aria-selected', 'true');
+    expect(headers).toHaveAttribute('data-bad');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('moves between the request tabs with the arrow keys', async () => {
+    page(data(), <ApiPlayground />);
+    const [first] = screen.getAllByRole('tab', { name: /Params/ });
+    first?.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: /Authorization/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /Authorization/ })).toHaveFocus();
+  });
+
+  it('shows the response headers on their own tab', async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => new Response('hi', { headers: { 'x-a': 'b' } }));
+    page(data(), <ApiPlayground />);
+    await userEvent.type(screen.getByLabelText(/^id/), '1');
+    await userEvent.click(screen.getByRole('button', { name: 'Send request' }));
+    const response = await screen.findByRole('region', { name: 'Response' });
+    expect(within(response).getByText('x-a')).not.toBeVisible();
+    await userEvent.click(within(response).getByRole('tab', { name: /Headers \(/ }));
+    expect(within(response).getByText('x-a')).toBeVisible();
   });
 
   it('only shows samples when the playground is off', () => {

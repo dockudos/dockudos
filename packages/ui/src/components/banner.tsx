@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { cn } from '../lib/utils.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface BannerProps {
   children: ReactNode;
@@ -60,3 +61,5 @@ export function Banner({ children, id, variant = 'default' }: BannerProps) {
     </div>
   );
 }
+
+Banner.toMarkdown = ((_props, children) => md.quote('Announcement', undefined, children)) satisfies ToMarkdown;

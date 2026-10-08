@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Badge, type BadgeColor } from './badge.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /** A dated sequence of events, such as a roadmap or a history. */
 export function Timeline({ children }: { children: ReactNode }) {
@@ -42,3 +43,10 @@ export function TimelineItem({
     </li>
   );
 }
+
+Timeline.toMarkdown = md.container;
+TimelineItem.toMarkdown = ((props, children) => {
+  const status = { done: 'Done', current: 'In progress', planned: 'Planned' }[md.text(props.status) ?? ''];
+  const facts = [md.text(props.date), status].filter(Boolean).join(', ');
+  return md.section(`${md.bold(props.title)}${facts ? ` (${facts})` : ''}`, children);
+}) satisfies ToMarkdown<{ title: string; date?: string; status?: string }>;

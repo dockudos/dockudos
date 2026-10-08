@@ -3,6 +3,7 @@ import { findAccessRule } from './access.ts';
 import type { DocsConfig } from './config.ts';
 import { KeywordSearch } from './keyword-search.ts';
 import { publicPages } from './llms.ts';
+import type { MarkdownComponents } from './markdown-twin.ts';
 import { type McpBackend, createDocsBackend } from './mcp.ts';
 import { buildNavigation } from './navigation.ts';
 import type { PageTree } from './page-tree.ts';
@@ -22,11 +23,14 @@ export async function createSiteBackend({
   docsDir = join(root, 'docs'),
   config,
   tree,
+  components,
 }: {
   root: string;
   docsDir?: string;
   config: DocsConfig;
   tree: PageTree;
+  /** The components of the site, so pages read as Markdown the way the site's own twins do. */
+  components?: MarkdownComponents;
 }): Promise<McpBackend> {
   const index =
     (await readIndexFile(root)) ??
@@ -46,7 +50,7 @@ export async function createSiteBackend({
     listed,
     markdown: (path) => {
       const page = tree.pages.find((p) => p.path === path);
-      return page ? readPageMarkdown(docsDir, page) : '';
+      return page ? readPageMarkdown(docsDir, page, { components }) : '';
     },
     isProtected: (path) => !!findAccessRule(config.access.rules, path),
   });

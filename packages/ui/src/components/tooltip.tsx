@@ -2,6 +2,7 @@
 
 import { Tooltip as Primitive } from 'radix-ui';
 import type { ReactNode } from 'react';
+import { type ToMarkdown } from '@dockudos/core';
 
 export interface TooltipProps {
   /** The explanation shown on hover or keyboard focus. */
@@ -36,3 +37,7 @@ export function Tooltip({ tip, children }: TooltipProps) {
     </Primitive.Provider>
   );
 }
+
+Tooltip.toMarkdown = ((props, children) => `${children}${props.tip ? ` (${props.tip})` : ''}`) satisfies ToMarkdown<{
+  tip?: string;
+}>;

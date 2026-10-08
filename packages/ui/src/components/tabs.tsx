@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { elementChildren } from '../lib/children.ts';
 import { TabsRoot } from './tabs-root.tsx';
+import { md } from '@dockudos/core';
 export { Tab } from './tab-panel.tsx';
 
 export interface TabsProps {
@@ -27,3 +28,5 @@ export function Tabs({ items, children, ...rest }: TabsProps) {
     </TabsRoot>
   );
 }
+
+Tabs.toMarkdown = md.container;

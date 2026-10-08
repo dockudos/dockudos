@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { renderIcon } from './render-icon.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export const CALLOUT_TYPES = [
   'note',
@@ -106,3 +107,21 @@ export const Warning = (props: Shorthand) => (
 export const Danger = (props: Shorthand) => (
   <Callout type="danger" {...props} />
 );
+
+const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+Callout.toMarkdown = ((props, children) =>
+  md.quote(capitalise(md.text(props.type) ?? 'note'), md.text(props.title), children)) satisfies ToMarkdown<{
+  type?: string;
+  title?: string;
+}>;
+for (const [component, label] of [
+  [Note, 'Note'],
+  [Info, 'Info'],
+  [Tip, 'Tip'],
+  [Check, 'Check'],
+  [Warning, 'Warning'],
+  [Danger, 'Danger'],
+] as const) {
+  (component as { toMarkdown?: ToMarkdown }).toMarkdown = (props, children) =>
+    md.quote(label, md.text(props.title), children);
+}

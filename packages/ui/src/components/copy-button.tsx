@@ -15,12 +15,13 @@ export function codeText(pre: Element): string {
   return (clone.textContent ?? '').replace(/\n+$/, '');
 }
 
-/** Copies the code block it sits in. Announces the result to screen readers. */
-export function CopyButton() {
+/** Copies the code block it sits in, or `text` when the code is not in a `<pre>`. Announces the result to screen readers. */
+export function CopyButton({ text }: { text?: string } = {}) {
   const ref = useRef<HTMLButtonElement>(null);
   const { copy, state } = useCopyToClipboard();
 
   const onClick = () => {
+    if (text !== undefined) return void copy(text);
     const pre = ref.current?.closest('.dk-code')?.querySelector('pre');
     if (pre) void copy(codeText(pre));
   };

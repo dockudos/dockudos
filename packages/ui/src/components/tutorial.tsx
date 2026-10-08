@@ -1,6 +1,7 @@
 import { Clock, Gauge } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Callout } from './callout.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface TutorialIntroProps {
   /** How long it takes: `20 minutes`. */
@@ -84,3 +85,23 @@ export function Checkpoint({
     </Callout>
   );
 }
+
+TutorialIntro.toMarkdown = ((props, children) => {
+  const learn = md.list(props.learn);
+  const requires = md.list(props.requires);
+  const facts = [props.time && `Time: ${props.time}`, props.level && `Level: ${props.level}`].filter(Boolean).join(' · ');
+  return md.section(
+    [
+      facts,
+      learn.length && `${md.bold('You will learn:')}\n${learn.map((l) => `- ${l}`).join('\n')}`,
+      requires.length && `${md.bold('Requires:')}\n${requires.map((l) => `- ${l}`).join('\n')}`,
+    ]
+      .filter(Boolean)
+      .join('\n\n'),
+    children,
+  );
+}) satisfies ToMarkdown<{ time?: string; level?: string; learn?: string[]; requires?: string[] }>;
+Checkpoint.toMarkdown = ((props, children) =>
+  md.section(md.bold(props.title ? `Checkpoint: ${props.title}` : 'Checkpoint'), children)) satisfies ToMarkdown<{
+  title?: string;
+}>;

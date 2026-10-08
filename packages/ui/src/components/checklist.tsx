@@ -5,6 +5,7 @@ import { type ReactNode, createContext, useContext } from 'react';
 import { usePageData } from '../docs-context.tsx';
 import { useLocalStorage } from '../hooks/use-local-storage.ts';
 import { elementChildren } from '../lib/children.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ChecklistProps {
   /**
@@ -127,3 +128,7 @@ export function ChecklistItem({
     </li>
   );
 }
+
+Checklist.toMarkdown = md.container;
+ChecklistItem.toMarkdown = ((props, children) =>
+  md.item(`[${props.checked ? 'x' : ' '}] ${children.trim()}`)) satisfies ToMarkdown<{ checked?: boolean }>;

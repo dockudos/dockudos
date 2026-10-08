@@ -3,6 +3,7 @@
 import { Check, Copy } from 'lucide-react';
 import { type ReactNode, useRef } from 'react';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface CopyTextProps {
   /** What is copied. Defaults to the text content. */
@@ -40,3 +41,5 @@ export function CopyText({ value, children }: CopyTextProps) {
     </span>
   );
 }
+
+CopyText.toMarkdown = ((_props, children) => md.code(children.trim())) satisfies ToMarkdown;

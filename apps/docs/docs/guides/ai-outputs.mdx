@@ -58,6 +58,44 @@ The home page is `/index.md`. The Markdown has the page's title and description,
 `<include>`s expanded and frontmatter removed. [`<Visibility for="agents">`](../components/visibility.mdx) blocks are
 included and `for="humans"` blocks are left out, so you can write extra context just for AI tools.
 
+Every component writes itself as plain Markdown, not as a tag: a callout becomes a quote (`> **Warning: Title:** ...`), tabs and
+steps become bold lines (`**npm**`, `**1. Install**`), a card becomes a link, `<Kbd>` becomes code, `<Endpoint>` becomes
+`` `GET /pet/{id}` ``, and a `<TypeTable>` or `<AutoTypeTable>` becomes a table. Code is never touched.
+
+### Your own components
+
+A component says how it reads as Markdown with a `toMarkdown` property, the way an object says how it reads as a string with
+`toString()`. It gets the props as written and its content already converted, and returns Markdown:
+
+```tsx title="components/pricing-note.tsx"
+import { md, type ToMarkdown } from '@dockudos/core';
+
+export function PricingNote({
+  plan,
+  children,
+}: {
+  plan: string;
+  children: React.ReactNode;
+}) {
+  return <aside className="pricing-note">{children}</aside>;
+}
+
+PricingNote.toMarkdown = ((props, children) =>
+  md.quote('Pricing', props.plan, children)) satisfies ToMarkdown<{
+  plan: string;
+}>;
+```
+
+`md` has the small pieces (`block`, `section`, `bold`, `code`, `link`, `table`, `quote`, `item`), and `container` for a component
+that only groups what is inside: `Row.toMarkdown = md.container`. The third argument says where the component sits: its
+`index` among siblings, the names of its `parents`, the page's `headings`, and `fence()` for a code block that must not be
+converted again. Return `undefined` to keep the tag as written. A component without `toMarkdown` keeps its content, and its
+title if it has one.
+
+The built-in components need nothing. To use your own, pass them where the Markdown is served:
+`createMarkdownHandler({ components })`, `createDocsApi({ components })`, `createLlmsFullHandler({ components })` and
+`createMcpHandler({ components })`, with the same object you give `defineMdxComponents()`.
+
 `withDocs()` sets up the rewrites; the content comes from the markdown route (`/api/markdown`, which `dockudos init` creates and the
 [catch-all API route](./search.mdx#the-routes) also provides). Files, `/api/*` and `/_next/*` are never rewritten.
 

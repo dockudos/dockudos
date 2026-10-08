@@ -17,6 +17,7 @@ import {
   pageSeo,
   themeCss,
   type SvgIcon,
+  type MarkdownComponents,
   type TocEntry,
 } from '@dockudos/core';
 import {
@@ -29,6 +30,7 @@ import {
   readPageMarkdown,
 } from '@dockudos/core/node';
 import type { Metadata } from 'next';
+import { defineMdxComponents } from './mdx-components.ts';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -63,7 +65,8 @@ export interface Site {
    * The page as plain Markdown: title and description, then the content with `<include>`s expanded and
    * frontmatter removed. For "copy page", `llms.txt`-style exports and AI assistants.
    */
-  markdown(page: Page): Promise<string>;
+  /** A page as Markdown. `components` are the site's own, added to the built-in ones. */
+  markdown(page: Page, components?: MarkdownComponents): Promise<string>;
   /**
    * The content index of the public pages (not hidden, not behind an access rule): search, the assistant,
    * `llms.txt` and the MCP server all read it. In production it is the file `dockudos build` wrote,
@@ -163,7 +166,10 @@ async function loadSite(root: string, docsDir: string): Promise<Site> {
         dir,
         config.urlPrefix,
       )),
-    markdown: (page) => readPageMarkdown(dir, page),
+    markdown: (page, components) =>
+      readPageMarkdown(dir, page, {
+        components: { ...defineMdxComponents(), ...components },
+      }),
     book: async () => {
       const ordered = [
         ...nav.tabs.flatMap((t) => flattenSidebar(t.sidebar)),

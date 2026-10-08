@@ -4,6 +4,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /** A file tree: `<Tree><Tree.Folder name="src" defaultOpen><Tree.File name="index.ts" /></Tree.Folder></Tree>`. */
 function TreeRoot({ children }: { children: ReactNode }) {
@@ -113,7 +114,14 @@ export function TreeFolder({
 }
 
 /** A file tree. `Tree.Folder` and `Tree.File` are its parts. */
+const folderDepth = (parents: readonly string[]) => parents.filter((p) => p === 'Tree.Folder' || p === 'Folder').length;
+TreeFolder.toMarkdown = ((props, children, { parents }) =>
+  `${md.item(`${props.name}/`, folderDepth(parents))}\n${md.trimBlank(children)}`) satisfies ToMarkdown<{ name: string }>;
+TreeFile.toMarkdown = ((props, _children, { parents }) =>
+  md.item(props.name, folderDepth(parents))) satisfies ToMarkdown<{ name: string }>;
+
 export const Tree = Object.assign(TreeRoot, {
+  toMarkdown: md.container,
   Folder: TreeFolder,
   File: TreeFile,
 });

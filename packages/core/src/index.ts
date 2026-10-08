@@ -15,6 +15,8 @@ export * from './lib/access.ts';
 export * from './lib/svg.ts';
 export * from './lib/hash.ts';
 export * from './lib/extract.ts';
+export * from './lib/mdx-to-markdown.ts';
+export * from './lib/markdown-twin.ts';
 export * from './lib/chunk.ts';
 export * from './lib/content-index.ts';
 export * from './lib/keyword-search.ts';

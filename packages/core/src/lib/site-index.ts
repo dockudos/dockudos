@@ -11,6 +11,7 @@ import {
 } from './content-index.ts';
 import { expandIncludes } from './include.ts';
 import { parseFrontmatter } from './frontmatter.ts';
+import { type MarkdownOptions, mdxToMarkdown } from './mdx-to-markdown.ts';
 import type { Page, PageTree } from './page-tree.ts';
 import { resolveVisibility } from './visibility.ts';
 
@@ -37,18 +38,20 @@ export async function readPageBody(
 
 /**
  * A page as plain Markdown: title and description, then the content with `<include>`s expanded and frontmatter
- * removed, `<Visibility for="agents">` blocks kept and `for="humans"` blocks dropped. For "copy page", `llms.txt`,
+ * removed, `<Visibility for="agents">` blocks kept and `for="humans"` blocks dropped, and components written as plain
+ * Markdown (callouts as quotes, tabs and steps as headed lines; see `mdxToMarkdown`). For "copy page", `llms.txt`,
  * Markdown twins and AI tools.
  */
 export async function readPageMarkdown(
   docsDir: string,
   page: Pick<Page, 'file' | 'title' | 'description'>,
+  options?: MarkdownOptions,
 ): Promise<string> {
   const body = await readPageBody(docsDir, page, 'agents');
   const head = [`# ${page.title}`, page.description && `> ${page.description}`]
     .filter(Boolean)
     .join('\n\n');
-  return `${head}\n\n${body.trim()}\n`;
+  return `${head}\n\n${await mdxToMarkdown(body, options)}\n`;
 }
 
 export interface SiteIndexOptions {

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export const BADGE_COLORS = ['gray', 'blue', 'green', 'amber', 'red'] as const;
 export type BadgeColor = (typeof BADGE_COLORS)[number];
@@ -33,3 +34,5 @@ export function Badge({ color = 'gray', children }: BadgeProps) {
     </span>
   );
 }
+
+Badge.toMarkdown = ((_props, children) => md.bold(children.trim())) satisfies ToMarkdown;

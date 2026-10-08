@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { renderIcon } from './render-icon.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 const STORAGE_KEY = 'dockudos-view';
 
@@ -129,3 +130,5 @@ export function View({ title, icon, children }: ViewProps) {
     </>
   );
 }
+
+View.toMarkdown = ((props, children) => md.section(md.bold(props.title), children)) satisfies ToMarkdown<{ title: string }>;

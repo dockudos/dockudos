@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { SmartLink } from './smart-link.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface TileProps {
   title: string;
@@ -37,3 +38,9 @@ export function Tile({ title, description, href, children }: TileProps) {
     </SmartLink>
   );
 }
+
+Tile.toMarkdown = ((props, children) =>
+  md.section(
+    [md.bold(md.link(props.title, md.text(props.href))), md.text(props.description)].filter(Boolean).join('\n\n'),
+    children,
+  )) satisfies ToMarkdown<{ title: string; href?: string; description?: string }>;

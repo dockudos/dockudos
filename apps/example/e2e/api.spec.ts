@@ -150,6 +150,12 @@ async function open(page: Page, path: string) {
   await page.waitForLoadState('networkidle');
 }
 
+/** Open the Authorization tab and type the key. */
+async function authorize(page: Page) {
+  await page.getByRole('tab', { name: 'Authorization' }).click();
+  await page.getByLabel(/api_key: API key/).fill(SECRET);
+}
+
 test.describe('playground', () => {
   // They share one mock API and read what it recorded, so they take turns.
   test.describe.configure({ mode: 'serial' });
@@ -163,7 +169,7 @@ test.describe('playground', () => {
   }) => {
     await open(page, '/api-reference/pet/getpetbyid');
     await page.getByLabel('petId').fill('1');
-    await page.getByLabel(/api_key: API key/).fill(SECRET);
+    await authorize(page);
     await page.getByRole('button', { name: 'Send request' }).click();
     const response = page.getByRole('region', { name: 'Response' });
     await expect(response).toContainText('200');
@@ -247,8 +253,8 @@ test.describe('playground', () => {
       seen.push({ url: r.url(), carriesSecret: hasIt });
     });
     await open(page, '/api-reference/pet/getpetbyid');
-    await page.getByLabel(/api_key: API key/).fill(SECRET);
     await page.getByLabel('petId').fill('1');
+    await authorize(page);
     await page.getByRole('button', { name: 'Send request' }).click();
     await expect(page.getByRole('region', { name: 'Response' })).toBeVisible();
     // Move around the site: nothing else is sent the secret, and it is not in the page's own storage.
@@ -268,8 +274,9 @@ test.describe('playground', () => {
     page,
   }) => {
     await open(page, '/api-reference/pet/getpetbyid');
-    await page.getByLabel(/api_key: API key/).fill(SECRET);
+    await authorize(page);
     await open(page, '/api-reference/store/getinventory');
+    await page.getByRole('tab', { name: 'Authorization' }).click();
     await expect(page.getByLabel(/api_key: API key/)).toHaveValue(SECRET);
   });
 });

@@ -1,4 +1,5 @@
 import { GitFork, Star } from 'lucide-react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface GithubInfoProps {
   owner: string;
@@ -83,3 +84,8 @@ export async function GithubInfo({ owner, repo }: GithubInfoProps) {
     </a>
   );
 }
+
+GithubInfo.toMarkdown = ((props) => {
+  const repo = `${props.owner}/${props.repo}`;
+  return md.block(md.link(repo, `https://github.com/${repo}`));
+}) satisfies ToMarkdown<{ owner: string; repo: string }>;

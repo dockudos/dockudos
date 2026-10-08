@@ -3,6 +3,7 @@ import { elementChildren } from '../lib/children.ts';
 import { cn } from '../lib/utils.ts';
 import { CopyButton } from './copy-button.tsx';
 import { Tab, Tabs } from './tabs.tsx';
+import { md } from '@dockudos/core';
 
 type PreProps = ComponentProps<'pre'> & {
   'data-title'?: string;
@@ -64,3 +65,5 @@ export function CodeGroup({
     </Tabs>
   );
 }
+
+CodeGroup.toMarkdown = md.container;

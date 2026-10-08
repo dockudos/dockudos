@@ -1,4 +1,5 @@
 import {
+  type MarkdownComponents,
   createDocsBackend,
   createMcpServer,
   createRateLimiter,
@@ -18,6 +19,8 @@ import { getSite } from './server.ts';
 export const MCP_SERVER_VERSION = '1';
 
 export interface McpHandlerOptions {
+  /** The site's own components, so their `toMarkdown` is used in what `get_page` returns. */
+  components?: MarkdownComponents;
   /** How `get_page` checks `access` rules. Default: the rules of `docs.json`. */
   access?: AccessOptions;
   /**
@@ -49,6 +52,7 @@ export function createMcpHandler({
   access,
   allowedOrigins = [],
   ratePerMinute = 120,
+  components,
 }: McpHandlerOptions = {}) {
   const limiter = createRateLimiter({ limit: ratePerMinute });
 
@@ -115,7 +119,7 @@ export function createMcpHandler({
         })),
         markdown: (path) => {
           const page = byPath.get(path);
-          return page ? site.markdown(page) : '';
+          return page ? site.markdown(page, components) : '';
         },
         isProtected: (path) => {
           const page = byPath.get(path);

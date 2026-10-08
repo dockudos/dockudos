@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Badge } from './badge.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface UpdateProps {
   /** The version or title: `1.4.0`, `March release`. */
@@ -58,3 +59,14 @@ export function Update({
     </article>
   );
 }
+
+Update.toMarkdown = ((props, children) =>
+  md.section(
+    [
+      [md.bold(props.label), md.text(props.date), md.list(props.tags).join(', ')].filter(Boolean).join(' — '),
+      md.text(props.description),
+    ]
+      .filter(Boolean)
+      .join('\n\n'),
+    children,
+  )) satisfies ToMarkdown<{ label: string; date?: string; tags?: string[]; description?: string }>;

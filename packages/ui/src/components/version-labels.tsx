@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Badge } from './badge.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface SinceProps {
   /** The version that introduced it: `1.4`. */
@@ -35,3 +36,10 @@ export function Deprecated({ since, replacedBy, children }: DeprecatedProps) {
     </>
   );
 }
+
+Since.toMarkdown = ((props) => md.italic(`Since ${props.version}`)) satisfies ToMarkdown<{ version: string }>;
+Deprecated.toMarkdown = ((props, children) =>
+  md.section(
+    md.bold(`Deprecated${props.since ? ` since ${props.since}` : ''}${props.replacedBy ? `, use ${props.replacedBy} instead` : ''}.`),
+    children,
+  )) satisfies ToMarkdown<{ since?: string; replacedBy?: string }>;

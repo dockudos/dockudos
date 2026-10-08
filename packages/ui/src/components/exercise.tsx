@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ExerciseProps {
   /** What the reader is asked to do, in a few words. */
@@ -47,3 +48,14 @@ export const Hint = (props: RevealProps) => <Reveal kind="hint" {...props} />;
 export const Solution = (props: RevealProps) => (
   <Reveal kind="solution" {...props} />
 );
+
+Exercise.toMarkdown = ((props, children) => md.section(md.bold(md.text(props.title) ?? 'Exercise'), children)) satisfies ToMarkdown<{
+  title?: string;
+}>;
+for (const [component, label] of [
+  [Hint, 'Hint'],
+  [Solution, 'Solution'],
+] as const) {
+  (component as { toMarkdown?: ToMarkdown }).toMarkdown = (props, children) =>
+    md.section(md.bold(props.title ? `${label}: ${String(props.title)}` : label), children);
+}

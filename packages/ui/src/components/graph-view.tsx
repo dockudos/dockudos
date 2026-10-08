@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { type GraphData, usePageData } from '../docs-context.tsx';
 import { layoutGraph } from '../lib/graph-layout.ts';
 import { useLink } from '../provider.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 const SIZE = 600;
 
@@ -91,3 +92,6 @@ export function GraphView({ data }: { data?: GraphData }) {
     </figure>
   );
 }
+
+GraphView.toMarkdown = (() =>
+  md.block(md.italic('A graph of how the pages of this site link to each other (interactive in the browser).'))) satisfies ToMarkdown;

@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /** One keycap. The single look for keys, shared by `Kbd` and `Shortcut`. */
 export function KeyCap({ children }: { children: ReactNode }) {
@@ -24,3 +25,5 @@ export function Kbd({ children }: KbdProps) {
     </span>
   );
 }
+
+Kbd.toMarkdown = ((_props, children) => md.code(children.trim())) satisfies ToMarkdown;

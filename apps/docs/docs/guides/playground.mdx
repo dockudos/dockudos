@@ -4,17 +4,22 @@ title: Playground
 description: 'Try an endpoint from the docs: inputs from the schema, authentication, the real response.'
 ---
 
-Every generated endpoint page ends with **Try it**: a form built from the operation, the code for it, and a button that sends
-the request and shows what came back.
+Every generated endpoint page ends with **Try it**: an address bar with the method and a **Send request** button, the request
+in tabs, and the answer below it.
 
+- **Params, Authorization, Headers and Body** are tabs. The page opens on the one that needs you: a required parameter, else
+  the body. A tab shows how many fields it has, a dot when something is entered, and turns red when a field needs fixing.
 - **Inputs** for every path, query, header and cookie parameter, from its schema: a list of choices for an enum or a boolean,
-  and checks for type, minimum and maximum, length, pattern and required before anything is sent. A body field starts with
-  the example, and JSON is checked as it is typed.
+  and checks for type, minimum and maximum, length, pattern and required before anything is sent.
+- **A code editor for the body** (CodeMirror): syntax colours, line numbers, search, undo, and JSON errors marked where they are
+  as you type. The body starts with the example. **Beautify** indents JSON, and <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd>
+  sends. The editor loads only on endpoint pages.
 - **Authentication** for API keys, bearer tokens, Basic, and OAuth 2 and OpenID Connect access tokens (you paste the token; the
   playground does not run the sign-in). Credentials are kept in `sessionStorage`: they are shared by the endpoint pages of that
   tab and are gone when it closes.
-- **The answer**: status, time, size, headers and the body, formatted when it is JSON.
-- **Code samples** that follow what is typed, so the cURL on the page is the request that gets sent.
+- **The answer**: status, time and size, the body in the same editor (coloured, with fold arrows for objects and arrays, and
+  search), and the headers on their own tab. **Cancel** stops a request that is still waiting.
+- **Code samples** with syntax colours that follow what is typed, so the cURL on the page is the request that gets sent.
 
 Set `openapi.playground.enabled` to `false` to keep only the code samples.
 

@@ -7,27 +7,18 @@ import {
   constraints,
   typeLabel,
 } from '@dockudos/core';
-import { CopyButton } from '../copy-button.tsx';
 import { ParamField } from '../param-field.tsx';
 import { Tab } from '../tab-panel.tsx';
 import { Tabs } from '../tabs.tsx';
+import { CodeView, languageForMime } from './code-editor.tsx';
 import { useApiOperation } from './context.tsx';
 import { Prose } from './prose.tsx';
 import { SchemaTree } from './schema.tsx';
+import { type ToMarkdown } from '@dockudos/core';
 
-/** Code as it is: a frame with a copy button. Samples are generated in the browser, so they are not highlighted. */
-export function CodeFigure({ code, title }: { code: string; title?: string }) {
-  return (
-    <figure className="dk-code" data-has-title={title ? '' : undefined}>
-      {title && <figcaption className="dk-code-title">{title}</figcaption>}
-      <div className="dk-code-body">
-        <pre className="dk-pre" tabIndex={0}>
-          <code>{code}</code>
-        </pre>
-        <CopyButton />
-      </div>
-    </figure>
-  );
+/** Code in a highlighted frame with a copy button. */
+export function CodeFigure({ code, title, language }: { code: string; title?: string; language?: string }) {
+  return <CodeView code={code} title={title} language={language ?? languageForMime(undefined, code)} />;
 }
 
 const LOCATIONS: ParameterLocation[] = ['path', 'query', 'header', 'cookie'];
@@ -95,6 +86,7 @@ function Media({ mime, media }: { mime: string; media: ApiMediaType }) {
         <CodeFigure
           key={name}
           title={example.summary ?? (examples.length > 1 ? name : 'Example')}
+          language={languageForMime(mime)}
           code={typeof example.value === 'string' ? example.value : JSON.stringify(example.value, null, 2)}
         />
       ))}
@@ -173,3 +165,8 @@ export function ApiResponses() {
     </div>
   );
 }
+
+// The API sections draw from the whole operation; the generated pages carry it as Markdown for AI tools.
+ApiParameters.toMarkdown = (() => '') satisfies ToMarkdown;
+ApiRequestBody.toMarkdown = (() => '') satisfies ToMarkdown;
+ApiResponses.toMarkdown = (() => '') satisfies ToMarkdown;

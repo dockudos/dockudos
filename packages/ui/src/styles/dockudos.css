@@ -23,6 +23,14 @@
     --dk-callout-tip: oklch(0.6 0.15 150);
     --dk-callout-warning: oklch(0.7 0.15 80);
     --dk-callout-danger: oklch(0.6 0.22 25);
+    --dk-tok-keyword: oklch(0.48 0.2 305);
+    --dk-tok-string: oklch(0.47 0.12 155);
+    --dk-tok-number: oklch(0.52 0.15 55);
+    --dk-tok-property: oklch(0.47 0.14 250);
+    --dk-tok-function: oklch(0.5 0.15 270);
+    --dk-tok-type: oklch(0.5 0.1 195);
+    --dk-tok-comment: oklch(0.55 0.02 260);
+    --dk-tok-punctuation: oklch(0.5 0.01 260);
   }
   .dark {
     --dk-callout-note: oklch(0.72 0.02 260);
@@ -30,6 +38,14 @@
     --dk-callout-tip: oklch(0.75 0.14 150);
     --dk-callout-warning: oklch(0.8 0.14 85);
     --dk-callout-danger: oklch(0.72 0.19 25);
+    --dk-tok-keyword: oklch(0.75 0.15 305);
+    --dk-tok-string: oklch(0.78 0.13 150);
+    --dk-tok-number: oklch(0.8 0.12 60);
+    --dk-tok-property: oklch(0.76 0.12 245);
+    --dk-tok-function: oklch(0.78 0.12 270);
+    --dk-tok-type: oklch(0.78 0.1 195);
+    --dk-tok-comment: oklch(0.65 0.02 260);
+    --dk-tok-punctuation: oklch(0.72 0.01 260);
   }
 
   html {
@@ -2583,8 +2599,7 @@
     border-radius: var(--radius-sm);
   }
   .dk-api-toggle:focus-visible,
-  .dk-api-variant:focus-visible,
-  .dk-api-send:focus-visible {
+  .dk-api-variant:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
@@ -2634,21 +2649,213 @@
   }
   .dk-api-form {
     display: grid;
-    gap: 1rem;
-  }
-  .dk-api-fieldset {
-    display: grid;
-    gap: 0.6rem;
-    margin: 0;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    gap: 0.75rem;
     min-inline-size: 0;
   }
-  .dk-api-fieldset legend {
-    padding: 0 0.35rem;
+
+  /* Editor (CodeMirror) */
+  .dk-cm {
+    min-inline-size: 0;
+  }
+  .dk-cm-fallback {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: 24rem;
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    overflow: auto;
+    border: 0;
+    background: transparent;
+    color: var(--foreground);
+    font-family: var(--font-mono);
     font-size: 0.8125rem;
+    line-height: 1.65;
+    resize: none;
+  }
+  .dk-cm-fallback:focus-visible {
+    outline: none;
+  }
+  .dk-api-pane > .dk-cm {
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+  }
+  .dk-api-pane > .dk-cm:focus-within {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+  .dk-api-pane > .dk-cm[data-invalid] {
+    border-color: var(--dk-callout-danger);
+  }
+  .dk-code .dk-cm {
+    padding-right: 2.5rem;
+  }
+  .dk-code .dk-cm .cm-scroller {
+    padding-right: 0;
+  }
+
+  /* Request bar: method, address, send */
+  .dk-api-bar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .dk-api-url {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+  }
+  .dk-api-url:focus-within {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+  .dk-api-url[data-invalid] {
+    border-color: var(--dk-callout-danger);
+  }
+  .dk-api-url input,
+  .dk-api-url select {
+    min-inline-size: 0;
+    padding: 0.5rem 0;
+    border: 0;
+    background: transparent;
+    color: var(--foreground);
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .dk-api-url input:focus-visible,
+  .dk-api-url select:focus-visible {
+    outline: none;
+  }
+  .dk-api-base {
+    flex: 1 1 8rem;
+  }
+  .dk-api-server {
+    max-width: 9rem;
+    text-overflow: ellipsis;
+  }
+  .dk-api-path {
+    flex: 0 1 auto;
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+  }
+  .dk-api-method-badge {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c, var(--muted-foreground));
+  }
+  .dk-api-send {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.875rem;
     font-weight: 600;
+    cursor: pointer;
+  }
+  .dk-api-send[data-busy] {
+    background: var(--muted);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+  .dk-api-vars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  /* Tabs and panes */
+  .dk-api-request,
+  .dk-api-response {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .dk-api-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+    overflow-x: auto;
+  }
+  .dk-api-request > .dk-api-tabs {
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in oklch, var(--muted) 55%, transparent);
+  }
+  .dk-api-tabs [role='tab'] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.6rem;
+    margin-bottom: -1px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .dk-api-tabs [role='tab']:hover {
+    color: var(--foreground);
+  }
+  .dk-api-tabs [role='tab'][aria-selected='true'] {
+    border-bottom-color: var(--primary);
+    color: var(--foreground);
+  }
+  .dk-api-tabs [role='tab'][data-bad] {
+    color: var(--dk-callout-danger);
+  }
+  .dk-api-tabs [role='tab']:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+  .dk-api-tab-count {
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: var(--muted);
+    font-size: 0.6875rem;
+    line-height: 1.25rem;
+  }
+  .dk-api-tab-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--dk-callout-tip);
+  }
+  .dk-api-pane {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+  .dk-api-pane[hidden] {
+    display: none;
+  }
+  .dk-api-pane .dk-api-subhead {
+    margin: 0 0 0.1rem;
+  }
+  .dk-api-group {
+    display: grid;
+    gap: 0.5rem;
   }
   .dk-api-label {
     display: grid;
@@ -2659,12 +2866,19 @@
   .dk-api-label > span {
     font-weight: 500;
   }
-  .dk-api-label-block {
-    display: block;
+  .dk-api-pane .dk-api-label {
+    grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.2rem 0.75rem;
   }
-  .dk-api-fieldset input,
-  .dk-api-fieldset select,
-  .dk-api-textarea {
+  .dk-api-pane .dk-api-label > .dk-api-error {
+    grid-column: 2;
+  }
+  .dk-api-pane input,
+  .dk-api-pane select,
+  .dk-api-vars input,
+  .dk-api-vars select,
+  .dk-api-bodybar select {
     width: 100%;
     padding: 0.4rem 0.6rem;
     border: 1px solid var(--input);
@@ -2672,46 +2886,73 @@
     background: var(--background);
     color: var(--foreground);
     font: inherit;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
-  .dk-api-fieldset input:focus-visible,
-  .dk-api-fieldset select:focus-visible,
-  .dk-api-textarea:focus-visible {
+  .dk-api-bodybar select {
+    width: auto;
+    font-family: var(--font-mono);
+  }
+  .dk-api-pane input:focus-visible,
+  .dk-api-pane select:focus-visible,
+  .dk-api-vars input:focus-visible,
+  .dk-api-vars select:focus-visible,
+  .dk-api-bodybar select:focus-visible,
+  .dk-api-send:focus-visible,
+  .dk-api-tool:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 1px;
   }
-  .dk-api-fieldset [aria-invalid='true'],
-  .dk-api-textarea[aria-invalid='true'] {
+  .dk-api-pane [aria-invalid='true'] {
     border-color: var(--dk-callout-danger);
   }
-  .dk-api-textarea {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    resize: vertical;
-  }
-  .dk-api-actions {
+  .dk-api-bodybar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
   }
-  .dk-api-send {
+  .dk-api-tool {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.9rem;
-    border: 0;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    background: var(--primary);
-    color: var(--primary-foreground);
-    font-size: 0.875rem;
-    font-weight: 600;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 0.8125rem;
     cursor: pointer;
   }
-  .dk-api-send:disabled {
-    opacity: 0.6;
-    cursor: progress;
+  .dk-api-tool:disabled {
+    opacity: 0.5;
+    cursor: default;
   }
+  .dk-api-hint {
+    margin-left: auto;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  @media (max-width: 40rem) {
+    .dk-api-pane .dk-api-label {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .dk-api-pane .dk-api-label > .dk-api-error {
+      grid-column: 1;
+    }
+    .dk-api-bar {
+      flex-direction: column;
+    }
+    .dk-api-send {
+      justify-content: center;
+      padding: 0.5rem 1rem;
+    }
+    .dk-api-hint {
+      display: none;
+    }
+  }
+
+  /* The answer */
   .dk-api-failure {
     padding: 0.75rem;
     border: 1px solid
@@ -2726,11 +2967,18 @@
   .dk-api-response-head {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+    gap: 0.25rem 0.9rem;
     align-items: center;
-    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in oklch, var(--muted) 55%, transparent);
     font-size: 0.8125rem;
     color: var(--muted-foreground);
+  }
+  .dk-api-response-head > .dk-api-tabs {
+    margin-right: auto;
+  }
+  .dk-api-response-head > :last-child {
+    margin-right: 0.75rem;
   }
   .dk-api-status-code {
     padding: 0.1rem 0.5rem;
@@ -2746,19 +2994,28 @@
   .dk-api-status-code[data-tone='redirect'] {
     background: color-mix(in oklch, var(--dk-callout-warning) 22%, transparent);
   }
+  .dk-api-response .dk-api-pane {
+    padding: 0;
+    gap: 0;
+  }
+  .dk-api-response .dk-api-pane > .dk-api-status {
+    padding: 0.75rem;
+    margin: 0;
+  }
+  .dk-api-response .dk-code {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
   .dk-api-headers {
-    margin-bottom: 0.5rem;
+    margin: 0;
+    padding: 0.75rem;
+    display: grid;
+    gap: 0.25rem;
     font-size: 0.8125rem;
   }
-  .dk-api-headers summary {
-    cursor: pointer;
-  }
-  .dk-api-headers dl {
-    margin: 0.35rem 0 0;
-    display: grid;
-    gap: 0.15rem;
-  }
-  .dk-api-headers dl > div {
+  .dk-api-headers > div {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -2772,17 +3029,22 @@
     overflow-wrap: anywhere;
     color: var(--muted-foreground);
   }
-  .dk-api-method[data-method='get'] {
+  .dk-api-method[data-method='get'],
+  .dk-api-method-badge[data-method='get'] {
     --c: var(--dk-callout-info);
   }
-  .dk-api-method[data-method='post'] {
+  .dk-api-method[data-method='post'],
+  .dk-api-method-badge[data-method='post'] {
     --c: var(--dk-callout-tip);
   }
   .dk-api-method[data-method='put'],
-  .dk-api-method[data-method='patch'] {
+  .dk-api-method[data-method='patch'],
+  .dk-api-method-badge[data-method='put'],
+  .dk-api-method-badge[data-method='patch'] {
     --c: var(--dk-callout-warning);
   }
-  .dk-api-method[data-method='delete'] {
+  .dk-api-method[data-method='delete'],
+  .dk-api-method-badge[data-method='delete'] {
     --c: var(--dk-callout-danger);
   }
   .dk-api-method {

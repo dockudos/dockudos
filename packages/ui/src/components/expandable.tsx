@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ExpandableProps {
   title: string;
@@ -34,3 +35,7 @@ export function Expandable({
     </details>
   );
 }
+
+Expandable.toMarkdown = ((props, children) => md.section(md.bold(props.title), children)) satisfies ToMarkdown<{
+  title: string;
+}>;

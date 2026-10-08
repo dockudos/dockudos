@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useState } from 'react';
+import { type ToMarkdown } from '@dockudos/core';
 
 /**
  * A Mermaid diagram, rendered in the browser. The library is fetched only
@@ -54,3 +55,6 @@ export function Mermaid({ chart }: { chart: string }) {
     </figure>
   );
 }
+
+Mermaid.toMarkdown = ((props, _children, { fence }) =>
+  props.chart ? fence(`\`\`\`mermaid\n${props.chart.trim()}\n\`\`\``) : '') satisfies ToMarkdown<{ chart?: string }>;

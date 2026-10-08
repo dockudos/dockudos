@@ -2,6 +2,7 @@
 
 import type { TocEntry } from '@dockudos/core';
 import { usePageData } from '../docs-context.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /** The page's own table of contents, inline. Takes `items` explicitly, else uses the current page's. */
 export function InlineToc({ items }: { items?: readonly TocEntry[] }) {
@@ -28,3 +29,11 @@ export function InlineToc({ items }: { items?: readonly TocEntry[] }) {
     </nav>
   );
 }
+
+InlineToc.toMarkdown = ((_props, _children, { headings }) =>
+  md.block(
+    headings
+      .filter((h) => h.depth >= 2)
+      .map((h) => `${'  '.repeat(h.depth - 2)}- ${md.link(h.text, `#${h.id}`)}`)
+      .join('\n'),
+  )) satisfies ToMarkdown;

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { SmartLink } from './smart-link.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface HeroProps {
   /** A small label above the title: a version, "New", a category. */
@@ -49,3 +50,12 @@ export function LinkButton({
     </SmartLink>
   );
 }
+
+Hero.toMarkdown = ((props, children) =>
+  md.section(
+    [props.eyebrow && md.italic(props.eyebrow), md.bold(props.title), props.description].filter(Boolean).join('\n\n'),
+    children,
+  )) satisfies ToMarkdown<{ eyebrow?: string; title: string; description?: string }>;
+LinkButton.toMarkdown = ((props, children) => md.link(children.trim(), md.text(props.href))) satisfies ToMarkdown<{
+  href: string;
+}>;

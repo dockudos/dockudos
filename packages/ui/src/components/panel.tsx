@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { CodeGroup } from './code-block.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 /**
  * A side panel for examples. On wide screens it sits in the right-hand column, replacing the table of
@@ -42,3 +43,7 @@ export function ResponseExample({ children }: { children: ReactNode }) {
     </Example>
   );
 }
+
+Panel.toMarkdown = md.container;
+RequestExample.toMarkdown = ((_props, children) => md.section(md.bold('Request example'), children)) satisfies ToMarkdown;
+ResponseExample.toMarkdown = ((_props, children) => md.section(md.bold('Response example'), children)) satisfies ToMarkdown;

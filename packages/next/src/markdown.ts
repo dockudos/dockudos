@@ -1,4 +1,8 @@
-import { normalizePath, resolveTwinTarget } from '@dockudos/core';
+import {
+  type MarkdownComponents,
+  normalizePath,
+  resolveTwinTarget,
+} from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
 import { getSite } from './server.ts';
 
@@ -26,7 +30,8 @@ function requestedPath(request: Request): string | undefined {
  */
 export function createMarkdownHandler({
   access,
-}: { access?: AccessOptions } = {}) {
+  components,
+}: { access?: AccessOptions; components?: MarkdownComponents } = {}) {
   return async function GET(request: Request): Promise<Response> {
     const requested = requestedPath(request);
     const site = await getSite();
@@ -57,7 +62,7 @@ export function createMarkdownHandler({
       const denied = await authorizePage(request, page.path, options);
       if (denied) return denied;
     }
-    return new Response(await site.markdown(page), {
+    return new Response(await site.markdown(page, components), {
       headers: {
         'content-type': 'text/markdown; charset=utf-8',
         'cache-control': 'public, max-age=60',

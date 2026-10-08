@@ -1,6 +1,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { mdxToMarkdown } from '@dockudos/core';
 import { readTypeFields } from './auto-type-table.tsx';
 import { defineMdxComponents } from './mdx-components.ts';
 
@@ -69,5 +70,28 @@ describe('defineMdxComponents', () => {
     expect(map['Callout']).toBe(Mine);
     expect(map['AutoTypeTable']).toBeTypeOf('function');
     expect(map['Tabs']).toBeTypeOf('function');
+  });
+});
+
+describe('AutoTypeTable as Markdown', () => {
+  it('reads the types now and writes them as a table', async () => {
+    const out = await mdxToMarkdown(
+      `<AutoTypeTable path="${file}" name="Options" />`,
+      { components: defineMdxComponents() },
+    );
+    expect(out).toContain(
+      '| `name` (required) | `string` |  | Name shown in the navbar. |',
+    );
+    expect(out).toContain(
+      '| `limit` | `number` | `10` | How many items to show. |',
+    );
+  });
+
+  it('names the table in a line when the file cannot be read', async () => {
+    const out = await mdxToMarkdown(
+      '<AutoTypeTable path="/no/such.ts" name="Options" />',
+      { components: defineMdxComponents() },
+    );
+    expect(out).toBe('_Type table of `Options` from `/no/such.ts`._');
   });
 });

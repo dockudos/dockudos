@@ -1,4 +1,5 @@
 import { cn } from '../lib/utils.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export const HTTP_METHODS = [
   'GET',
@@ -47,3 +48,9 @@ export function Endpoint({ method, path, baseUrl }: EndpointProps) {
     </div>
   );
 }
+
+Endpoint.toMarkdown = ((props) =>
+  md.block(md.code([md.text(props.method)?.toUpperCase(), md.text(props.path)].filter(Boolean).join(' ')))) satisfies ToMarkdown<{
+  method?: string;
+  path?: string;
+}>;

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
+import { md } from '@dockudos/core';
 
 export interface ColumnsProps {
   /** Columns on wide screens. One column on phones. Default 2. */
@@ -22,3 +23,5 @@ export function Columns({ cols = 2, children }: ColumnsProps) {
     </div>
   );
 }
+
+Columns.toMarkdown = md.container;

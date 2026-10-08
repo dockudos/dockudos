@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { elementChildren } from '../lib/children.ts';
 import { cn } from '../lib/utils.ts';
 import { renderIcon } from './render-icon.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface AccordionsProps {
   /** Allow several items open at once. Default: one at a time. */
@@ -92,3 +93,10 @@ export function Accordion({
 
 /** The same as `Accordions`, under the name other tools use. */
 export const AccordionGroup = Accordions;
+
+Accordions.toMarkdown = md.container;
+Accordion.toMarkdown = ((props, children) =>
+  md.section([md.bold(props.title), md.text(props.description)].filter(Boolean).join('\n\n'), children)) satisfies ToMarkdown<{
+  title: string;
+  description?: string;
+}>;

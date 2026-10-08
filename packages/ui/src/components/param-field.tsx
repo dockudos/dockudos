@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ParamFieldProps {
   /** The parameter, property or header name. */
@@ -56,3 +57,16 @@ export function ResponseField({
     </ParamField>
   );
 }
+
+const field = ((props, children) => {
+  const name = ['name', 'path', 'query', 'body', 'header'].map((k) => md.text(props[k])).find(Boolean) ?? '';
+  const facts = [
+    md.text(props.type),
+    props.location && `in ${String(props.location)}`,
+    props.required && 'required',
+    props.default && `default ${String(props.default)}`,
+  ].filter(Boolean);
+  return md.section(`${md.bold(md.code(name))}${facts.length ? ` (${facts.join(', ')})` : ''}`, children);
+}) satisfies ToMarkdown<Record<string, unknown>>;
+ParamField.toMarkdown = field;
+ResponseField.toMarkdown = field;

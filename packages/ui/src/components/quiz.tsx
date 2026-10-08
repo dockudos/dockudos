@@ -12,6 +12,7 @@ import {
 import { usePageData } from '../docs-context.tsx';
 import { useLocalStorage } from '../hooks/use-local-storage.ts';
 import { elementChildren } from '../lib/children.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface AnswerProps {
   /** This is a right answer. One right answer makes a single choice; several make "select all". */
@@ -257,3 +258,12 @@ function QuestionBody({
     </fieldset>
   );
 }
+
+Quiz.toMarkdown = ((props, children) =>
+  md.section(md.bold(props.title ? `Quiz: ${props.title}` : 'Quiz'), children)) satisfies ToMarkdown<{ title?: string }>;
+Question.toMarkdown = ((props, children) => {
+  const explanation = md.text(props.explanation);
+  return md.section(md.bold(props.text), `${children.trim()}\n\n${explanation ? md.italic(`Explanation: ${explanation}`) : ''}`);
+}) satisfies ToMarkdown<{ text: string; explanation?: string }>;
+Answer.toMarkdown = ((props, children) =>
+  md.item(`${children.trim()}${props.correct ? ' (correct)' : ''}`)) satisfies ToMarkdown<{ correct?: boolean }>;

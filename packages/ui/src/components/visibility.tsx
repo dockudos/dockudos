@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { md } from '@dockudos/core';
 
 export const AUDIENCES = ['humans', 'agents'] as const;
 export type Audience = (typeof AUDIENCES)[number];
@@ -21,3 +22,5 @@ export function Visibility({ for: audience, children }: VisibilityProps) {
   }
   return audience === 'humans' ? <>{children}</> : null;
 }
+
+Visibility.toMarkdown = md.container;

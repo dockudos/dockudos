@@ -22,3 +22,8 @@ globalThis.matchMedia ??= ((query: string) => ({
   dispatchEvent: () => false,
   onchange: null,
 })) as unknown as typeof globalThis.matchMedia;
+
+// jsdom does no layout; CodeMirror measures text with Range geometry, so give it empty answers.
+const noRects = () => [] as unknown as DOMRectList;
+Range.prototype.getClientRects ??= noRects;
+Range.prototype.getBoundingClientRect ??= () => new DOMRect();

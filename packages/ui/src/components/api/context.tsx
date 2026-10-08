@@ -3,6 +3,7 @@
 import type { ApiOperationData, SampleLanguage } from '@dockudos/core';
 import { defaultSampleLanguages } from '@dockudos/core';
 import { type ReactNode, createContext, useContext } from 'react';
+import { type ToMarkdown } from '@dockudos/core';
 
 interface ApiContext {
   data: ApiOperationData;
@@ -58,3 +59,5 @@ export function ApiOperation({
     </Context>
   );
 }
+
+ApiOperation.toMarkdown = (() => '') satisfies ToMarkdown;

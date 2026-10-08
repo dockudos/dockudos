@@ -1,7 +1,35 @@
-import { createMcpServer, mcpParseError } from '@dockudos/core';
+import {
+  type MarkdownComponents,
+  createMcpServer,
+  mcpParseError,
+} from '@dockudos/core';
 import { createSiteBackend } from '@dockudos/core/node';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { Env } from './io.ts';
 import { loadProject } from './project.ts';
+
+/**
+ * The components of the project's site, so pages read as Markdown like the site's own twins. The project has
+ * `@dockudos/ui` when it has a site; without it (or if it will not load here) pages keep their content and lose
+ * only the component formatting.
+ */
+async function siteComponents(
+  cwd: string,
+): Promise<MarkdownComponents | undefined> {
+  try {
+    const entry = createRequire(join(cwd, 'package.json')).resolve(
+      '@dockudos/ui',
+    );
+    const ui = (await import(pathToFileURL(entry).href)) as {
+      mdxComponents?: MarkdownComponents;
+    };
+    return ui.mdxComponents;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * `dockudos mcp`: serve the docs of this project to AI coding tools over the Model Context Protocol, on
@@ -21,6 +49,7 @@ export async function mcp(env: Env, _args: string[]): Promise<number> {
       docsDir: project.docsDir,
       config: project.config,
       tree: project.tree,
+      components: await siteComponents(env.cwd),
     }),
   );
   for await (const line of env.stdinLines()) {

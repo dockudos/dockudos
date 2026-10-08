@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface StatsProps {
   /** Columns on wide screens. Default 3. */
@@ -41,3 +42,11 @@ export function Stat({ label, value, description }: StatProps) {
     </div>
   );
 }
+
+Stats.toMarkdown = md.container;
+Stat.toMarkdown = ((props) =>
+  md.item(`${md.bold(`${props.label}:`)} ${props.value}${props.description ? ` (${props.description})` : ''}`)) satisfies ToMarkdown<{
+  label: string;
+  value: string;
+  description?: string;
+}>;

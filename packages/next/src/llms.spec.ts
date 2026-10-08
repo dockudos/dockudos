@@ -88,6 +88,28 @@ describe('Markdown twins', () => {
     expect(await home.text()).toContain('Welcome.');
   });
 
+  it("writes components as Markdown: the built-in ones, and the site's own through `components`", async () => {
+    await writeFile(
+      join(root, 'docs', 'guides', 'parts.mdx'),
+      '---\ntitle: Parts\n---\n\n<Callout type="warning" title="Careful">Mind it.</Callout>\n\n<Price plan="Pro">Ten a month.</Price>\n',
+    );
+    const own = Object.assign(() => null, {
+      toMarkdown: (props: Record<string, unknown>, children: string) =>
+        `**${String(props.plan)} plan:** ${children.trim()}`,
+    });
+    const text = await (
+      await createMarkdownHandler({ components: { Price: own } })(
+        req('/guides/parts.md'),
+      )
+    ).text();
+    expect(text).toContain('> **Warning: Careful**\n>\n> Mind it.');
+    expect(text).toContain('**Pro plan:** Ten a month.');
+    // without the component the content stays
+    expect(await (await GET(req('/guides/parts.md'))).text()).toContain(
+      'Ten a month.',
+    );
+  });
+
   it('reads the address the request was made to, as a rewrite leaves it', async () => {
     const twin = await GET(req('/guides/auth.md'));
     expect(await twin.text()).toContain('# Authentication');

@@ -3,6 +3,7 @@
 import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard.ts';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface ColorItem {
   name: string;
@@ -56,3 +57,12 @@ export function Colors({
     </figure>
   );
 }
+
+Colors.toMarkdown = ((props) =>
+  md.block(
+    props.title && md.bold(props.title),
+    md.table(
+      ['Name', 'Value'],
+      (props.items ?? []).map((i) => [i.name, md.code(i.value)]),
+    ),
+  )) satisfies ToMarkdown<{ title?: string; items?: { name: string; value: string }[] }>;

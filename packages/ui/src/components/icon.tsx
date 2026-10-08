@@ -4,6 +4,7 @@ import { type SvgIcon } from '@dockudos/core';
 import { ICONS, ICON_NAMES } from '../lib/icons.ts';
 import { cn } from '../lib/utils.ts';
 import { type IconRegistry, useIconRegistry } from './icons-context.tsx';
+import { type ToMarkdown } from '@dockudos/core';
 
 export interface IconProps {
   /**
@@ -146,3 +147,5 @@ export function Icon({ name, size = 16, className, label }: IconProps) {
   const { Component } = found;
   return <Component width={size} height={size} className={classes} {...a11y} />;
 }
+
+Icon.toMarkdown = (() => '') satisfies ToMarkdown;

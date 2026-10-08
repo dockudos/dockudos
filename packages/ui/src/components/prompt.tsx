@@ -5,6 +5,7 @@ import { type ReactNode, useRef } from 'react';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard.ts';
 import { cn } from '../lib/utils.ts';
 import { renderIcon } from './render-icon.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export const PROMPT_ACTIONS = ['copy', 'cursor'] as const;
 export type PromptAction = (typeof PROMPT_ACTIONS)[number];
@@ -96,3 +97,7 @@ export function Prompt({
     </section>
   );
 }
+
+Prompt.toMarkdown = ((props, children) => md.quote('Prompt', md.text(props.description), children)) satisfies ToMarkdown<{
+  description: string;
+}>;

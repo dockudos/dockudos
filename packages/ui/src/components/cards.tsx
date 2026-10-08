@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { cn } from '../lib/utils.ts';
 import { renderIcon } from './render-icon.tsx';
 import { SmartLink, isExternal } from './smart-link.tsx';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export function Cards({
   children,
@@ -123,3 +124,10 @@ export function Card({
 
 /** The same as `Cards`, under the name other tools use. */
 export const CardGroup = Cards;
+
+Cards.toMarkdown = md.container;
+Card.toMarkdown = ((props, children) =>
+  md.section(md.bold(md.link(md.text(props.title) ?? '', md.text(props.href))), children)) satisfies ToMarkdown<{
+  title: string;
+  href?: string;
+}>;

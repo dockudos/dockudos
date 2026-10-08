@@ -1,4 +1,5 @@
 import { ZoomableImage } from './zoomable-image.tsx';
+import { type ToMarkdown } from '@dockudos/core';
 
 export interface ThemedImageProps {
   /** The image shown in light mode (and on paper). */
@@ -33,3 +34,8 @@ export function ThemedImage({
     </>
   );
 }
+
+ThemedImage.toMarkdown = ((props) => `![${props.alt ?? ''}](${props.light})`) satisfies ToMarkdown<{
+  light: string;
+  alt?: string;
+}>;

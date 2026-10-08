@@ -1,5 +1,6 @@
 import { Download as DownloadIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface DownloadProps {
   /** The file's address. */
@@ -30,3 +31,9 @@ export function Download({ href, filename, size, children }: DownloadProps) {
     </a>
   );
 }
+
+Download.toMarkdown = ((props, children) =>
+  `${md.link(children.trim(), md.text(props.href))}${props.size ? ` (${props.size})` : ''}`) satisfies ToMarkdown<{
+  href: string;
+  size?: string;
+}>;

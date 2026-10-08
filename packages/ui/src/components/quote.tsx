@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { md, type ToMarkdown } from '@dockudos/core';
 
 export interface QuoteProps {
   /** Who said it. */
@@ -31,3 +32,8 @@ export function Quote({ author, source, href, children }: QuoteProps) {
     </figure>
   );
 }
+
+Quote.toMarkdown = ((props, children) => {
+  const by = [md.text(props.author), md.text(props.source)].filter(Boolean).join(', ');
+  return md.quote('', undefined, children, by ? `— ${md.link(by, md.text(props.href))}` : undefined);
+}) satisfies ToMarkdown<{ author?: string; source?: string; href?: string }>;

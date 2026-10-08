@@ -1,4 +1,8 @@
-import { type ContentIndex, hashText } from '@dockudos/core';
+import {
+  type ContentIndex,
+  type MarkdownComponents,
+  hashText,
+} from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
 import {
   type AiOptions,
@@ -23,6 +27,8 @@ export interface DocsApiOptions {
   access?: AccessOptions;
   /** Adapters and environment for the assistant. The settings themselves are the `ai` key of `docs.json`. */
   ai?: AiOptions;
+  /** The site's own components, so their `toMarkdown` is used in the Markdown of a page. */
+  components?: MarkdownComponents;
 }
 
 export type { AiOptions };
@@ -107,7 +113,7 @@ export function createIndexHandler() {
  * markdown }`. Hidden pages are served (their URL works); pages behind an `access` rule need the same
  * credentials as on their own URL.
  */
-export function createPageHandler({ access }: DocsApiOptions = {}) {
+export function createPageHandler({ access, components }: DocsApiOptions = {}) {
   return async function GET(request: Request): Promise<Response> {
     const path = new URL(request.url).searchParams.get('path');
     if (!path) return apiError(400, 'Give the page as ?path=/guides/auth.');
@@ -127,7 +133,7 @@ export function createPageHandler({ access }: DocsApiOptions = {}) {
         title: page.title,
         ...(page.description && { description: page.description }),
         headings: await site.toc(page),
-        markdown: await site.markdown(page),
+        markdown: await site.markdown(page, components),
       },
       200,
       { 'cache-control': 'public, max-age=60' },
