@@ -6,6 +6,18 @@ import { type RefObject, useEffect, useRef } from 'react';
 import { renderIcon } from '../components/render-icon.tsx';
 import { useLink } from '../provider.tsx';
 
+/** Short labels for the method in front of an endpoint in the sidebar. */
+const METHOD_BADGE: Record<string, string> = {
+  get: 'GET',
+  post: 'POST',
+  put: 'PUT',
+  patch: 'PATCH',
+  delete: 'DEL',
+  options: 'OPT',
+  head: 'HEAD',
+  trace: 'TRACE',
+};
+
 const hasActive = (items: readonly SidebarItem[], path: string): boolean =>
   items.some((i) =>
     i.type === 'page'
@@ -48,6 +60,15 @@ function Items({
                 {!numbered && item.page.icon && (
                   <span className="dk-nav-icon">
                     {renderIcon(item.page.icon, 15)}
+                  </span>
+                )}
+                {item.page.api?.method && (
+                  <span
+                    className="dk-api-method"
+                    data-method={item.page.api.method}
+                  >
+                    {METHOD_BADGE[item.page.api.method] ??
+                      item.page.api.method.toUpperCase()}
                   </span>
                 )}
                 {item.page.sidebarTitle ?? item.page.title}

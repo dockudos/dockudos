@@ -17,6 +17,12 @@ export default defineConfig({
       url: 'http://127.0.0.1:4399/__calls',
       reuseExistingServer: !process.env.CI,
     },
+    // The API the playground tries (4398), and one without CORS headers (4397).
+    {
+      command: 'node e2e/mock-api.mjs',
+      url: 'http://127.0.0.1:4398/__calls',
+      reuseExistingServer: !process.env.CI,
+    },
     // A plain page on another origin, with the widget script in it: the "product" that embeds the assistant.
     {
       command: 'node e2e/host-page.mjs',

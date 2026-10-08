@@ -65,7 +65,10 @@ export function buildNavigation(
   const issues: string[] = [];
   const used = new Set<Page>();
 
-  const resolve = (item: NavItem, where: string): SidebarItem | undefined => {
+  const resolve = (
+    item: NavItem,
+    where: string,
+  ): SidebarItem | SidebarItem[] | undefined => {
     if (typeof item === 'string') {
       const page = byId.get(item.replace(DOC_EXT, ''));
       if (!page) {
@@ -76,6 +79,17 @@ export function buildNavigation(
       return { type: 'page', page };
     }
     if ('href' in item) return { type: 'link', ...item };
+    if ('openapi' in item || 'reference' in item) {
+      const name = 'openapi' in item ? item.openapi : item.reference;
+      const items = sourceSidebar(tree, name);
+      if (!items.length) {
+        issues.push(
+          `${where}: no pages were generated for "${name}". Run \`dockudos generate\` and check that the source is in docs.json`,
+        );
+      }
+      for (const page of flattenSidebar(items)) used.add(page);
+      return items;
+    }
     return {
       type: 'group',
       title: item.group,
@@ -106,6 +120,32 @@ export function buildNavigation(
   };
 }
 
+/**
+ * The sidebar of one generated source: the overview, then a group for each tag (or path segment, or kind of type)
+ * in the order of the source.
+ */
+export function sourceSidebar(tree: PageTree, source: string): SidebarItem[] {
+  const pages = tree.pages
+    .filter((p) => p.api?.source === source && !p.hidden)
+    .sort((a, b) => (a.api?.order ?? 0) - (b.api?.order ?? 0));
+  const items: SidebarItem[] = pages
+    .filter((p) => !p.api?.group)
+    .map((page) => ({ type: 'page', page }));
+  const groups = new Map<string, Extract<SidebarItem, { type: 'group' }>>();
+  for (const page of pages) {
+    const name = page.api?.group;
+    if (!name) continue;
+    let group = groups.get(name);
+    if (!group) {
+      group = { type: 'group', title: name, items: [] };
+      groups.set(name, group);
+      items.push(group);
+    }
+    group.items.push({ type: 'page', page });
+  }
+  return items;
+}
+
 function folderSidebar(tree: PageTree): SidebarItem[] {
   const toItems = (index: Page | undefined, children: Folder['children']) => {
     const items: SidebarItem[] = [];
@@ -118,7 +158,11 @@ function folderSidebar(tree: PageTree): SidebarItem[] {
         if (inner.length) {
           items.push({
             type: 'group',
-            title: titleFromSlug(child.name),
+            // A folder of generated pages is titled like its tag, not like its slug.
+            title:
+              child.children.find(
+                (c): c is Page => c.type === 'page' && !!c.api?.group,
+              )?.api?.group ?? titleFromSlug(child.name),
             items: inner,
           });
         }

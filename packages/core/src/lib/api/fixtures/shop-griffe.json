@@ -1,0 +1,243 @@
+{
+  "shop": {
+    "analysis": "static",
+    "docstring": {
+      "endlineno": 1,
+      "lineno": 1,
+      "value": "A tiny shop SDK."
+    },
+    "filepath": "/tmp/claude-1000/-home-vnodecg-BIXFLO-dockudos/99f052a7-80fe-4f69-8fd1-cc96e94f56d9/scratchpad/pyp/shop/__init__.py",
+    "imports": {
+      "Optional": "typing.Optional"
+    },
+    "kind": "module",
+    "members": {
+      "Client": {
+        "analysis": "static",
+        "bases": [],
+        "decorators": [],
+        "docstring": {
+          "endlineno": 9,
+          "lineno": 5,
+          "value": "Talks to the shop.\n\nArgs:\n    token: API token."
+        },
+        "endlineno": 17,
+        "kind": "class",
+        "lineno": 4,
+        "members": {
+          "__init__": {
+            "analysis": "static",
+            "decorators": [],
+            "endlineno": 13,
+            "kind": "function",
+            "lineno": 12,
+            "name": "__init__",
+            "parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "self"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "__init__",
+                  "name": "str"
+                },
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "token"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "__init__",
+                  "name": "float"
+                },
+                "default": "10.0",
+                "kind": "positional or keyword",
+                "name": "timeout"
+              }
+            ],
+            "returns": "None",
+            "runtime": true
+          },
+          "base_url": {
+            "analysis": "static",
+            "annotation": {
+              "cls": "ExprName",
+              "member": null,
+              "name": "str"
+            },
+            "endlineno": 10,
+            "kind": "attribute",
+            "labels": [
+              "class-attribute",
+              "instance-attribute"
+            ],
+            "lineno": 10,
+            "name": "base_url",
+            "runtime": true,
+            "value": "'https://api.shop.test'"
+          },
+          "get_product": {
+            "analysis": "static",
+            "decorators": [],
+            "docstring": {
+              "endlineno": 16,
+              "lineno": 16,
+              "value": "Fetch one product."
+            },
+            "endlineno": 17,
+            "kind": "function",
+            "lineno": 15,
+            "name": "get_product",
+            "parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "self"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "get_product",
+                  "name": "int"
+                },
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "product_id"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "get_product",
+                    "name": "Optional"
+                  },
+                  "slice": {
+                    "cls": "ExprSubscript",
+                    "left": {
+                      "cls": "ExprName",
+                      "member": "get_product",
+                      "name": "list"
+                    },
+                    "slice": {
+                      "cls": "ExprName",
+                      "member": "get_product",
+                      "name": "str"
+                    }
+                  }
+                },
+                "default": "None",
+                "kind": "keyword-only",
+                "name": "expand"
+              }
+            ],
+            "returns": {
+              "cls": "ExprName",
+              "member": "get_product",
+              "name": "dict"
+            },
+            "runtime": true
+          },
+          "token": {
+            "analysis": "static",
+            "endlineno": 13,
+            "kind": "attribute",
+            "labels": [
+              "instance-attribute"
+            ],
+            "lineno": 13,
+            "name": "token",
+            "runtime": true,
+            "value": {
+              "cls": "ExprName",
+              "member": null,
+              "name": "token"
+            }
+          }
+        },
+        "name": "Client",
+        "runtime": true
+      },
+      "Optional": {
+        "analysis": "static",
+        "endlineno": 2,
+        "inherited": false,
+        "kind": "alias",
+        "lineno": 2,
+        "name": "Optional",
+        "runtime": true,
+        "target_path": "typing.Optional"
+      },
+      "_private": {
+        "analysis": "static",
+        "decorators": [],
+        "endlineno": 20,
+        "kind": "function",
+        "lineno": 19,
+        "name": "_private",
+        "parameters": [],
+        "returns": null,
+        "runtime": true
+      },
+      "connect": {
+        "analysis": "static",
+        "decorators": [],
+        "docstring": {
+          "endlineno": 23,
+          "lineno": 23,
+          "value": "Open a client."
+        },
+        "endlineno": 24,
+        "kind": "function",
+        "lineno": 22,
+        "name": "connect",
+        "parameters": [
+          {
+            "annotation": {
+              "cls": "ExprName",
+              "member": "connect",
+              "name": "str"
+            },
+            "default": null,
+            "kind": "positional or keyword",
+            "name": "url"
+          },
+          {
+            "annotation": {
+              "cls": "ExprName",
+              "member": "connect",
+              "name": "str"
+            },
+            "default": "()",
+            "kind": "variadic positional",
+            "name": "args"
+          },
+          {
+            "annotation": {
+              "cls": "ExprName",
+              "member": "connect",
+              "name": "int"
+            },
+            "default": "{}",
+            "kind": "variadic keyword",
+            "name": "kwargs"
+          }
+        ],
+        "returns": {
+          "cls": "ExprName",
+          "member": "connect",
+          "name": "Client"
+        },
+        "runtime": true
+      }
+    },
+    "name": "shop",
+    "runtime": true
+  }
+}

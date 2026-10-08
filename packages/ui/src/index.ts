@@ -89,3 +89,15 @@ export * from './lib/navigate-client.ts';
 export * from './components/navigation-notice.tsx';
 export * from './components/embedded-assistant.tsx';
 export * from './components/docs-assistant.tsx';
+export * from './components/api/context.tsx';
+export * from './components/api/sections.tsx';
+export * from './components/api/schema.tsx';
+export * from './components/api/playground.tsx';
+export * from './components/api/prose.tsx';
+export {
+  sendRequest,
+  formatBody,
+  CORS_HINT,
+  type SendOutcome,
+  type PlaygroundResponse,
+} from './components/api/send.ts';

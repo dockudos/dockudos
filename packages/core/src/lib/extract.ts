@@ -39,6 +39,7 @@ const TEXT_ATTRIBUTES = new Set([
   'caption',
   'alt',
   'path',
+  'method',
   'name',
   'question',
   'header',

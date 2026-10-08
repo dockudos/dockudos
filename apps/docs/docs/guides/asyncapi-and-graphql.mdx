@@ -1,0 +1,45 @@
+---
+icon: radio
+title: AsyncAPI and GraphQL
+description: Reference pages for event-driven APIs and GraphQL schemas.
+---
+
+The same `openapi.sources` list takes AsyncAPI and GraphQL specs. The kind is detected from the file; set `type` when it
+cannot be (`"type": "graphql"` for a `.json` introspection result).
+
+```json title="docs.json"
+{
+  "openapi": {
+    "sources": [
+      { "name": "events", "spec": "asyncapi.yaml", "path": "events" },
+      {
+        "name": "graph",
+        "spec": "https://api.acme.com/schema.graphql",
+        "path": "graphql"
+      }
+    ]
+  }
+}
+```
+
+Add them to the sidebar with `{ "openapi": "events" }` like an OpenAPI source.
+
+## AsyncAPI 2.x and 3.x
+
+- An overview, a **Servers** page (name, URL, protocol) and one page for each channel.
+- Each channel page has its address and parameters, then what the application **sends** and **receives** on it, with each
+  message: title, content type, payload as JSON Schema, a generated example, and headers.
+- AsyncAPI 2 names operations from the client's side (`publish` is what clients publish). The pages say it from the
+  application's side, the way AsyncAPI 3 does, so `publish` appears as "Receive".
+- `$ref` is followed, including circular payloads.
+
+There is no playground for event APIs.
+
+## GraphQL
+
+From SDL or from the JSON of an introspection query (with or without the `data` wrapper):
+
+- One page for each **query**, **mutation** and **subscription**: arguments with types and defaults, the return type,
+  deprecation, and an example operation that is valid against your schema.
+- One page for each kind of type (objects, inputs, enums, interfaces, unions, scalars), so a schema with thousands of types
+  does not become thousands of pages.

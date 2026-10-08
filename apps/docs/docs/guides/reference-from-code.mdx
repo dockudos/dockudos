@@ -1,0 +1,68 @@
+---
+icon: file-code
+title: Reference from code
+description: Generate reference pages from TypeScript definitions and Python docstrings.
+---
+
+Keep reference pages in step with the code with `reference.sources`:
+
+```json title="docs.json"
+{
+  "reference": {
+    "sources": [
+      {
+        "name": "sdk",
+        "type": "typescript",
+        "input": "../sdk/src/index.ts",
+        "path": "reference/sdk"
+      },
+      {
+        "name": "py",
+        "type": "python",
+        "input": "py-docs.json",
+        "path": "reference/python"
+      }
+    ]
+  },
+  "navigation": [
+    {
+      "tab": "Reference",
+      "groups": [
+        {
+          "group": "SDK",
+          "pages": [{ "reference": "sdk" }, { "reference": "py" }]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## TypeScript
+
+`input` is one or more entry points (`.ts` or `.d.ts`). Everything they export, including through `export *`, gets a page,
+grouped as functions, classes, interfaces, types, enums and variables. Install `typescript` next to dockudos.
+
+Each page shows the signature, the parameters with their `@param` text, the return type, the members of an interface or class
+with their types and TSDoc, `@deprecated` and `@example`. Optional members are marked, and `x?: T` shows `T`.
+
+For a single interface inside a page you write yourself, [`<AutoTypeTable>`](../components/auto-type-table.mdx) reads it the
+same way.
+
+## Python
+
+dockudos reads the JSON that [Griffe](https://mkdocstrings.github.io/griffe/) writes, instead of parsing Python itself:
+
+```bash
+uvx griffe dump -s src mypackage > py-docs.json
+```
+
+Griffe already understands the whole language (annotations, overloads, inheritance, `__all__`), and the same file works for
+tools beyond this one. The alternative, a Python parser in a JavaScript tool, would be less accurate and would need updating
+with every Python release. Sphinx output is not read.
+
+Each module becomes a page with its public functions, classes (with methods and attributes) and constants: signature with
+annotations and defaults, and the docstring. Names that start with `_` and imported names are left out. Docstrings are shown as
+text, paragraph by paragraph: Google, NumPy and Sphinx sections are not parsed into tables.
+
+Commit `py-docs.json` or generate it in CI before `dockudos build`; dockudos does not run Python.

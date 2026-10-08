@@ -60,6 +60,13 @@ import { TypeTable } from '../components/type-table.tsx';
 import { Update } from '../components/update.tsx';
 import { Video } from '../components/video.tsx';
 import { ZoomableImage } from '../components/zoomable-image.tsx';
+import { ApiOperation } from '../components/api/context.tsx';
+import { ApiPlayground } from '../components/api/playground.tsx';
+import {
+  ApiParameters,
+  ApiRequestBody,
+  ApiResponses,
+} from '../components/api/sections.tsx';
 
 /** Components available in every MDX file without importing. */
 export const mdxComponents = {
@@ -129,6 +136,11 @@ export const mdxComponents = {
   ParamField,
   ResponseField,
   Endpoint,
+  ApiOperation,
+  ApiParameters,
+  ApiRequestBody,
+  ApiResponses,
+  ApiPlayground,
   Update,
   CopyText,
   Hero,

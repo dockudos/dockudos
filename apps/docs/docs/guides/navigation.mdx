@@ -49,13 +49,14 @@ Invalid navigation in docs.json:
 
 ## What each entry does
 
-| Entry                          | Result                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| A string                       | A page in the sidebar.                                                                                  |
-| `{ "group": …, "pages": […] }` | A group. Top-level groups start open. Nested groups start collapsed, unless they hold the current page. |
-| `{ "title": …, "href": … }`    | A link, opened in a new tab.                                                                            |
-| A tab with `groups`            | A tab in the navbar. The sidebar shows the active tab's groups.                                         |
-| A tab with `href`              | A link in the navbar only.                                                                              |
+| Entry                                                | Result                                                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| A string                                             | A page in the sidebar.                                                                                    |
+| `{ "group": …, "pages": […] }`                       | A group. Top-level groups start open. Nested groups start collapsed, unless they hold the current page.   |
+| `{ "title": …, "href": … }`                          | A link, opened in a new tab.                                                                              |
+| A tab with `groups`                                  | A tab in the navbar. The sidebar shows the active tab's groups.                                           |
+| A tab with `href`                                    | A link in the navbar only.                                                                                |
+| `{ "openapi": "name" }` or `{ "reference": "name" }` | All the pages generated from that [source](./api-reference.mdx): the overview, then a group for each tag. |
 
 On small screens the navbar tabs and the sidebar move into a drawer.
 

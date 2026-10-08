@@ -36,6 +36,19 @@
           ]
         }
       ]
+    },
+    {
+      "tab": "API reference",
+      "groups": [
+        {
+          "group": "Petstore",
+          "pages": [
+            {
+              "openapi": "petstore"
+            }
+          ]
+        }
+      ]
     }
   ],
   "theme": {
@@ -85,5 +98,17 @@
       "ratePerMinute": 30
     },
     "allowedOrigins": ["http://127.0.0.1:4390"]
+  },
+  "openapi": {
+    "sources": [
+      {
+        "name": "petstore",
+        "spec": "openapi.json",
+        "path": "api-reference"
+      }
+    ],
+    "playground": {
+      "allowedHosts": ["127.0.0.1:4398"]
+    }
   }
 }

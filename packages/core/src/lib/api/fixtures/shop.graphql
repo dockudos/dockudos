@@ -1,0 +1,29 @@
+"""The shop API"""
+schema { query: Query mutation: Mutation subscription: Subscription }
+
+type Query {
+  "Find a product"
+  product(id: ID!, locale: Locale = EN): Product
+  products(filter: ProductFilter, first: Int = 10): [Product!]!
+  oldThing: String @deprecated(reason: "Use product")
+}
+type Mutation {
+  addProduct(input: ProductInput!): Product!
+}
+type Subscription {
+  priceChanged(productId: ID!): Price!
+}
+"A thing for sale"
+type Product implements Node {
+  id: ID!
+  name: String!
+  price: Price
+  related: [Product!]
+}
+interface Node { id: ID! }
+type Price { amount: Float! currency: String! }
+input ProductInput { name: String! price: Float }
+input ProductFilter { search: String }
+enum Locale { EN DE @deprecated(reason: "no") }
+union SearchResult = Product | Price
+scalar Date

@@ -34,12 +34,27 @@ server stays up.
 dockudos build [next build options]
 ```
 
-1. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
-2. Checks every link, anchor and image. Any error stops here.
-3. Runs [`index`](#index): the search index, reusing pages that did not change, plus embeddings when configured.
-4. Runs `next build`.
+1. Runs [`generate`](#generate) when `docs.json` has API or reference sources.
+2. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
+3. Checks every link, anchor and image. Any error stops here.
+4. Runs [`index`](#index): the search index, reusing pages that did not change, plus embeddings when configured.
+5. Runs `next build`.
 
 Exits with the status of `next build`, or 1 when a check fails, with the reason printed.
+
+## generate
+
+```bash
+dockudos generate [--force]
+```
+
+Writes the pages and data for every source in `openapi.sources` and `reference.sources` of `docs.json`: one page for each
+operation of an OpenAPI spec, the channels of an AsyncAPI spec, the fields of a GraphQL schema, the exports of TypeScript
+files and the modules of a Python package. A spec that did not change since the last run is skipped (`--force` ignores
+that, for example after a file the spec refers to changed). Pages that left the spec are removed; files that were not
+written by this command are never touched. A spec that cannot be fetched or parsed stops the command with its location
+and the reason. `dev`, `build`, `index` and `broken-links` run it first; `dev` runs it again when a local spec changes.
+See [API reference](../guides/api-reference.mdx).
 
 ## index
 

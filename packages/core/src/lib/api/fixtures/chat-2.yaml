@@ -1,0 +1,50 @@
+asyncapi: 2.6.0
+info:
+  title: Chat {events}
+  version: 1.2.0
+  description: Realtime <chat> events.
+servers:
+  prod:
+    url: wss://chat.example.com/{tenant}
+    protocol: wss
+    description: Production
+channels:
+  chat/{room}/message:
+    description: Messages in a room
+    parameters:
+      room:
+        description: Room id
+        schema: { type: string }
+    publish:
+      summary: Post a message
+      operationId: postMessage
+      message:
+        $ref: '#/components/messages/ChatMessage'
+    subscribe:
+      message:
+        oneOf:
+          - $ref: '#/components/messages/ChatMessage'
+          - name: Typing
+            payload: { type: object, properties: { user: { type: string } } }
+  user/signedup:
+    subscribe:
+      message:
+        payload: { type: object }
+components:
+  messages:
+    ChatMessage:
+      name: ChatMessage
+      title: A chat message
+      contentType: application/json
+      payload:
+        type: object
+        required: [text]
+        properties:
+          text: { type: string }
+          replyTo: { $ref: '#/components/schemas/ChatPayload' }
+  schemas:
+    ChatPayload:
+      type: object
+      properties:
+        text: { type: string }
+        parent: { $ref: '#/components/schemas/ChatPayload' }

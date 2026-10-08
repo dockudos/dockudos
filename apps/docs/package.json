@@ -6,7 +6,48 @@
     "sourceRoot": "apps/docs/src",
     "tags": [
       "scope:app"
-    ]
+    ],
+    "targets": {
+      "generate": {
+        "command": "dockudos generate",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "cache": false,
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "generate"
+        ]
+      },
+      "test-ci": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      }
+    }
   },
   "dependencies": {
     "@dockudos/core": "workspace:*",
@@ -15,5 +56,8 @@
     "next": "~16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@dockudos/cli": "workspace:*"
   }
 }

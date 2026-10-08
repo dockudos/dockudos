@@ -64,6 +64,17 @@ Invalid docs config in /my-docs/docs.json:
       description: 'Metadata defaults. See below.',
       default: '{}',
     },
+    openapi: {
+      type: 'object',
+      description: 'API reference sources and the playground. See below.',
+      default: '{}',
+    },
+    reference: {
+      type: 'object',
+      description:
+        'Reference pages from TypeScript and Python code. See below.',
+      default: '{}',
+    },
   }}
 />
 
@@ -379,3 +390,105 @@ See [Protecting pages](../guides/protecting-pages.mdx).
 />
 
 Each pack is a folder, or `{ dir, monochrome }`; `monochrome` makes fixed colors follow the text color. See [Icons](../components/icons.mdx#your-own-icons).
+
+## openapi
+
+API reference pages from OpenAPI, AsyncAPI and GraphQL. See [API reference](../guides/api-reference.mdx) and
+[Playground](../guides/playground.mdx).
+
+<TypeTable
+  type={{
+    sources: {
+      type: 'Source[]',
+      description: 'The specs to generate pages from. Each has the keys below.',
+      default: '[]',
+    },
+    'sources[].name': {
+      type: 'string',
+      required: true,
+      description:
+        'Lowercase name to refer to the source by, in `navigation`: `{ "openapi": "petstore" }`. Unique.',
+    },
+    'sources[].spec': {
+      type: 'string',
+      required: true,
+      description:
+        'A file in the project or an http(s) URL. JSON or YAML; OpenAPI 3.0 or 3.1, AsyncAPI 2 or 3, GraphQL SDL or introspection JSON.',
+    },
+    'sources[].path': {
+      type: 'string',
+      description:
+        'Folder below `docs/` the pages are written to, and so their URL. Default: the name. Unique.',
+    },
+    'sources[].type': {
+      type: '"openapi" | "asyncapi" | "graphql"',
+      description: 'What the spec is. Detected when left out.',
+    },
+    'sources[].groupBy': {
+      type: '"tag" | "path"',
+      default: '"tag"',
+      description: 'How OpenAPI endpoints are grouped in the sidebar.',
+    },
+    'sources[].title': {
+      type: 'string',
+      description:
+        'Title of the overview page. Default: the title in the spec.',
+    },
+    'playground.enabled': {
+      type: 'boolean',
+      default: 'true',
+      description:
+        'Show "Try it" on endpoint pages. Off leaves the code samples.',
+    },
+    'playground.proxy': {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'Send requests through `POST /api/playground` of your site, for APIs without CORS. Secrets then pass through your server. Read the warnings first.',
+    },
+    'playground.allowedHosts': {
+      type: 'string[]',
+      default: '[]',
+      description:
+        "Hosts the proxy may call besides the spec's servers, like `api.example.com` or `localhost:4000`. These skip the private-network check.",
+    },
+  }}
+/>
+
+## reference
+
+<TypeTable
+  type={{
+    sources: {
+      type: 'Source[]',
+      description: 'Code to generate pages from. Each has the keys below.',
+      default: '[]',
+    },
+    'sources[].name': {
+      type: 'string',
+      required: true,
+      description:
+        'Lowercase name, used in `navigation`: `{ "reference": "sdk" }`.',
+    },
+    'sources[].type': {
+      type: '"typescript" | "python"',
+      required: true,
+      description:
+        '`typescript`: `.ts` or `.d.ts` entry points. `python`: the JSON from `griffe dump`.',
+    },
+    'sources[].input': {
+      type: 'string | string[]',
+      required: true,
+      description:
+        'Files in the project: the entry points, or the Griffe JSON file.',
+    },
+    'sources[].path': {
+      type: 'string',
+      description: 'Folder below `docs/`. Default: the name.',
+    },
+    'sources[].title': {
+      type: 'string',
+      description: 'Title of the overview page.',
+    },
+  }}
+/>

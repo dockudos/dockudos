@@ -1,0 +1,151 @@
+---
+icon: webhook
+title: API reference
+description: Turn an OpenAPI spec into a page for every endpoint, with schemas, examples, code samples and a playground.
+---
+
+Point dockudos at a spec and it writes a page for every endpoint. Each page has the parameters, the request body, every
+response with its schema and an example, code samples in four languages and a playground to try it.
+
+## Add a spec
+
+Put the spec in your project, or use its URL, and list it in `docs.json`:
+
+```json title="docs.json"
+{
+  "openapi": {
+    "sources": [
+      { "name": "petstore", "spec": "openapi.json", "path": "api-reference" }
+    ]
+  },
+  "navigation": [
+    {
+      "tab": "API reference",
+      "groups": [{ "group": "Petstore", "pages": [{ "openapi": "petstore" }] }]
+    }
+  ]
+}
+```
+
+Then run:
+
+```bash
+dockudos generate
+```
+
+`dockudos dev` and `dockudos build` run it for you. The pages appear below `docs/` at `path` (here `docs/api-reference/`), so
+they are ordinary pages: they are in search, in `llms.txt`, in the Markdown twins (`/api-reference/pet/getpetbyid.md` has the
+whole endpoint for AI tools) and in what the assistant and the MCP server read.
+
+<Note>
+  A site built with `next build` alone, without the dockudos CLI, needs
+  `dockudos generate` before it. In an Nx workspace, make `build` and `dev`
+  depend on a `generate` target; `apps/example` in the dockudos repository shows
+  how.
+</Note>
+
+### What is read
+
+- **OpenAPI 3.0 and 3.1**, as JSON or YAML, from a file or an `http(s)` URL. Swagger 2.0 is rejected with a message that says
+  to convert it first.
+- `$ref` to anything: schemas, parameters, responses, other files and other URLs (relative to where the spec is). Circular
+  references are fine.
+- `oneOf`, `anyOf` and `allOf`, discriminators, enums, `nullable` and 3.1 `type` lists, `additionalProperties`, `readOnly`
+  and `writeOnly`, `webhooks` (shown without a playground).
+- A spec that cannot be fetched or parsed stops the build and says which spec and why:
+  `https://api.acme.com/openapi.json: could not be fetched: the server answered 404 Not Found`.
+
+Every operation gets a page: the count in the spec is the count of pages. The overview page lists them all.
+
+## Navigation
+
+`{ "openapi": "petstore" }` in a group's `pages` expands to the overview and a sidebar group for each tag, in the order of the
+spec's `tags`, with the HTTP method in front of each endpoint. An operation with several tags is listed under its first.
+
+| Setting               | Result                                                                          |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `"groupBy": "tag"`    | One group for each tag (the default). Untagged operations go under "Endpoints". |
+| `"groupBy": "path"`   | One group for each first path segment: `/pets/{id}` is under `pets`.            |
+| Your own `navigation` | List generated page ids like any others, for any order or grouping.             |
+| No `navigation`       | The sidebar follows the folders of the generated pages.                         |
+
+## Code samples
+
+Each endpoint shows cURL, JavaScript (`fetch`), Python (`requests`) and Go (`net/http`). They use the server and the
+authentication of the spec and follow what the reader types into the playground. The language a reader picks is remembered on
+every other endpoint page.
+
+To add or replace languages, wrap `ApiOperation` with your own list. Each language turns the request into text. The wrapper
+must be a client component, because the languages are functions:
+
+```tsx title="src/api-operation.tsx"
+'use client';
+
+import { defaultSampleLanguages, defineSampleLanguage } from '@dockudos/core';
+import { ApiOperation, type ApiOperationProps } from '@dockudos/ui';
+
+const ruby = defineSampleLanguage({
+  id: 'ruby',
+  label: 'Ruby',
+  highlight: 'ruby',
+  generate: ({ method, url, headers }) =>
+    [
+      `require 'net/http'`,
+      `uri = URI(${JSON.stringify(url)})`,
+      `# ${method} with ${headers.length} headers`,
+    ].join('\n'),
+});
+
+export function AcmeApiOperation(props: ApiOperationProps) {
+  return (
+    <ApiOperation {...props} languages={[...defaultSampleLanguages, ruby]} />
+  );
+}
+```
+
+```tsx title="src/mdx-components.tsx"
+import { defineMdxComponents } from '@dockudos/next/mdx-components';
+import { AcmeApiOperation } from './api-operation';
+
+export const useMDXComponents = (components) => ({
+  ...defineMdxComponents({ ApiOperation: AcmeApiOperation }),
+  ...components,
+});
+```
+
+## Large specs
+
+Generation reads the spec once and writes small files. Each page carries only its own operation (about 11 kB for the GitHub
+API); the schemas it refers to are separate files in `public/_dockudos/` that the browser fetches when a reader opens a field,
+so a page with a deep schema stays light and a circular schema cannot loop. A spec that did not change is skipped on the next
+run, so only the first build pays. Measured:
+
+| Spec                          | Operations | `generate`  |
+| ----------------------------- | ---------- | ----------- |
+| Petstore                      | 19         | a few ms    |
+| Stripe                        | 612        | about 0.4 s |
+| GitHub REST                   | 1,232      | about 0.4 s |
+| Synthetic, 400 linked schemas | 2,000      | about 0.4 s |
+
+(Generation only, on a laptop. `next build` then compiles one page for each operation, which takes the longer part of the
+time.) The test suite fails if 2,000 operations need more than 5 seconds or a page carries more than 60 kB of data.
+
+## Generated files
+
+`dockudos generate` writes to three places and keeps a list of what it wrote in `.dockudos/api/manifest.json`, so it can remove
+pages that left the spec and never touches anything else:
+
+- `docs/<path>/`: the MDX pages.
+- `.dockudos/api/<name>/`: the data the pages import, and the spec's server list.
+- `public/_dockudos/api/<name>/schemas/`: schemas loaded on demand.
+
+Commit them or ignore them. Ignoring is easier to keep in step with the spec, as long as `generate` runs before every build.
+
+<Warning>
+  The schema files are in `public/`, so they are public even when `access` rules
+  protect the pages. Do not generate pages for an API you must keep private,
+  until private docs can cover them.
+</Warning>
+
+Text in a spec is written by other people, so it never goes into a page as markup: descriptions are shown as text with basic
+formatting (paragraphs, lists, code, links), and braces, tags and `import` lines cannot break the build.

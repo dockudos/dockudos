@@ -1,6 +1,7 @@
 import { brokenLinks } from './broken-links.ts';
 import { build } from './build.ts';
 import { dev } from './dev.ts';
+import { generate } from './generate.ts';
 import { init } from './init.ts';
 import { indexCommand } from './index-command.ts';
 import { kudos } from './kudos.ts';
@@ -16,6 +17,7 @@ Commands:
   init [folder]     Create a new docs site (--name, --package-manager, --yes)
   dev [next args]   Start the dev server; restarts when docs.json changes
   build [next args] Validate docs.json, check links, then build the site
+  generate          Write API reference pages from the specs in docs.json (--force)
   index             Build the search index (and embeddings, when configured) without building the site
   mcp               Serve the docs to AI coding tools over the Model Context Protocol (stdio)
   broken-links      Check internal links and anchors (--external also checks http links)
@@ -32,6 +34,7 @@ const COMMANDS: Record<string, (env: Env, args: string[]) => Promise<number>> =
     init,
     dev,
     build,
+    generate,
     index: indexCommand,
     mcp,
     'broken-links': brokenLinks,

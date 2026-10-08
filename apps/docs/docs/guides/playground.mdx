@@ -1,0 +1,64 @@
+---
+icon: play
+title: Playground
+description: 'Try an endpoint from the docs: inputs from the schema, authentication, the real response.'
+---
+
+Every generated endpoint page ends with **Try it**: a form built from the operation, the code for it, and a button that sends
+the request and shows what came back.
+
+- **Inputs** for every path, query, header and cookie parameter, from its schema: a list of choices for an enum or a boolean,
+  and checks for type, minimum and maximum, length, pattern and required before anything is sent. A body field starts with
+  the example, and JSON is checked as it is typed.
+- **Authentication** for API keys, bearer tokens, Basic, and OAuth 2 and OpenID Connect access tokens (you paste the token; the
+  playground does not run the sign-in). Credentials are kept in `sessionStorage`: they are shared by the endpoint pages of that
+  tab and are gone when it closes.
+- **The answer**: status, time, size, headers and the body, formatted when it is JSON.
+- **Code samples** that follow what is typed, so the cURL on the page is the request that gets sent.
+
+Set `openapi.playground.enabled` to `false` to keep only the code samples.
+
+## Where requests go
+
+By default requests go **from the visitor's browser straight to the API**. Your docs server never sees them or the secrets in
+them. A request carries no cookies of your site (`credentials: omit`).
+
+Because the browser makes the request, the API must allow it:
+
+- **CORS.** The API has to answer with `Access-Control-Allow-Origin` for your docs site and allow the headers sent (such as
+  `Authorization`). When the browser blocks a request, the playground says so and lists the usual causes. The browser does not
+  tell a page which one it was, so the message cannot either.
+- **https and http.** A page on `https` cannot call an `http` API.
+- **Headers a browser forbids**, such as `Cookie`, are left out; the playground says which.
+
+## The proxy
+
+If you cannot change the API's CORS rules, turn on the proxy:
+
+```json title="docs.json"
+{
+  "openapi": {
+    "playground": { "proxy": true, "allowedHosts": ["sandbox.acme.com"] }
+  }
+}
+```
+
+and make sure the API route is installed (`createDocsApi()` serves `POST /api/playground`). Requests then go to your site,
+which sends them on.
+
+<Warning>
+  With the proxy on, the credentials a visitor types pass through your server.
+  They are not stored or logged by dockudos, but the server sees them. Only turn
+  it on for APIs where that is acceptable, such as a sandbox.
+</Warning>
+
+What the proxy does to stay safe to leave on:
+
+- It forwards **only to the hosts of the spec's servers** and of `allowedHosts`. A name from the spec that resolves to a
+  private, loopback or link-local address is refused. Hosts you list in `allowedHosts` are trusted as you wrote them, which is
+  how you allow `localhost` for development.
+- It answers only requests from your own site (same origin, plus a header a page on another site cannot send).
+- It never follows redirects, passes no `Cookie` and no `Host` header, caps the request at 1 MB and the answer at 5 MB, gives up
+  after 30 seconds and allows 30 requests a minute for each visitor.
+- Limits: the address check happens before the request is sent, so a DNS record that changes in between could still reach an
+  internal address. If your docs server can reach sensitive internal services, do not enable the proxy.

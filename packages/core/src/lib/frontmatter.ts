@@ -16,6 +16,17 @@ export const frontmatterSchema = z.looseObject({
   layout: z.enum(LAYOUTS).optional(),
   /** Shorter label for the sidebar. */
   sidebarTitle: z.string().min(1).optional(),
+  /** Set by `dockudos generate` on pages it writes from an API spec or from code. */
+  api: z
+    .strictObject({
+      source: z.string().min(1),
+      kind: z.string().min(1),
+      method: z.string().min(1).optional(),
+      endpoint: z.string().min(1).optional(),
+      group: z.string().min(1).optional(),
+      order: z.number().optional(),
+    })
+    .optional(),
 });
 
 export type Frontmatter = z.output<typeof frontmatterSchema>;

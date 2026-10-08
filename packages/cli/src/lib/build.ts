@@ -1,3 +1,4 @@
+import { generatePages } from './generate.ts';
 import { indexSite } from './index-site.ts';
 import { type Env, CliError } from './io.ts';
 import { resolveNext } from './next-bin.ts';
@@ -6,6 +7,8 @@ import { exitCode } from './spawn.ts';
 
 /** Validate the project, check links, then run `next build`. */
 export async function build(env: Env, args: string[]): Promise<number> {
+  // API reference pages first: navigation and links refer to them.
+  await generatePages(env);
   const project = await loadProject(env.cwd);
   env.out(`Checked docs.json and ${project.tree.pages.length} pages.\n`);
 

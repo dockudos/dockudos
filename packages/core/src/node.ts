@@ -95,6 +95,7 @@ export async function discoverPages(
           sidebarTitle,
           layout,
           kudos,
+          api,
         } = data;
         return {
           file,
@@ -105,6 +106,7 @@ export async function discoverPages(
           sidebarTitle,
           layout,
           kudos,
+          api,
         };
       } catch (e) {
         if (e instanceof FrontmatterError) errors.push(e);
@@ -128,3 +130,14 @@ export * from './lib/check-links.ts';
 export * from './lib/icon-packs.ts';
 export * from './lib/site-index.ts';
 export * from './lib/mcp-site.ts';
+export * from './lib/api/bundle.ts';
+export * from './lib/api/openapi.ts';
+export {
+  generateOpenApi,
+  expandRoot,
+  type GeneratedFile,
+} from './lib/api/generate-openapi.ts';
+export * from './lib/api/sources.ts';
+export * from './lib/api/asyncapi.ts';
+export * from './lib/api/graphql.ts';
+export * from './lib/api/reference.ts';

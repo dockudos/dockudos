@@ -32,3 +32,8 @@ export * from './lib/navigate.ts';
 export * from './lib/mcp.ts';
 export * from './lib/embed.ts';
 export * from './lib/eval.ts';
+export * from './lib/api/types.ts';
+export * from './lib/api/schema-view.ts';
+export * from './lib/api/request.ts';
+export * from './lib/api/samples.ts';
+export { schemaFileName, slugify } from './lib/api/text.ts';

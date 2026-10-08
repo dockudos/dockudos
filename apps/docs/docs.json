@@ -52,6 +52,15 @@
           ]
         },
         {
+          "group": "API reference",
+          "pages": [
+            "guides/api-reference",
+            "guides/playground",
+            "guides/asyncapi-and-graphql",
+            "guides/reference-from-code"
+          ]
+        },
+        {
           "group": "Reader experience",
           "pages": [
             "guides/keyboard-shortcuts",
@@ -196,6 +205,19 @@
           ]
         }
       ]
+    },
+    {
+      "tab": "API example",
+      "groups": [
+        {
+          "group": "Petstore",
+          "pages": [
+            {
+              "openapi": "petstore"
+            }
+          ]
+        }
+      ]
     }
   ],
   "logo": {
@@ -269,5 +291,15 @@
       "source": "/components/files",
       "destination": "/components/tree"
     }
-  ]
+  ],
+  "openapi": {
+    "sources": [
+      {
+        "name": "petstore",
+        "spec": "openapi/petstore.json",
+        "path": "api-reference",
+        "title": "Petstore example"
+      }
+    ]
+  }
 }

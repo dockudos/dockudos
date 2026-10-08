@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Orders
+  version: '1'
+servers:
+  broker:
+    host: mq.example.com:5672
+    protocol: amqp
+channels:
+  orderCreated:
+    address: orders.created
+    messages:
+      created:
+        name: OrderCreated
+        payload: { type: object, properties: { id: { type: string, format: uuid } } }
+operations:
+  publishOrder:
+    action: send
+    summary: Announce an order
+    channel: { $ref: '#/channels/orderCreated' }
+    messages:
+      - $ref: '#/channels/orderCreated/messages/created'

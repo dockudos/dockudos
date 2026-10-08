@@ -27,6 +27,45 @@
           "build"
         ],
         "cache": false
+      },
+      "generate": {
+        "command": "dockudos generate",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "cache": false,
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "generate"
+        ]
+      },
+      "test-ci": {
+        "dependsOn": [
+          "generate",
+          "^build"
+        ]
       }
     }
   },

@@ -15,6 +15,7 @@ import {
   json,
 } from './api-common.ts';
 import { createMarkdownHandler } from './markdown.ts';
+import { createPlaygroundHandler } from './playground-proxy.ts';
 import { getSite } from './server.ts';
 
 export interface DocsApiOptions {
@@ -144,7 +145,7 @@ export type RouteContext = { params: Promise<{ dockudos?: string[] }> };
  *     import { createDocsApi } from '@dockudos/next/api';
  *     export const { GET, POST } = createDocsApi();
  *
- * It answers `/api/search`, `/api/search/index`, `/api/page`, `/api/markdown`, `POST /api/ask` and `POST /api/navigate`; routes you add yourself (such as
+ * It answers `/api/search`, `/api/search/index`, `/api/page`, `/api/markdown`, `POST /api/ask`, `POST /api/navigate` and `POST /api/playground` (when `openapi.playground.proxy` is on); routes you add yourself (such as
  * `/api/kudos`) win over it.
  */
 export function createDocsApi(options: DocsApiOptions = {}) {
@@ -159,6 +160,8 @@ export function createDocsApi(options: DocsApiOptions = {}) {
   const post: Record<string, Route> = {
     ask: createAskHandler(options.ai, guard),
     navigate: createNavigateHandler(options.ai, guard),
+    // Off unless `openapi.playground.proxy` is set in docs.json.
+    playground: createPlaygroundHandler(),
   };
 
   const dispatch =

@@ -23,6 +23,13 @@ const linkSchema = z.strictObject({
   href: z.string().min(1),
 });
 
+const sourceName = z
+  .string()
+  .regex(
+    /^[a-z][a-z0-9-]*$/,
+    'must be lowercase letters, digits and dashes, like "petstore"',
+  );
+
 export interface NavGroup {
   group: string;
   /** Treat the group as a tutorial: its pages are numbered steps with progress. */
@@ -30,8 +37,16 @@ export interface NavGroup {
   pages: NavItem[];
 }
 
-/** A sidebar entry: a page id (file path without extension), an external link, or a nested group. */
-export type NavItem = string | { title: string; href: string } | NavGroup;
+/**
+ * A sidebar entry: a page id (file path without extension), an external link, a nested group, or all the pages
+ * generated from one source in docs.json (`{ "openapi": "petstore" }`, `{ "reference": "sdk" }`).
+ */
+export type NavItem =
+  | string
+  | { title: string; href: string }
+  | { openapi: string }
+  | { reference: string }
+  | NavGroup;
 
 const groupSchema: z.ZodType<NavGroup> = z.lazy(() =>
   z.strictObject({
@@ -43,7 +58,13 @@ const groupSchema: z.ZodType<NavGroup> = z.lazy(() =>
 );
 
 const navItemSchema: z.ZodType<NavItem> = z.lazy(() =>
-  z.union([z.string().min(1), linkSchema, groupSchema]),
+  z.union([
+    z.string().min(1),
+    linkSchema,
+    z.strictObject({ openapi: sourceName }),
+    z.strictObject({ reference: sourceName }),
+    groupSchema,
+  ]),
 );
 
 const tabSchema = z.union([
@@ -250,6 +271,81 @@ const aiSchema = z
     path: ['model'],
   });
 
+/** A folder below the docs folder where generated pages are written. */
+const mountPath = z
+  .string()
+  .regex(
+    /^[A-Za-z0-9][\w-]*(?:\/[A-Za-z0-9][\w-]*)*$/,
+    'must be a folder path like "api-reference", without a leading or trailing "/"',
+  );
+
+const apiSourceSchema = z.strictObject({
+  /** Name to refer to the source by, for example in `navigation`: `{ "openapi": "petstore" }`. */
+  name: sourceName,
+  /** A file in the project (`specs/petstore.yaml`) or an http(s) URL. OpenAPI 3.0 or 3.1, AsyncAPI 2 or 3, GraphQL SDL or introspection JSON. */
+  spec: z.string().min(1),
+  /** Where the pages are mounted below the docs folder. Default: the source's name. */
+  path: mountPath.optional(),
+  /** What the spec is. Detected from the file when left out. */
+  type: z.enum(['openapi', 'asyncapi', 'graphql']).optional(),
+  /** How OpenAPI endpoints are grouped in the sidebar. */
+  groupBy: z.enum(['tag', 'path']).default('tag'),
+  /** Title of the overview page. Default: the title in the spec. */
+  title: z.string().min(1).optional(),
+});
+
+const playgroundSchema = z.strictObject({
+  /** Show "Try it" on endpoint pages. */
+  enabled: z.boolean().default(true),
+  /**
+   * Send requests through your site instead of straight from the browser, for APIs without CORS.
+   * Off by default: requests go from the browser to the API and the secrets typed in never reach your server.
+   * With it on, the secrets pass through your server, which only forwards to the hosts of the spec's servers
+   * and of `allowedHosts`.
+   */
+  proxy: z.boolean().default(false),
+  /** Hosts the proxy may call besides the spec's servers, like `api.example.com`. */
+  allowedHosts: z.array(z.string().min(1)).default([]),
+});
+
+const referenceSourceSchema = z.strictObject({
+  name: sourceName,
+  /** `typescript`: `.ts` or `.d.ts` files. `python`: the JSON written by `griffe dump`. */
+  type: z.enum(['typescript', 'python']),
+  /** Files in the project: TypeScript entry points, or the Griffe JSON file. */
+  input: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
+  path: mountPath.optional(),
+  title: z.string().min(1).optional(),
+});
+
+const uniqueBy = <T extends { name: string; path?: string }>(
+  items: T[],
+  ctx: z.RefinementCtx,
+  where: string[],
+) => {
+  const names = new Set<string>();
+  const paths = new Set<string>();
+  items.forEach((item, i) => {
+    if (names.has(item.name)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `the name "${item.name}" is used twice`,
+        path: [...where, i, 'name'],
+      });
+    }
+    names.add(item.name);
+    const mount = item.path ?? item.name;
+    if (paths.has(mount)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `the path "${mount}" is used twice`,
+        path: [...where, i, 'path'],
+      });
+    }
+    paths.add(mount);
+  });
+};
+
 const accessRuleSchema = z.strictObject({
   /**
    * Which URL paths the rule covers: `/print` (that page), `/team/*` (one level), `/team/**` (the
@@ -349,7 +445,26 @@ export const docsConfigSchema = z.strictObject({
   access: z
     .strictObject({ rules: z.array(accessRuleSchema).default([]) })
     .default(() => ({ rules: [] })),
+  /** API reference pages generated from OpenAPI, AsyncAPI and GraphQL specs, and the playground. */
+  openapi: z
+    .strictObject({
+      sources: z.array(apiSourceSchema).default([]),
+      playground: playgroundSchema.default(() => playgroundSchema.parse({})),
+    })
+    .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
+    .default(() => ({
+      sources: [],
+      playground: playgroundSchema.parse({}),
+    })),
+  /** Reference pages generated from TypeScript definitions and Python packages. */
+  reference: z
+    .strictObject({ sources: z.array(referenceSourceSchema).default([]) })
+    .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
+    .default(() => ({ sources: [] })),
 });
+
+export type ApiSourceConfig = z.output<typeof apiSourceSchema>;
+export type ReferenceSourceConfig = z.output<typeof referenceSourceSchema>;
 
 /** JSON Schema for `docs.json`, for editor autocomplete. */
 export function docsConfigJsonSchema(): Record<string, unknown> {

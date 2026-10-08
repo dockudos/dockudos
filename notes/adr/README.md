@@ -12,3 +12,4 @@ Short records of decisions that are costly to reverse. Format: context, decision
 | [0006](./0006-first-ai-adapters.md) | First LLM and embedding adapters |
 | [0007](./0007-apps-web-is-marketing-site.md) | `apps/web` is the marketing site |
 | [0008](./0008-palette-ai-modes.md) | How the palette offers the assistant and AI navigation |
+| [0009](./0009-generated-api-pages.md) | API pages are generated MDX; Python docs come from Griffe |

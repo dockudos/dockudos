@@ -46,6 +46,11 @@ describe('parseConfig', () => {
       shortcuts: true,
       icons: { packs: {} },
       access: { rules: [] },
+      openapi: {
+        sources: [],
+        playground: { enabled: true, proxy: false, allowedHosts: [] },
+      },
+      reference: { sources: [] },
     });
   });
 

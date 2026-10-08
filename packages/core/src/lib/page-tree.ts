@@ -1,5 +1,21 @@
 import type { LayoutName } from './config.ts';
 
+/** Where a generated page came from: an API source and, for an endpoint, its method and path. */
+export interface ApiPageMeta {
+  /** The `name` of the source in docs.json. */
+  source: string;
+  /** `overview`, `operation`, `webhook`, `channel`, `type`, ... */
+  kind: string;
+  /** HTTP method in lower case, for operations. */
+  method?: string;
+  /** Path of the endpoint, for operations. */
+  endpoint?: string;
+  /** Sidebar group: a tag, a path segment, a kind of type. */
+  group?: string;
+  /** Position in the source, to keep the spec's order. */
+  order?: number;
+}
+
 export interface Page {
   type: 'page';
   /** URL path, e.g. `/guides/auth`. The index page of a folder takes the folder's path. */
@@ -19,6 +35,8 @@ export interface Page {
   layout?: LayoutName;
   /** `false` hides the kudos widget on this page. */
   kudos?: boolean;
+  /** Set on pages written by `dockudos generate`. */
+  api?: ApiPageMeta;
 }
 
 /** A discovered file plus whatever metadata was read from it. */
@@ -31,6 +49,7 @@ export interface PageSource {
   sidebarTitle?: string;
   layout?: LayoutName;
   kudos?: boolean;
+  api?: ApiPageMeta;
 }
 
 export interface Folder {
@@ -104,6 +123,7 @@ export function buildPageTree(
     if (meta.sidebarTitle) page.sidebarTitle = meta.sidebarTitle;
     if (meta.layout) page.layout = meta.layout;
     if (meta.kudos !== undefined) page.kudos = meta.kudos;
+    if (meta.api) page.api = meta.api;
 
     if (isIndex) folder.index = page;
     else folder.children.push(page);

@@ -35,7 +35,10 @@
               "minLength": 1
             }
           },
-          "required": ["light", "dark"],
+          "required": [
+            "light",
+            "dark"
+          ],
           "additionalProperties": false
         }
       ]
@@ -58,12 +61,23 @@
         "mode": {
           "default": "system",
           "type": "string",
-          "enum": ["light", "dark", "system"]
+          "enum": [
+            "light",
+            "dark",
+            "system"
+          ]
         },
         "layout": {
           "default": "docs",
           "type": "string",
-          "enum": ["docs", "notebook", "spacious", "flux", "glass", "home"]
+          "enum": [
+            "docs",
+            "notebook",
+            "spacious",
+            "flux",
+            "glass",
+            "home"
+          ]
         },
         "fonts": {
           "type": "object",
@@ -112,7 +126,10 @@
                 }
               }
             },
-            "required": ["tab", "groups"],
+            "required": [
+              "tab",
+              "groups"
+            ],
             "additionalProperties": false
           },
           {
@@ -127,7 +144,10 @@
                 "minLength": 1
               }
             },
-            "required": ["tab", "href"],
+            "required": [
+              "tab",
+              "href"
+            ],
             "additionalProperties": false
           }
         ]
@@ -152,7 +172,10 @@
             "type": "boolean"
           }
         },
-        "required": ["source", "destination"],
+        "required": [
+          "source",
+          "destination"
+        ],
         "additionalProperties": false
       }
     },
@@ -235,7 +258,11 @@
         "backend": {
           "default": "builtin",
           "type": "string",
-          "enum": ["builtin", "server", "custom"]
+          "enum": [
+            "builtin",
+            "server",
+            "custom"
+          ]
         },
         "endpoint": {
           "type": "string",
@@ -273,7 +300,11 @@
         },
         "provider": {
           "type": "string",
-          "enum": ["openai", "anthropic", "custom"]
+          "enum": [
+            "openai",
+            "anthropic",
+            "custom"
+          ]
         },
         "model": {
           "type": "string",
@@ -313,7 +344,9 @@
             "provider": {
               "default": "openai",
               "type": "string",
-              "enum": ["openai"]
+              "enum": [
+                "openai"
+              ]
             },
             "model": {
               "type": "string",
@@ -329,7 +362,9 @@
               "maximum": 8192
             }
           },
-          "required": ["model"],
+          "required": [
+            "model"
+          ],
           "additionalProperties": false
         },
         "limits": {
@@ -413,7 +448,9 @@
                     "type": "boolean"
                   }
                 },
-                "required": ["dir"],
+                "required": [
+                  "dir"
+                ],
                 "additionalProperties": false
               }
             ]
@@ -444,7 +481,12 @@
               },
               "require": {
                 "type": "string",
-                "enum": ["basic", "token", "custom", "deny"]
+                "enum": [
+                  "basic",
+                  "token",
+                  "custom",
+                  "deny"
+                ]
               },
               "secretEnv": {
                 "type": "string",
@@ -456,7 +498,156 @@
                 "maxLength": 100
               }
             },
-            "required": ["paths", "require"],
+            "required": [
+              "paths",
+              "require"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "openapi": {
+      "default": {
+        "sources": [],
+        "playground": {
+          "enabled": true,
+          "proxy": false,
+          "allowedHosts": []
+        }
+      },
+      "type": "object",
+      "properties": {
+        "sources": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "spec": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "openapi",
+                  "asyncapi",
+                  "graphql"
+                ]
+              },
+              "groupBy": {
+                "default": "tag",
+                "type": "string",
+                "enum": [
+                  "tag",
+                  "path"
+                ]
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name",
+              "spec"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "playground": {
+          "default": {
+            "enabled": true,
+            "proxy": false,
+            "allowedHosts": []
+          },
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            },
+            "proxy": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowedHosts": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "reference": {
+      "default": {
+        "sources": []
+      },
+      "type": "object",
+      "properties": {
+        "sources": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "typescript",
+                  "python"
+                ]
+              },
+              "input": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                ]
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name",
+              "type",
+              "input"
+            ],
             "additionalProperties": false
           }
         }
@@ -464,7 +655,9 @@
       "additionalProperties": false
     }
   },
-  "required": ["name"],
+  "required": [
+    "name"
+  ],
   "additionalProperties": false,
   "$defs": {
     "__schema0": {
@@ -497,7 +690,36 @@
                     "minLength": 1
                   }
                 },
-                "required": ["title", "href"],
+                "required": [
+                  "title",
+                  "href"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "openapi": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "openapi"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "reference"
+                ],
                 "additionalProperties": false
               },
               {
@@ -507,7 +729,10 @@
           }
         }
       },
-      "required": ["group", "pages"],
+      "required": [
+        "group",
+        "pages"
+      ],
       "additionalProperties": false
     }
   }

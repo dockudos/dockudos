@@ -49,6 +49,7 @@
   ],
   "dependencies": {
     "github-slugger": "^2.0.0",
+    "graphql": "^16.14.2",
     "tslib": "^2.3.0",
     "yaml": "^2.9.1",
     "zod": "^4.6.5"
@@ -60,5 +61,13 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "typescript": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   }
 }

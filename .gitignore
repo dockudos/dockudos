@@ -58,8 +58,11 @@ test-output
 # Tooling
 .serena.dockudos
 
-# dockudos build output (search index)
+# dockudos build output (search index, generated API reference)
 .dockudos/index.json
+**/.dockudos/api/
+**/public/_dockudos/
+apps/*/docs/api-reference/
 
 # AI evaluation output
 apps/example/eval/results
