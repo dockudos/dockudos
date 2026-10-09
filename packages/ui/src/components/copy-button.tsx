@@ -12,7 +12,7 @@ export function codeText(pre: Element): string {
       '.diff.remove, [class*="twoslash-popup"], .twoslash-completion-list',
     )
     .forEach((n) => n.remove());
-  return (clone.textContent ?? '').replace(/\n+$/, '');
+  return clone.textContent.replace(/\n+$/, '');
 }
 
 /** Copies the code block it sits in, or `text` when the code is not in a `<pre>`. Announces the result to screen readers. */

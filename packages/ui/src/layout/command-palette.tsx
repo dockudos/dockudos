@@ -95,7 +95,14 @@ type Row =
   | { kind: 'hit'; key: string; hit: SearchHit }
   | { kind: 'ask'; key: string }
   | { kind: 'navigate'; key: string }
-  | { kind: 'choice'; key: string; target: NavigateTarget; primary: boolean };
+  | {
+      kind: 'choice';
+      key: string;
+      target: NavigateTarget;
+      primary: boolean;
+      /** Why the first choice was picked: said to the reader on arrival. Only the first has one. */
+      reason?: string;
+    };
 
 /** What "Take me there" is doing. */
 type Nav =
@@ -238,6 +245,7 @@ export function CommandPalette({
           key: `choice:${target.url}`,
           target,
           primary: i === 0,
+          reason: i === 0 ? result.reason : undefined,
         }),
       );
     }
@@ -267,9 +275,8 @@ export function CommandPalette({
   }, [active, rows]);
 
   const startAsking = () => {
-    const asked = query.trim();
-    if (!ai || !asked) return;
-    setQuestion(asked);
+    // Only reached with the assistant on and something typed: the ask row and Tab both require it.
+    setQuestion(query.trim());
     setQuery('');
     setMode('ask');
   };
@@ -303,15 +310,7 @@ export function CommandPalette({
     if (!row) return;
     if (row.kind === 'ask') return startAsking();
     if (row.kind === 'navigate') return startNavigating();
-    if (row.kind === 'choice')
-      return arrive(
-        row.target,
-        row.primary
-          ? nav.status === 'choices'
-            ? nav.result.reason
-            : undefined
-          : undefined,
-      );
+    if (row.kind === 'choice') return arrive(row.target, row.reason);
     setOpen(false);
     setQuery('');
     navigate(row.kind === 'hit' ? row.hit.url : row.entry.path);
@@ -362,13 +361,12 @@ export function CommandPalette({
   return (
     <Dialog.Root
       open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) {
-          setQuery('');
-          setMode('search');
-          setQuestion(undefined);
-        }
+      // There is no trigger, so the only change the dialog asks for is to close.
+      onOpenChange={() => {
+        setOpen(false);
+        setQuery('');
+        setMode('search');
+        setQuestion(undefined);
       }}
     >
       <Dialog.Portal>

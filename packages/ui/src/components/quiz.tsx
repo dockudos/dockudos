@@ -98,7 +98,7 @@ export function Quiz({ id, title, children }: QuizProps) {
     (q) => state.submitted[questionId(q.props)],
   );
   const right = answered.filter((q) =>
-    isRight(state.submitted[questionId(q.props)] ?? [], q.props.children),
+    isRight(state.submitted[questionId(q.props)] as number[], q.props.children),
   ).length;
   const finished = questions.length > 0 && answered.length === questions.length;
 

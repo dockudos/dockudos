@@ -58,8 +58,8 @@ export function GraphView({ data }: { data?: GraphData }) {
           );
         })}
         {graph.nodes.map((node) => {
-          const p = positions.get(node.id);
-          if (!p) return null;
+          // Every node was given a position above.
+          const p = positions.get(node.id) as { x: number; y: number };
           const current = node.path === page.path;
           return (
             <Link

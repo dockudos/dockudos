@@ -39,7 +39,7 @@ function Contents({
   present: ReadonlySet<string>;
 }) {
   const shown = items.filter(
-    (i) =>
+    (i): i is Extract<SidebarItem, { type: 'page' | 'group' }> =>
       i.type === 'group' || (i.type === 'page' && present.has(i.page.path)),
   );
   if (shown.length === 0) return null;
@@ -52,12 +52,12 @@ function Contents({
               {item.page.sidebarTitle ?? item.page.title}
             </a>
           </li>
-        ) : item.type === 'group' ? (
+        ) : (
           <li key={`${item.title}-${i}`}>
             <span className="dk-book-group">{item.title}</span>
             <Contents items={item.items} present={present} />
           </li>
-        ) : null,
+        ),
       )}
     </ul>
   );

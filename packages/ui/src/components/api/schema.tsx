@@ -258,7 +258,8 @@ function Variants({
   depth: number;
 }) {
   const [selected, setSelected] = useState(0);
-  const current = variants[selected] ?? variants[0];
+  const current = variants[selected];
+  // Only an empty list has nothing to show.
   if (!current) return null;
   const labels = variants.map((v, i) => v.title ?? v.ref ?? `${typeLabel(v)} ${i + 1}`);
   return (

@@ -42,7 +42,8 @@ const ALIASES: Record<string, string> = {
 export function parseChord(chord: string): Parsed {
   const parts =
     chord.trim().toLowerCase() === '+' ? ['+'] : chord.trim().split('+');
-  const key = parts.pop() ?? '';
+  // `split` always yields at least one part.
+  const key = parts.pop() as string;
   const mods = new Set(parts.map((p) => p.trim().toLowerCase()));
   return {
     key: ALIASES[key.toLowerCase()] ?? key.toLowerCase(),

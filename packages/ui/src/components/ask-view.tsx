@@ -180,8 +180,9 @@ export function AskView({
   // Keep the newest text in view while it streams.
   const last = turns.at(-1);
   useEffect(() => {
-    const el = log.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    // The log is always rendered, so the ref is set by the time effects run.
+    const el = log.current as HTMLDivElement;
+    el.scrollTop = el.scrollHeight;
   }, [turns.length, last?.text, last?.status]);
 
   const go = (url: string) => {

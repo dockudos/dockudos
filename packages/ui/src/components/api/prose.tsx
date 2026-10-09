@@ -8,7 +8,7 @@ function inline(text: string): ReactNode[] {
   let last = 0;
   let key = 0;
   for (const m of text.matchAll(INLINE)) {
-    const at = m.index ?? 0;
+    const at = m.index;
     if (at > last) out.push(text.slice(last, at));
     const [token] = m;
     if (m[1]) out.push(<code key={key++}>{token.slice(1, -1)}</code>);

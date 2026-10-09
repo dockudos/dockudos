@@ -27,7 +27,7 @@ export function BookLinks() {
           h.id = `${key}--${h.id}`;
         });
       section.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((a) => {
-        const raw = a.getAttribute('href') ?? '';
+        const raw = a.getAttribute('href') as string;
         if (raw.startsWith('#')) {
           a.setAttribute('href', `#${key}--${raw.slice(1)}`);
           return;

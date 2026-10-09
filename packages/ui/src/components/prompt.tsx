@@ -40,7 +40,7 @@ export function Prompt({
   const text = () =>
     (typeof children === 'string'
       ? children
-      : (body.current?.textContent ?? '')
+      : (body.current as HTMLDivElement).textContent
     ).trim();
   const known = actions.filter((a) => PROMPT_ACTIONS.includes(a));
 

@@ -21,7 +21,7 @@ export function CopyText({ value, children }: CopyTextProps) {
       <code ref={code}>{children}</code>
       <button
         type="button"
-        onClick={() => void copy(value ?? code.current?.textContent ?? '')}
+        onClick={() => void copy(value ?? String(code.current?.textContent))}
         aria-label="Copy"
         data-print="hide"
       >

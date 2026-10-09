@@ -24,12 +24,13 @@ export function AnswerText({
     const out: ReactNode[] = [];
     let at = 0;
     for (const m of line.matchAll(INLINE)) {
-      const index = m.index ?? 0;
+      const index = m.index;
       if (index > at) out.push(line.slice(at, index));
       if (m[1]) out.push(<code key={`${key}-${index}`}>{m[1].slice(1, -1)}</code>);
       else if (m[2]) out.push(<strong key={`${key}-${index}`}>{m[2].slice(2, -2)}</strong>);
-      else if (m[4]) {
-        const numbers = m[4].split(',').map((n) => Number(n.trim()));
+      else {
+        // Neither code nor bold, so it is the citation group, which always captures its numbers.
+        const numbers = (m[4] as string).split(',').map((n) => Number(n.trim()));
         const links = numbers.flatMap((n) => {
           const source = byNumber.get(n);
           return source ? [source] : [];
@@ -66,14 +67,14 @@ export function AnswerText({
   const parts = text.split(/(^|\n)```[^\n]*\n([\s\S]*?)(?:\n```|$)/g);
   // split with two capture groups yields [text, sep, code, text, sep, code, ...]
   for (let i = 0; i < parts.length; i += 3) {
-    const prose = parts[i] ?? '';
+    const prose = parts[i] as string;
     const code = parts[i + 2];
     const paragraphs = prose.split(/\n{2,}/).filter((p) => p.trim());
     paragraphs.forEach((paragraph, p) => {
       const lines = paragraph.split('\n').filter((l) => l.trim() !== '');
       const list = lines.every((l) => /^\s*(?:[-*]|\d+[.)])\s+/.test(l));
       if (list) {
-        const ordered = /^\s*\d/.test(lines[0] ?? '');
+        const ordered = /^\s*\d/.test(lines[0] as string);
         const items = lines.map((l, n) => (
           <li key={n}>{inline(l.replace(/^\s*(?:[-*]|\d+[.)])\s+/, ''), `${i}-${p}-${n}`)}</li>
         ));

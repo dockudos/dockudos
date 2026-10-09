@@ -51,11 +51,11 @@ export function PageActions({
     ? `Read ${pageUrl} so I can ask questions about it.`
     : undefined;
 
+  // Only reachable with an endpoint: the button, the menu item and the shortcut all need one.
   const copyPage = async () => {
-    if (!markdownUrl) return;
     setFailed(false);
     try {
-      const res = await fetch(markdownUrl);
+      const res = await fetch(markdownUrl as string);
       if (!res.ok) throw new Error(String(res.status));
       await copy(await res.text());
     } catch {

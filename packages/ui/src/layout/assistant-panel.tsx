@@ -61,9 +61,10 @@ export function AssistantPanel({
   return (
     <Dialog.Root
       open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setQuestion(undefined);
+      // There is no trigger, so the only change the dialog asks for is to close.
+      onOpenChange={() => {
+        setOpen(false);
+        setQuestion(undefined);
       }}
     >
       <Dialog.Portal>
