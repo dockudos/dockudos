@@ -29,7 +29,7 @@ export function Expandable({
         />
         {title}
       </summary>
-      <div className="border-t px-4 py-3 text-sm [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+      <div className="border-t px-4 py-3 text-sm *:first:mt-0 *:last:mb-0">
         {children}
       </div>
     </details>

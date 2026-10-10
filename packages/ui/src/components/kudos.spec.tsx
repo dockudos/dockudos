@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Kudos } from './kudos.tsx';
-import { Logo, Wordmark } from './logo.tsx';
+import { Logo } from './logo.tsx';
 
 const ID = '11111111-1111-1111-1111-111111111111';
 
@@ -162,14 +162,6 @@ describe('Kudos', () => {
 });
 
 describe('Logo', () => {
-  it('shows doc and kudos as two parts, the second in the brand color', () => {
-    render(<Wordmark />);
-    expect(screen.getByText('doc')).not.toHaveStyle({
-      color: 'var(--primary)',
-    });
-    expect(screen.getByText('kudos')).toHaveStyle({ color: 'var(--primary)' });
-  });
-
   it('reads as a single name to screen readers and hides the mark', () => {
     const { container } = render(<Logo />);
     expect(container).toHaveTextContent('dockudos');
@@ -179,8 +171,13 @@ describe('Logo', () => {
     );
   });
 
-  it('can drop the mark', () => {
-    const { container } = render(<Logo showMark={false} />);
-    expect(container.querySelector('svg')).toBeNull();
+  it('renders an image, a light/dark pair, or a component', () => {
+    const { container, rerender } = render(<Logo src="/a.svg" alt="Acme" />);
+    expect(screen.getByAltText('Acme')).toHaveAttribute('src', '/a.svg');
+    rerender(<Logo src={{ light: '/l.svg', dark: '/d.svg' }} alt="Acme" />);
+    expect(container.querySelectorAll('img')).toHaveLength(2);
+    rerender(<Logo src={() => <b data-testid="c" />} alt="Acme" />);
+    expect(screen.getByTestId('c')).toBeInTheDocument();
+    expect(container).toHaveTextContent('Acme');
   });
 });
