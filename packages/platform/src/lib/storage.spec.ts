@@ -93,7 +93,7 @@ function fakeS3() {
       );
     }
     const v = store.get(key);
-    return v ? new Response(v as BodyInit) : new Response('<Error/>', { status: 404 });
+    return v ? new Response(v as never) : new Response('<Error/>', { status: 404 });
   };
   return { fetchImpl, calls };
 }

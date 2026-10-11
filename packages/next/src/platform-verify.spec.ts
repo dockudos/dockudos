@@ -3,7 +3,7 @@ import { createPlatformVerify } from './platform-verify.ts';
 
 const rule = (extra: object = {}) => ({ paths: ['/private/**'], require: 'custom', ...extra }) as never;
 const principal = { sub: 'u', roles: ['team:acme:editor'], groups: ['team:acme'] };
-const answering = (p: unknown, status = 200) => vi.fn(async () => new Response(JSON.stringify({ principal: p }), { status }));
+const answering = (p: unknown, status = 200) => vi.fn(async (..._args: unknown[]) => new Response(JSON.stringify({ principal: p }), { status }));
 const withBearer = (t = 'dkd_x') => new Request('https://docs.test/private/a', { headers: { authorization: `Bearer ${t}` } });
 
 describe('createPlatformVerify', () => {
@@ -22,7 +22,7 @@ describe('createPlatformVerify', () => {
     const verify = createPlatformVerify({ platformUrl: 'https://platform.test', fetch: f as never });
     const req = new Request('https://docs.test/', { headers: { cookie: 'dockudos_platform=abc' } });
     expect(await verify(req, rule())).toBe(true);
-    expect((f.mock.calls[0]![1] as RequestInit).headers).toEqual({ cookie: 'dockudos_platform=abc' });
+    expect((f.mock.calls[0]![1] as unknown as RequestInit).headers).toEqual({ cookie: 'dockudos_platform=abc' });
   });
 
   it('refuses with no credentials, on refusals, bad answers and a platform that is down', async () => {

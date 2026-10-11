@@ -1,10 +1,11 @@
+import { webcrypto } from 'node:crypto';
 import { toB64url } from '@dockudos/core';
 
 /** A small OpenID Connect provider for tests: discovery, keys, and a token endpoint that checks PKCE. */
 export async function createTestIdp(issuer = 'https://idp.test', clientId = 'dockudos') {
   const { privateKey, publicKey } = (await crypto.subtle.generateKey(
     { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
-    true, ['sign', 'verify'])) as CryptoKeyPair;
+    true, ['sign', 'verify'])) as webcrypto.CryptoKeyPair;
   const jwk = { ...(await crypto.subtle.exportKey('jwk', publicKey)), kid: 'k1', use: 'sig' };
   const codes = new Map<string, { challenge: string; nonce: string; redirect: string; claims: Record<string, unknown> }>();
   const enc = (v: unknown) => toB64url(new TextEncoder().encode(JSON.stringify(v)));

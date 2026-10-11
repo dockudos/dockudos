@@ -9,7 +9,6 @@ let db: Db;
 beforeAll(async () => (db = await createTestDb()));
 afterAll(() => db.close());
 
-const SHA = 'b'.repeat(40);
 async function push(f: Fixture, sha: string, id: string) {
   const body = JSON.stringify({ ref: 'refs/heads/main', after: sha, repository: { full_name: f.repo }, commits: [{ modified: ['index.mdx'] }] });
   return f.webhooks(new Request('https://p.test/', {
