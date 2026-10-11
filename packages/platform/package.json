@@ -1,0 +1,31 @@
+{
+  "name": "@dockudos/platform",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Self-hostable platform services for dockudos: database, job queue, storage, Git providers, webhooks, builds, auth, editor, analytics and the docs agent.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@dockudos/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "engines": { "node": ">=20.19" },
+  "dependencies": {
+    "@dockudos/core": "workspace:*",
+    "pg": "^8.13.0",
+    "tslib": "^2.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0",
+    "@types/pg": "^8.11.0"
+  },
+  "nx": { "tags": ["scope:platform"] }
+}

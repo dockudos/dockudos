@@ -46,6 +46,10 @@ export default [
                 'scope:cli',
               ],
             },
+            {
+              sourceTag: 'scope:platform',
+              onlyDependOnLibsWithTags: ['scope:core', 'scope:platform'],
+            },
             { sourceTag: 'scope:app', onlyDependOnLibsWithTags: ['*'] },
           ],
         },
