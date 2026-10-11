@@ -157,3 +157,16 @@ describe('createDocsApi', () => {
     ).toBe(404);
   });
 });
+
+describe('createDocsApi: a handler that fails', () => {
+  it('answers 500 and logs, instead of throwing', async () => {
+    const error = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    await writeFile(join(root, 'docs.json'), '{ not json');
+    const res = await createDocsApi().GET(req('/api/page?path=/'), ctx('page'));
+    error.mockRestore();
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe('Something went wrong.');
+  });
+});

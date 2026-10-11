@@ -443,3 +443,77 @@ describe('schema helpers', () => {
     for (const f of files) expect(f).toMatch(/^[a-z0-9_.~-]+$/);
   });
 });
+
+describe('buildHttpRequest: cookies, keys elsewhere and basic credentials', () => {
+  const operation: ApiOperation = {
+    ...op,
+    path: '/x',
+    parameters: [
+      { name: 'sid', in: 'cookie', required: false },
+      { name: 'q', in: 'query', required: false },
+      { name: 'ids', in: 'query', required: false, schema: { type: 'array' } },
+    ],
+    security: [{ keyQ: [] }, { keyC: [] }, { basic: [] }, { missing: [] }],
+  };
+  const all: Record<string, ApiSecurityScheme> = {
+    keyQ: { type: 'apiKey', in: 'query', name: 'key' },
+    keyC: { type: 'apiKey', in: 'cookie', name: 'session' },
+    basic: { type: 'http', scheme: 'basic' },
+  };
+  const build = (auth: AuthValues, extra = {}, placeholders = false) =>
+    buildHttpRequest(
+      operation,
+      all,
+      'https://h.test',
+      { ...emptyValues(), cookie: { sid: 'abc' }, ...extra },
+      auth,
+      { placeholders },
+    );
+
+  it('sends cookie parameters in one Cookie header', () => {
+    expect(build({}).headers).toEqual([['Cookie', 'sid=abc']]);
+  });
+
+  it('puts an API key where the scheme says', () => {
+    expect(build({ keyQ: { value: 'k1' } }).url).toBe(
+      'https://h.test/x?key=k1',
+    );
+    const withCookie = { ...operation, security: [{ keyC: [] }] };
+    const req = buildHttpRequest(
+      withCookie,
+      all,
+      'https://h.test',
+      emptyValues(),
+      {
+        keyC: { value: 's1' },
+      },
+    );
+    expect(req.headers).toEqual([['Cookie', 'session=s1']]);
+  });
+
+  it('encodes basic credentials, or shows a placeholder for samples', () => {
+    const only = { ...operation, security: [{ basic: [] }] };
+    const base = [only, all, 'https://h.test', emptyValues()] as const;
+    expect(
+      buildHttpRequest(...base, { basic: { username: 'u', password: 'p' } })
+        .headers,
+    ).toEqual([['Authorization', `Basic ${btoa('u:p')}`]]);
+    expect(
+      buildHttpRequest(...base, {}, { placeholders: true }).headers,
+    ).toEqual([['Authorization', 'Basic YOUR_BASE64_CREDENTIALS']]);
+    expect(buildHttpRequest(...base, {}).headers).toEqual([]);
+  });
+
+  it('ignores a scheme the spec does not define', () => {
+    const only = { ...operation, security: [{ missing: [] }] };
+    expect(
+      buildHttpRequest(only, all, 'https://h.test', emptyValues(), {}).headers,
+    ).toEqual([]);
+  });
+
+  it('sends a list with no style repeated', () => {
+    expect(build({}, { query: { ids: 'a,b' } }).url).toBe(
+      'https://h.test/x?ids=a&ids=b',
+    );
+  });
+});

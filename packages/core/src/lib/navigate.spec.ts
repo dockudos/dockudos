@@ -7,6 +7,8 @@ import {
   cleanReason,
   navigate,
   parseChoice,
+  parseOptions,
+  validateNavigate,
   searchConfidence,
 } from './navigate.ts';
 import type { RetrievedChunk } from './retrieval.ts';
@@ -332,5 +334,86 @@ describe('navigate with context', () => {
       context: { path: '/guides/team' },
     });
     expect(other?.url).toBe('/guides/team#notifications');
+  });
+});
+
+describe('validateNavigate', () => {
+  const limits = { maxQuestionLength: 50 };
+
+  it('refuses a body that is not an object', () => {
+    for (const raw of [null, 'x', 3, [], undefined])
+      expect(() => validateNavigate(raw, limits)).toThrow('JSON object');
+  });
+
+  it('refuses an empty or oversized query', () => {
+    expect(() => validateNavigate({ query: '  ' }, limits)).toThrow(
+      'where you want to go',
+    );
+    expect(() => validateNavigate({ query: 3 }, limits)).toThrow(
+      'where you want to go',
+    );
+    expect(() => validateNavigate({ query: 'x'.repeat(51) }, limits)).toThrow(
+      '50 characters',
+    );
+  });
+
+  it('trims the query and keeps short locale, version and context', () => {
+    expect(
+      validateNavigate(
+        {
+          query: '  billing ',
+          locale: 'fr',
+          version: 'v2',
+          context: { path: '/guides' },
+        },
+        limits,
+      ),
+    ).toEqual({
+      query: 'billing',
+      locale: 'fr',
+      version: 'v2',
+      context: { path: '/guides' },
+    });
+  });
+
+  it('drops tags that are not strings and cuts long ones', () => {
+    const out = validateNavigate(
+      { query: 'q', locale: 7, version: 'v'.repeat(80), context: 'nope' },
+      limits,
+    );
+    expect(out).toEqual({ query: 'q', version: 'v'.repeat(32) });
+  });
+});
+
+describe('parseOptions', () => {
+  it('reads the numbered options and the request out of the model message', () => {
+    const message = [
+      '<<<OPTION abc 1 | Billing > Email>>>',
+      'Change the email.',
+      '<<<END abc>>>',
+      '<<<OPTION abc 2 | Auth>>>',
+      'Rotate keys.',
+      '<<<END abc>>>',
+      '',
+      'Request: change my email',
+    ].join('\n');
+    expect(parseOptions(message)).toEqual([
+      {
+        n: 1,
+        where: 'Billing > Email',
+        text: 'Change the email.',
+        request: 'change my email',
+      },
+      {
+        n: 2,
+        where: 'Auth',
+        text: 'Rotate keys.',
+        request: 'change my email',
+      },
+    ]);
+  });
+
+  it('is empty, with an empty request, for a message without options', () => {
+    expect(parseOptions('hello')).toEqual([]);
   });
 });

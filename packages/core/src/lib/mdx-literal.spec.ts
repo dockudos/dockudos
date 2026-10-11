@@ -32,3 +32,30 @@ describe('parseLiteral', () => {
     }
   });
 });
+
+describe('parseLiteral: input that stops short', () => {
+  it('is undefined when a comment, string, list or object is cut off or malformed', () => {
+    for (const code of [
+      '{ a: 1 /* never closed',
+      '"unterminated',
+      '[1 2]',
+      '[1',
+      '{ a 1 }',
+      '{ a: 1 b: 2 }',
+      '{ a: 1',
+      '{ : 1 }',
+    ])
+      expect(parseLiteral(code), code).toBeUndefined();
+  });
+
+  it('reads unicode escapes and keeps an unknown escape as the character', () => {
+    expect(parseLiteral('"\\u0041\\q"')).toBe('Aq');
+  });
+
+  it('reads numeric keys', () => {
+    expect(parseLiteral('{ 1: "a", -2: "b" }')).toEqual({
+      '1': 'a',
+      '-2': 'b',
+    });
+  });
+});

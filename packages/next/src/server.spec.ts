@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { buildSiteIndex, writeIndexFile } from '@dockudos/core/node';
 import {
   getSite,
   pageMetadata,
@@ -337,5 +338,47 @@ describe('icons', () => {
     await expect(getSite({ root })).rejects.toThrow(
       /icons\/bad\.svg: needs a viewBox/,
     );
+  });
+});
+
+describe('site.index', () => {
+  it('uses the index that the build wrote when running in production', async () => {
+    const built = await getSite({ root });
+    const { index } = await buildSiteIndex({
+      root,
+      docsDir: join(root, 'docs'),
+      config: built.config,
+      tree: built.tree,
+    });
+    await writeIndexFile(root, { ...index, pages: index.pages.slice(0, 1) });
+    vi.stubEnv('NODE_ENV', 'production');
+    try {
+      const site = await getSite({ root });
+      expect((await site.index()).pages).toHaveLength(1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('tries again after an index that could not be built', async () => {
+    const site = await getSite({ root });
+    const file = join(root, 'docs', 'guides', 'auth.mdx');
+    await rm(file);
+    await expect(site.index()).rejects.toThrow();
+    await writeFile(file, '# Auth');
+    expect((await site.index()).pages.length).toBeGreaterThan(0);
+  });
+});
+
+describe('sitemap and robots: the site of the working directory', () => {
+  it('read the site themselves when none is passed', async () => {
+    const cwd = process.cwd();
+    process.chdir(root);
+    try {
+      expect((await sitemapResponse()).status).toBe(200);
+      expect(await (await robotsResponse()).text()).toContain('Sitemap:');
+    } finally {
+      process.chdir(cwd);
+    }
   });
 });

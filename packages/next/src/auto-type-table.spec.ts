@@ -95,3 +95,22 @@ describe('AutoTypeTable as Markdown', () => {
     expect(out).toBe('_Type table of `Options` from `/no/such.ts`._');
   });
 });
+
+describe('AutoTypeTable', () => {
+  it('reads the types of the file, relative to the working directory', async () => {
+    const { AutoTypeTable } = await import('./auto-type-table.tsx');
+    const cwd = process.cwd();
+    process.chdir(dir);
+    try {
+      const element = await AutoTypeTable({
+        path: 'types.ts',
+        name: 'Options',
+      });
+      expect(Object.keys(element.props.type)).toEqual(
+        expect.arrayContaining(['name', 'limit']),
+      );
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+});

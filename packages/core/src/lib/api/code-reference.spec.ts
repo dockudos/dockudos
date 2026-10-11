@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generatePython, generateTypeScript, griffeExpr } from './reference.ts';
 import { ApiSpecError } from './types.ts';
@@ -117,5 +118,154 @@ describe('Python reference (Griffe)', () => {
     ).toBe('dict[str, int]');
     expect(griffeExpr(['a', { cls: 'ExprName', name: 'b' }])).toBe('ab');
     expect(griffeExpr(null)).toBe('');
+  });
+});
+
+describe('griffeExpr: every shape of expression', () => {
+  const name = (n: string) => ({ cls: 'ExprName', name: n });
+  it('writes numbers, booleans, attributes, operators, lists and unknown nodes', () => {
+    expect(griffeExpr(3)).toBe('3');
+    expect(griffeExpr(true)).toBe('true');
+    expect(griffeExpr({ not: 'an expression' })).toBe('');
+    expect(griffeExpr(Symbol.for('x'))).toBe('');
+    expect(
+      griffeExpr({
+        cls: 'ExprAttribute',
+        values: [name('os'), '..', name('path')],
+      }),
+    ).toBe('os..path'.replace('..', '.'));
+    expect(
+      griffeExpr({
+        cls: 'ExprBinOp',
+        left: name('int'),
+        operator: '|',
+        right: name('None'),
+      }),
+    ).toBe('int | None');
+    expect(
+      griffeExpr({ cls: 'ExprBinOp', left: name('a'), right: name('b') }),
+    ).toBe('a | b');
+    expect(
+      griffeExpr({ cls: 'ExprList', elements: [name('a'), name('b')] }),
+    ).toBe('a, b');
+    expect(griffeExpr({ cls: 'ExprSet' })).toBe('');
+    expect(griffeExpr({ cls: 'ExprOther', name: 'n' })).toBe('n');
+    expect(griffeExpr({ cls: 'ExprOther', value: 'v' })).toBe('v');
+    expect(griffeExpr({ cls: 'ExprOther' })).toBe('');
+  });
+});
+
+describe('Python reference: a dump written by hand', () => {
+  const doc = (value: string) => ({ value });
+  const dump = JSON.stringify({
+    pkg: {
+      kind: 'module',
+      name: 'pkg',
+      docstring: doc('The package.'),
+      members: {
+        fn: {
+          kind: 'function',
+          name: 'fn',
+          docstring: doc('Do it.'),
+          parameters: [
+            { name: 'a', annotation: 'int', default: '1' },
+            { name: 'args', kind: 'variadic positional' },
+            { name: 'kwargs', kind: 'variadic keyword', default: '{}' },
+            { name: 'b', default: null },
+          ],
+          returns: 'str',
+        },
+        bare: { kind: 'function', name: 'bare' },
+        Base: { kind: 'class', name: 'Base' },
+        Child: {
+          kind: 'class',
+          name: 'Child',
+          bases: ['Base', { cls: 'ExprName', name: 'Mixin' }, null],
+          docstring: doc('A child.'),
+        },
+        sub: {
+          kind: 'module',
+          name: 'sub',
+          members: {
+            deep: { kind: 'function', name: 'deep' },
+            nested: { kind: 'module', name: 'nested', members: {} },
+          },
+        },
+        empty: { kind: 'module', name: 'empty', members: {} },
+        value: { kind: 'attribute', name: 'value' },
+      },
+    },
+  });
+
+  it('writes functions, classes with and without bases, and nested modules', () => {
+    const { files } = generatePython(dump, 'g.json', {
+      name: 'py',
+      base: 'docs/py',
+    });
+    const root = page(files, 'modules/pkg.mdx');
+    expect(root).toContain('The package.');
+    expect(root).toContain('fn(a: int = 1, *args, **kwargs, b) -> str');
+    expect(root).toContain('bare()');
+    expect(root).toContain('Bases: `Base`, `Mixin`');
+    expect(root).toContain('A child.');
+    expect(page(files, 'modules/pkg/sub.mdx')).toContain('deep()');
+    // A module with nothing to show gets no page.
+    expect(files.some((f) => f.file.endsWith('nested.mdx'))).toBe(false);
+    expect(files.some((f) => f.file.endsWith('empty.mdx'))).toBe(false);
+  });
+});
+
+describe('TypeScript reference: awkward exports', { timeout: 30_000 }, () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'dockudos-ts-'));
+  });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+  const write = (file: string, text: string) =>
+    writeFileSync(join(dir, file), text);
+
+  it('numbers exports whose pages would share a name, and handles namespaces and generics', async () => {
+    write(
+      'index.ts',
+      [
+        'export const Thing = 1;',
+        'export const thing = 2;',
+        'export const index = 3;',
+        'export namespace Ns { export const inner = 1; }',
+        'export declare function over(a: string): string;',
+        'export declare function over(a: number): number;',
+        'export class Box<T extends object = {}> { value!: T; get size(): number { return 1; } static make(): void {} }',
+        'export interface Empty {}',
+        'export type Union = "a" | "b";',
+        'export type Obj = { a: string };',
+        'export default class {}',
+        'export * as helpers from "./helpers.ts";',
+      ].join('\n'),
+    );
+    write('helpers.ts', 'export const help = 1;\n');
+    const { files } = await generateTypeScript([join(dir, 'index.ts')], dir, {
+      name: 't',
+      base: 'docs/t',
+    });
+    const names = files.map((f) => f.file);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'docs/t/variables/thing.mdx',
+        'docs/t/variables/thing-2.mdx',
+        'docs/t/variables/index-2.mdx',
+      ]),
+    );
+    expect(page(files, 'classes/box.mdx')).toContain('value');
+  });
+
+  it('names an entry that is not a TypeScript file, and skips one with no exports', async () => {
+    write('plain.ts', 'const x = 1;\n');
+    write('index.ts', 'export const a = 1;\n');
+    const { pages } = await generateTypeScript(
+      [join(dir, 'plain.ts'), join(dir, 'index.ts')],
+      dir,
+      { name: 't', base: 'docs/t' },
+    );
+    expect(pages).toBe(1);
   });
 });

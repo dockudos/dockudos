@@ -429,6 +429,52 @@ describe('dev', () => {
     t.children[1]!.child.emit('exit', 0);
     await done;
   });
+
+  describe('with an API spec in the project', () => {
+    const SPEC = JSON.stringify({
+      openapi: '3.0.0',
+      info: { title: 'Pets', version: '1' },
+      paths: { '/pets': { get: { responses: { '200': {} } } } },
+    });
+    const WITH_SPEC = {
+      ...GOOD,
+      'docs.json': JSON.stringify({
+        name: 'T',
+        openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] },
+      }),
+      'pets.json': SPEC,
+    };
+
+    it('writes the pages again when the spec changes, and keeps the server running', async () => {
+      await project(WITH_SPEC);
+      const t = makeEnv();
+      const done = run(['dev'], t.env);
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      // The spec is watched first, docs.json second.
+      expect(t.watchers).toHaveLength(2);
+      t.watchers[0]!();
+      t.watchers[0]!(); // a burst collapses into one run
+      await new Promise((r) => setTimeout(r, 400));
+      expect(t.errText()).toBe('');
+      expect(t.children).toHaveLength(1);
+      t.children[0]!.child.emit('exit', 0);
+      await done;
+    });
+
+    it('reports a spec that stopped being valid and keeps the previous pages', async () => {
+      await project(WITH_SPEC);
+      const t = makeEnv();
+      const done = run(['dev'], t.env);
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      await writeFile(join(dir, 'pets.json'), '{ nope');
+      t.watchers[0]!();
+      await vi.waitFor(() =>
+        expect(t.errText()).toContain('Keeping the previous pages'),
+      );
+      t.children[0]!.child.emit('exit', 0);
+      await done;
+    });
+  });
 });
 
 describe('kudos', () => {
@@ -724,5 +770,83 @@ describe('findChrome', () => {
         throw new Error('no browser');
       }).catch((e) => e.message),
     ).resolves.toMatch(/No Chrome|^\//);
+  });
+});
+
+describe('pdf: the server it starts', () => {
+  async function finishBuild(t: ReturnType<typeof makeEnv>) {
+    await vi.waitFor(() => expect(t.children.length).toBeGreaterThanOrEqual(1));
+    t.children[0]!.child.emit('exit', 0);
+    await vi.waitFor(() => expect(t.children).toHaveLength(2));
+  }
+
+  it('refuses a port that is not one', async () => {
+    await project({ ...GOOD, '.next/BUILD_ID': 'x' });
+    const t = makeEnv();
+    expect(await run(['pdf', '--no-build', '--port', '70000'], t.env)).toBe(1);
+    expect(t.errText()).toContain('--port must be a port number');
+    expect(t.children).toHaveLength(0);
+  });
+
+  it('reports a server that fails to start', async () => {
+    await project(GOOD);
+    const t = makeEnv({
+      fetch: async () => {
+        throw new Error('ECONNREFUSED');
+      },
+    });
+    const done = run(['pdf'], t.env);
+    await finishBuild(t);
+    const server = t.children[1]!.child as unknown as {
+      stdout: EventEmitter;
+      stderr: EventEmitter;
+    };
+    server.stdout = new EventEmitter();
+    server.stderr = new EventEmitter();
+    // A server that cannot even start reports the same way as one that stops.
+    t.children[1]!.child.emit('error', new Error('spawn failed'));
+    expect(await done).toBe(1);
+    expect(t.errText()).toContain('server stopped before it was ready');
+  });
+
+  it('collects the output of the server for the message', async () => {
+    await project(GOOD);
+    const stdout = new EventEmitter();
+    const stderr = new EventEmitter();
+    const t = makeEnv({
+      spawn: ((_cmd: string, args: string[]) => {
+        const child = new FakeChild() as FakeChild & {
+          stdout?: EventEmitter;
+          stderr?: EventEmitter;
+        };
+        if (args[1] === 'start') {
+          child.stdout = stdout;
+          child.stderr = stderr;
+          setTimeout(() => {
+            stdout.emit('data', 'listening on 4555\n');
+            stderr.emit('data', 'EADDRINUSE\n');
+            child.emit('exit', 1);
+          }, 20);
+        } else setTimeout(() => child.emit('exit', 0), 5);
+        return child as unknown as ChildProcess;
+      }) as Env['spawn'],
+      // Not ready yet: the check looks again after the server has already stopped.
+      fetch: async () => {
+        throw new Error('ECONNREFUSED');
+      },
+    });
+    expect(await run(['pdf'], t.env)).toBe(1);
+    expect(t.errText()).toContain('EADDRINUSE');
+  });
+
+  it('reports the size in MB for a large file', async () => {
+    await project({ ...GOOD, '.next/BUILD_ID': 'x' });
+    const t = makeEnv({
+      renderPdf: async () => new Uint8Array(3 * 1024 * 1024),
+    });
+    const done = run(['pdf', '--no-build'], t.env);
+    await vi.waitFor(() => expect(t.children).toHaveLength(1));
+    expect(await done).toBe(0);
+    expect(t.text()).toContain('3.0 MB');
   });
 });

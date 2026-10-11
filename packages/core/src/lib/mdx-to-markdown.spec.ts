@@ -138,3 +138,55 @@ describe('mdxToMarkdown', () => {
     ).toBe('text more');
   });
 });
+
+describe('mdxToMarkdown: tags that are not quite JSX', () => {
+  // None of these may throw; text that is not a component stays as the author wrote it.
+  const kept = async (body: string) => {
+    const out = await convert(body);
+    expect(out).toContain(body.split('\n')[0]!.trim().slice(0, 6));
+    return out;
+  };
+
+  it('reads boolean, single-quoted, braced and spread attributes', async () => {
+    expect(
+      await convert(
+        `<Note {...rest} title='Single' hidden data-x={ { a: "}" } } n={1 /* } */} s={\`}\`}>Body</Note>`,
+      ),
+    ).toBe('> **Note: Single** Body'.replace(' Body', '\n>\n> Body'));
+  });
+
+  it('keeps a braced expression it cannot evaluate out of the props', async () => {
+    expect(await convert('<Note title={someVariable}>Body</Note>')).toContain(
+      'Body',
+    );
+    expect(await convert('<Note title={undefined}>Body</Note>')).toContain(
+      'Body',
+    );
+  });
+
+  it('leaves unterminated or malformed tags as text', async () => {
+    await kept('<Note title="open');
+    await kept("<Note title='open");
+    await kept('<Note title={1');
+    await kept('<Note {...spread');
+    await kept('<Note title=bare>x</Note>');
+    await kept('<Note =oops>x</Note>');
+    await kept('<Note');
+    await kept('</Note title="x">');
+    await kept('<Note title={ "a" // } \n');
+    await kept('<Note title={ /* never closed ');
+    await kept('<Note title={ "never closed ');
+    await kept('<123>');
+  });
+
+  it('ignores a closing tag that matches nothing open', async () => {
+    expect(await convert('Text </Note> after')).toContain('Text');
+  });
+
+  it('keeps a list together when the source put blank lines between its items', async () => {
+    const out = await convert(
+      '<Tree>\n<Tree.Folder name="a">\n\n<Tree.Folder name="b">\n</Tree.Folder>\n\n</Tree.Folder>\n</Tree>',
+    );
+    expect(out).not.toMatch(/\n\n\s*- /);
+  });
+});

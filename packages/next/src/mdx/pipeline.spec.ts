@@ -142,3 +142,28 @@ describe('include', () => {
     );
   });
 });
+
+describe('plugins on a document that is not a file', () => {
+  it('leave links and includes alone when the document has no path', async () => {
+    const out = String(
+      await compile('[other](./other.mdx)\n\n<include>/x.mdx</include>', {
+        jsx: true,
+        remarkPlugins: [
+          [remarkInclude, { docsDir }],
+          [remarkLinks, { docsDir }],
+        ],
+      }),
+    );
+    expect(out).toContain('./other.mdx');
+  });
+
+  it('leave links alone in a file outside the docs folder', async () => {
+    const out = String(
+      await compile(
+        { value: '[other](./other.mdx)', path: join(docsDir, '..', 'x.mdx') },
+        { jsx: true, remarkPlugins: [[remarkLinks, { docsDir }]] },
+      ),
+    );
+    expect(out).toContain('./other.mdx');
+  });
+});

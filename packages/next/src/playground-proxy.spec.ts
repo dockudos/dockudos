@@ -195,6 +195,130 @@ describe('playground proxy', () => {
     config.root = '/nonexistent';
   });
 
+  it('rejects payloads that are not shaped right', async () => {
+    for (const body of [
+      'null',
+      '"text"',
+      JSON.stringify({ ...ask, url: 3 }),
+      JSON.stringify({ ...ask, headers: 'x' }),
+      JSON.stringify({ ...ask, headers: [['only-one']] }),
+      JSON.stringify({ ...ask, headers: [[1, 2]] }),
+      JSON.stringify({ ...ask, body: 5 }),
+      JSON.stringify({ ...ask, url: 'not a url' }),
+    ])
+      expect((await call(body)).status, body).toBe(400);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it('refuses a request that is too large', async () => {
+    const response = await call({ ...ask, body: 'x'.repeat(2_100_000) });
+    expect(response.status).toBe(413);
+  });
+
+  it('slows down a client that asks too often', async () => {
+    const handler = createPlaygroundHandler({
+      fetch: upstream as unknown as typeof fetch,
+      lookup,
+    });
+    const send = () =>
+      handler(
+        new Request('http://docs.test/api/playground', {
+          method: 'POST',
+          headers: {
+            host: 'docs.test',
+            'x-dockudos-playground': '1',
+            'x-forwarded-for': '9.9.9.9',
+          },
+          body: JSON.stringify(ask),
+        }),
+      );
+    let last = 200;
+    let response: Response | undefined;
+    for (let i = 0; i < 40 && last !== 429; i++) {
+      response = await send();
+      last = response.status;
+    }
+    expect(last).toBe(429);
+    expect(response!.headers.get('retry-after')).toMatch(/^\d+$/);
+  });
+
+  describe('for a server named in the spec', () => {
+    let root: string;
+    beforeEach(async () => {
+      const { mkdtemp, mkdir, writeFile } = await import('node:fs/promises');
+      const { tmpdir } = await import('node:os');
+      const { join } = await import('node:path');
+      root = await mkdtemp(join(tmpdir(), 'proxy-'));
+      await mkdir(join(root, '.dockudos/api/s'), { recursive: true });
+      await writeFile(
+        join(root, '.dockudos/api/s/servers.json'),
+        JSON.stringify(['https://api.spec.test/v1', 'http://10.1.2.3:8080']),
+      );
+      config.root = root;
+      config.allowedHosts = [];
+    });
+    afterEach(async () => {
+      const { rm } = await import('node:fs/promises');
+      await rm(root, { recursive: true });
+      config.root = '/nonexistent';
+    });
+    const send = (url: string, resolve: () => Promise<{ address: string }[]>) =>
+      createPlaygroundHandler({
+        fetch: upstream as unknown as typeof fetch,
+        lookup: resolve,
+      })(
+        new Request('http://docs.test/api/playground', {
+          method: 'POST',
+          headers: { host: 'docs.test', 'x-dockudos-playground': '1' },
+          body: JSON.stringify({ ...ask, url }),
+        }),
+      );
+
+    it('says so when the name cannot be found', async () => {
+      const response = await send('https://api.spec.test/v1/x', async () => {
+        throw new Error('ENOTFOUND');
+      });
+      expect(response.status).toBe(502);
+      expect((await response.json()).error).toContain('could not be found');
+    });
+
+    it('checks an address written as an IP literal without asking DNS', async () => {
+      const resolve = vi.fn(async () => [{ address: '93.184.216.34' }]);
+      const response = await send('http://10.1.2.3:8080/x', resolve);
+      expect(response.status).toBe(403);
+      expect(resolve).not.toHaveBeenCalled();
+    });
+  });
+
+  it('refuses an answer that is too large, and passes on one with no body', async () => {
+    const big = new Uint8Array(1024 * 1024);
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (let i = 0; i < 12; i++) controller.enqueue(big);
+        controller.close();
+      },
+    });
+    upstream.mockResolvedValueOnce(new Response(stream));
+    expect((await call(ask)).status).toBe(502);
+    upstream.mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const empty = await call(ask);
+    expect(empty.status).toBe(200);
+    expect(await empty.json()).toMatchObject({ status: 204, body: '' });
+  });
+
+  it('ignores a servers list that is not valid JSON', async () => {
+    const { mkdtemp, mkdir, writeFile, rm } = await import('node:fs/promises');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    config.root = await mkdtemp(join(tmpdir(), 'proxy-'));
+    await mkdir(join(config.root, '.dockudos/api/s'), { recursive: true });
+    await writeFile(join(config.root, '.dockudos/api/s/servers.json'), '{nope');
+    config.allowedHosts = [];
+    expect((await call({ ...ask, url: 'https://x.test/' })).status).toBe(403);
+    await rm(config.root, { recursive: true });
+    config.root = '/nonexistent';
+  });
+
   it('reports an upstream that cannot be reached', async () => {
     upstream.mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
     const response = await call(ask);

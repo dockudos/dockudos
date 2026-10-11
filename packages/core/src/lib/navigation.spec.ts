@@ -4,6 +4,7 @@ import {
   tutorialOf,
   flattenSidebar,
   NavigationError,
+  type SidebarItem,
 } from './navigation.ts';
 import { buildPageTree } from './page-tree.ts';
 
@@ -146,5 +147,116 @@ describe('tutorialOf', () => {
 
   it('is undefined for a page outside a tutorial', () => {
     expect(tutorialOf(nav, '/')).toBeUndefined();
+  });
+});
+
+type GroupItem = Extract<SidebarItem, { type: 'group' }>;
+
+describe('API sources in navigation', () => {
+  const api = (
+    file: string,
+    title: string,
+    meta: { group?: string; order?: number; kind?: string },
+    hidden = false,
+  ) => ({
+    file,
+    title,
+    hidden,
+    api: { source: 'pets', kind: 'operation', ...meta },
+  });
+  const apiTree = buildPageTree([
+    { file: 'index.mdx', title: 'Home' },
+    api('pets/index.mdx', 'Overview', { kind: 'overview', order: 0 }),
+    api('pets/b.mdx', 'Get B', { group: 'Beta', order: 3 }),
+    api('pets/a.mdx', 'List A', { group: 'Alpha', order: 1 }),
+    api('pets/a2.mdx', 'Make A', { group: 'Alpha', order: 2 }),
+    api('pets/gone.mdx', 'Hidden', { group: 'Alpha', order: 9 }, true),
+    api('pets/unordered.mdx', 'Unordered', { group: 'Alpha' }),
+  ]);
+
+  it('expands a source into its overview and one group per tag, in spec order', () => {
+    const nav = buildNavigation(
+      config([
+        {
+          tab: 'API',
+          groups: [{ group: 'Pets', pages: [{ openapi: 'pets' }] }],
+        },
+      ]),
+      apiTree,
+    );
+    const items = (nav.tabs[0]!.sidebar[0] as GroupItem).items;
+    expect(
+      items.map((i) => (i.type === 'page' ? i.page.title : i.type)),
+    ).toEqual(['Overview', 'group', 'group']);
+    const groups = items.filter((i) => i.type === 'group');
+    expect(groups.map((g) => g.type === 'group' && g.title)).toEqual([
+      'Alpha',
+      'Beta',
+    ]);
+    // The unordered page sorts first (order 0); the hidden one is left out.
+    expect(
+      groups[0]!.type === 'group' &&
+        groups[0]!.items.map((i) => i.type === 'page' && i.page.title),
+    ).toEqual(['Unordered', 'List A', 'Make A']);
+    expect(nav.unlisted.map((p) => p.path)).toEqual(['/']);
+  });
+
+  it('expands a code reference the same way', () => {
+    const nav = buildNavigation(
+      config([
+        {
+          tab: 'API',
+          groups: [{ group: 'Pets', pages: [{ reference: 'pets' }] }],
+        },
+      ]),
+      apiTree,
+    );
+    expect((nav.tabs[0]!.sidebar[0] as GroupItem).items.length).toBe(3);
+  });
+
+  it('says which source produced nothing', () => {
+    expect(() =>
+      buildNavigation(
+        config([
+          {
+            tab: 'API',
+            groups: [{ group: 'X', pages: [{ openapi: 'missing' }] }],
+          },
+        ]),
+        apiTree,
+      ),
+    ).toThrow(/no pages were generated for "missing"/);
+  });
+});
+
+describe('tutorialOf: nested groups', () => {
+  it('finds a tutorial group inside another group, and gives up on a page in none', () => {
+    const nav = buildNavigation(
+      config([
+        {
+          tab: 'T',
+          groups: [
+            {
+              group: 'Outer',
+              pages: [
+                'index',
+                {
+                  group: 'Inner',
+                  tutorial: true,
+                  pages: ['start', 'guides/auth'],
+                },
+              ],
+            },
+          ],
+        },
+      ]),
+      tree,
+    );
+    expect(tutorialOf(nav, '/guides/auth')).toMatchObject({
+      title: 'Inner',
+      step: 2,
+    });
+    expect(tutorialOf(nav, '/')).toBeUndefined();
+    expect(tutorialOf(nav, '/not-there')).toBeUndefined();
   });
 });

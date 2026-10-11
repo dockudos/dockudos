@@ -340,3 +340,91 @@ describe('openaiEmbeddings', () => {
     await expect(short.embed(['a', 'b'])).rejects.toThrow('did not match');
   });
 });
+
+describe('adapters: the platform fetch, bodies and chunks that are not usable', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const generate = (llm: ReturnType<typeof openaiProvider>) =>
+    text(
+      llm.generate({
+        system: 's',
+        messages: [{ role: 'user', content: 'q' }],
+        maxTokens: 5,
+      }),
+    );
+
+  it('uses the global fetch when none is given', async () => {
+    const fetchMock = vi.fn(async () =>
+      sse(
+        `data: ${JSON.stringify({ choices: [{ delta: { content: 'ok' } }] })}\n\n`,
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await generate(openaiProvider({ apiKey: KEY, model: 'm' }))).toBe(
+      'ok',
+    );
+    fetchMock.mockImplementation(async () =>
+      sse(
+        `event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'hi' } })}\n\n`,
+      ),
+    );
+    expect(await generate(anthropicProvider({ apiKey: KEY, model: 'm' }))).toBe(
+      'hi',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('says so when the answer has no body', async () => {
+    const noBody = { ok: true, status: 200, body: null } as unknown as Response;
+    const { fetch } = recorder(() => noBody);
+    await expect(
+      generate(openaiProvider({ apiKey: KEY, model: 'm', fetch })),
+    ).rejects.toThrow('no response body');
+    await expect(
+      generate(anthropicProvider({ apiKey: KEY, model: 'm', fetch })),
+    ).rejects.toThrow('no response body');
+  });
+
+  it('skips events that are not JSON', async () => {
+    const good = `data: ${JSON.stringify({ choices: [{ delta: { content: 'x' } }] })}\n\n`;
+    const { fetch } = recorder(() =>
+      sse('data: {oops\n\n', good, 'data: [DONE]\n\n'),
+    );
+    expect(
+      await generate(openaiProvider({ apiKey: KEY, model: 'm', fetch })),
+    ).toBe('x');
+    const anth = recorder(() =>
+      sse(
+        'event: ping\ndata: {oops\n\n',
+        `event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'y' } })}\n\n`,
+      ),
+    );
+    expect(
+      await generate(
+        anthropicProvider({ apiKey: KEY, model: 'm', fetch: anth.fetch }),
+      ),
+    ).toBe('y');
+  });
+});
+
+describe('openaiEmbeddings: the platform fetch and the real pause between retries', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('uses the global fetch, and waits before it tries again', async () => {
+    let n = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        ++n === 1
+          ? new Response('busy', { status: 429 })
+          : Response.json({ data: [{ index: 0, embedding: [1, 2] }] }),
+      ),
+    );
+    const embeddings = openaiEmbeddings({
+      apiKey: KEY,
+      model: 'm',
+      retryDelay: 1,
+    });
+    expect(await embeddings.embed(['a'])).toEqual([[1, 2]]);
+    expect(n).toBe(2);
+  });
+});

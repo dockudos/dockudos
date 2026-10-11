@@ -197,3 +197,28 @@ describe('fileKudosStore', () => {
     }
   });
 });
+
+describe('createKudosHandler: memory', () => {
+  it('forgets clients that have been quiet for a minute once there are many', async () => {
+    let t = Date.parse('2026-02-03T04:05:06Z');
+    const { handler } = setup({ now: () => t });
+    for (let i = 0; i <= 5000; i++)
+      await handler(
+        post(
+          { path: '/guide', vote: 'up' },
+          { 'x-forwarded-for': `10.0.${i >> 8}.${i & 255}` },
+        ),
+      );
+    t += 120_000;
+    expect(
+      (
+        await handler(
+          post(
+            { path: '/guide', vote: 'up' },
+            { 'x-forwarded-for': '1.1.1.1' },
+          ),
+        )
+      ).status,
+    ).toBe(201);
+  });
+});
