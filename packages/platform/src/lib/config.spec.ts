@@ -52,9 +52,10 @@ describe('loadConfig', () => {
   });
 
   it('refuses a sites domain that shares the platform host', () => {
-    expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'platform.example.com' })).toThrow('different host');
-    expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'example.com' })).toThrow('different host');
+    expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'platform.example.com' })).toThrow('own host');
+    expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'example.com' })).toThrow('own host');
     expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'sites.example.net' })).not.toThrow();
+    expect(() => loadConfig({ ...base, DOCKUDOS_SITES_DOMAIN: 'sites.platform.example.com' })).not.toThrow();
   });
 
   it('parses booleans and numbers', () => {

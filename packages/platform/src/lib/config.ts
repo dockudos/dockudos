@@ -164,8 +164,8 @@ export function loadConfig(
   const sitesDomain = get('DOCKUDOS_SITES_DOMAIN')?.toLowerCase();
   if (sitesDomain) {
     const host = (() => { try { return new URL(get('DOCKUDOS_PUBLIC_URL') ?? '').hostname; } catch { return ''; } })();
-    if (host && (host === sitesDomain || host.endsWith(`.${sitesDomain}`) || sitesDomain.endsWith(`.${host}`)))
-      problems.push('DOCKUDOS_SITES_DOMAIN must be a different host from DOCKUDOS_PUBLIC_URL, or documentation scripts could read platform sessions');
+    if (host && (host === sitesDomain || host.endsWith(`.${sitesDomain}`)))
+      problems.push('DOCKUDOS_SITES_DOMAIN must not be the own host of the platform or a parent of it: hosted documentation runs its own scripts and must stay on a different origin');
   }
   if (problems.length || !e) throw new ConfigError(problems);
 

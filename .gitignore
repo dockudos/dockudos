@@ -68,3 +68,8 @@ apps/*/docs/api-reference/
 apps/example/eval/results
 .serena
 .headroom*
+
+# platform app
+apps/platform/.next
+apps/platform/test-results
+apps/platform/playwright-report
