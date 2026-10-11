@@ -18,5 +18,9 @@
     "network": {
       "allowUnixSockets": ["/tmp/.nx", "~/.nx"]
     }
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   }
 }
