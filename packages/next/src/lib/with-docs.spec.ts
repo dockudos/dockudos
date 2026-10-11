@@ -248,3 +248,44 @@ describe('withDocs: the embeddable assistant', () => {
     );
   });
 });
+
+describe('withDocs: static export', () => {
+  afterEach(() => {
+    delete process.env.DOCKUDOS_STATIC;
+    delete process.env.DOCKUDOS_BASE_PATH;
+  });
+
+  it('does nothing different unless `dockudos build --static` asked for it', () => {
+    const config = docs();
+    expect(config.output).toBeUndefined();
+    expect(config.rewrites).toBeDefined();
+  });
+
+  it('exports plain files, without the settings export cannot use', () => {
+    process.env.DOCKUDOS_STATIC = '1';
+    const config = docs({ images: { formats: ['image/webp'] } });
+    expect(config.output).toBe('export');
+    expect(config.trailingSlash).toBe(true);
+    expect(config.images).toEqual({
+      formats: ['image/webp'],
+      unoptimized: true,
+    });
+    expect(config.basePath).toBeUndefined();
+    expect(config.rewrites).toBeUndefined();
+    expect(config.headers).toBeUndefined();
+    expect(config.redirects).toBeUndefined();
+    expect(config.env).toMatchObject({
+      NEXT_PUBLIC_DOCKUDOS_STATIC: '1',
+      NEXT_PUBLIC_DOCKUDOS_BASE_PATH: '',
+    });
+    expect(config.pageExtensions).toContain('mdx');
+  });
+
+  it('serves from a sub-path and tells the browser', () => {
+    process.env.DOCKUDOS_STATIC = '1';
+    process.env.DOCKUDOS_BASE_PATH = 'demo/';
+    const config = docs();
+    expect(config.basePath).toBe('/demo');
+    expect(config.env?.NEXT_PUBLIC_DOCKUDOS_BASE_PATH).toBe('/demo');
+  });
+});

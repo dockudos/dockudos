@@ -44,9 +44,12 @@ export function PageActions({
   const { copy, state } = useCopyToClipboard();
   const [failed, setFailed] = useState(false);
 
-  const markdownUrl = markdownEndpoint
-    ? `${markdownEndpoint}?path=${encodeURIComponent(path)}`
-    : undefined;
+  // 'static': the build wrote a `.md` file next to every page (see `dockudos build --static`).
+  const markdownUrl = !markdownEndpoint
+    ? undefined
+    : markdownEndpoint === 'static'
+      ? `${process.env.NEXT_PUBLIC_DOCKUDOS_BASE_PATH ?? ''}${path === '/' ? '/index' : path}.md`
+      : `${markdownEndpoint}?path=${encodeURIComponent(path)}`;
   const prompt = pageUrl
     ? `Read ${pageUrl} so I can ask questions about it.`
     : undefined;

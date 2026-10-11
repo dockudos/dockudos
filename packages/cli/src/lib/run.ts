@@ -16,7 +16,7 @@ Usage: dockudos <command> [options]
 Commands:
   init [folder]     Create a new docs site (--name, --package-manager, --yes)
   dev [next args]   Start the dev server; restarts when docs.json changes
-  build [next args] Validate docs.json, check links, then build the site
+  build [next args] Validate docs.json, check links, then build the site (--static for a plain-file site in out/, --base-path /name for a sub-path)
   generate          Write API reference pages from the specs in docs.json (--force)
   index             Build the search index (and embeddings, when configured) without building the site
   mcp               Serve the docs to AI coding tools over the Model Context Protocol (stdio)

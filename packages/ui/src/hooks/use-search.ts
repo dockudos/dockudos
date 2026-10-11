@@ -17,7 +17,7 @@ export type SearchSettings = Partial<
   Pick<DocsConfig['search'], 'backend' | 'endpoint' | 'limit'>
 >;
 
-export const DEFAULT_SEARCH_ENDPOINT = '/api/search';
+export const DEFAULT_SEARCH_ENDPOINT = `${process.env.NEXT_PUBLIC_DOCKUDOS_BASE_PATH ?? ''}/api/search`;
 
 /**
  * The search client for the site: the backend given to `DocsProvider`, else the one `search` in

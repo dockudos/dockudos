@@ -15,7 +15,7 @@ import { loadProject } from './project.ts';
  * `@dockudos/ui` when it has a site; without it (or if it will not load here) pages keep their content and lose
  * only the component formatting.
  */
-async function siteComponents(
+export async function siteComponents(
   cwd: string,
 ): Promise<MarkdownComponents | undefined> {
   try {

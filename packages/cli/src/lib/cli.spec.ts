@@ -12,7 +12,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { checkLinks, discoverPages, loadConfig } from '@dockudos/core/node';
-import type { ChildProcess } from 'node:child_process';
+import type { ChildProcess, SpawnOptions } from 'node:child_process';
 import { findChrome } from './chrome.ts';
 import { type Env } from './io.ts';
 import { run } from './run.ts';
@@ -350,6 +350,103 @@ describe('build', () => {
     await vi.waitFor(() => expect(t.children).toHaveLength(1));
     t.children[0]!.child.emit('exit', 3);
     expect(await done).toBe(3);
+  });
+
+  describe('--static', () => {
+    const exists = (file: string) =>
+      readFile(join(dir, file), 'utf8').then(
+        () => true,
+        () => false,
+      );
+
+    it('refuses a site with access rules, before building anything', async () => {
+      await project({
+        ...GOOD,
+        'docs.json':
+          '{"name":"T","access":{"rules":[{"paths":["/a"],"require":"basic","realm":"R"}]}}',
+      });
+      const t = makeEnv();
+      expect(await run(['build', '--static'], t.env)).toBe(1);
+      expect(t.errText()).toContain('has 1 `access` rule');
+      expect(t.children).toHaveLength(0);
+    });
+
+    it('builds with the static switches, sets server files aside and writes the extra files', async () => {
+      await project({
+        ...GOOD,
+        'docs.json':
+          '{"name":"T","redirects":[{"source":"/old","destination":"/a"},{"source":"/x/:id","destination":"/a"}]}',
+        'src/proxy.ts': 'export const proxy = 1;',
+        'src/app/api/kudos/route.ts': 'export {}',
+        'src/app/page.tsx': 'export {}',
+      });
+      const t = makeEnv();
+      let during: boolean[] = [];
+      let vars: Record<string, string | undefined> = {};
+      const spawn = t.env.spawn;
+      t.env.spawn = ((cmd: string, args: string[], options: SpawnOptions) => {
+        vars = options.env as typeof vars;
+        return spawn(cmd, args, options);
+      }) as Env['spawn'];
+      const done = run(
+        ['build', '--static', '--base-path', 'demo/', '--debug'],
+        t.env,
+      );
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      during = [
+        await exists('src/proxy.ts'),
+        await exists('src/app/api/kudos/route.ts'),
+        await exists('src/app/page.tsx'),
+      ];
+      expect(during).toEqual([false, false, true]);
+      expect(t.children[0]!.args.slice(1)).toEqual(['build', '--debug']);
+      expect(vars).toMatchObject({
+        DOCKUDOS_STATIC: '1',
+        DOCKUDOS_BASE_PATH: '/demo',
+      });
+      t.children[0]!.child.emit('exit', 0);
+      expect(await done).toBe(0);
+
+      // Put back afterwards.
+      expect(await exists('src/proxy.ts')).toBe(true);
+      expect(await exists('src/app/api/kudos/route.ts')).toBe(true);
+      expect(await exists('.dockudos/static-stash/src/proxy.ts')).toBe(false);
+      // The extra files.
+      expect(await exists('out/api/search/index')).toBe(true);
+      expect(await readFile(join(dir, 'out/index.md'), 'utf8')).toContain('# ');
+      expect(await exists('out/a.md')).toBe(true);
+      expect(await readFile(join(dir, 'out/old/index.html'), 'utf8')).toContain(
+        'url=/demo/a',
+      );
+      expect(t.errText()).toContain('1 redirect with patterns was not written');
+      expect(t.text()).toContain('Static site written to out/');
+    });
+
+    it('puts the server files back and writes nothing when next fails', async () => {
+      await project({ ...GOOD, 'src/proxy.ts': 'export const proxy = 1;' });
+      const t = makeEnv();
+      const done = run(['build', '--static', '--base-path=/p'], t.env);
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      t.children[0]!.child.emit('exit', 2);
+      expect(await done).toBe(2);
+      expect(await exists('src/proxy.ts')).toBe(true);
+      expect(await exists('out/index.md')).toBe(false);
+    });
+
+    it('restores files left behind by an earlier crashed build', async () => {
+      await project({
+        ...GOOD,
+        '.dockudos/static-stash/src/proxy.ts': 'export const proxy = 1;',
+      });
+      const t = makeEnv();
+      const done = run(['build', '--static'], t.env);
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      // Restored, then set aside again for the build.
+      expect(await exists('src/proxy.ts')).toBe(false);
+      t.children[0]!.child.emit('exit', 0);
+      await done;
+      expect(await exists('src/proxy.ts')).toBe(true);
+    });
   });
 
   it('explains when next is not installed', async () => {

@@ -27,6 +27,10 @@ import { Sidebar } from './sidebar.tsx';
 import { Toc } from './toc.tsx';
 import { TutorialHeader } from './tutorial-header.tsx';
 
+/** Set by `dockudos build --static`: there is no server, so AI and feedback are left out. */
+const STATIC_EXPORT = process.env.NEXT_PUBLIC_DOCKUDOS_STATIC === '1';
+const STATIC_MARKDOWN = 'static';
+
 export interface DocsLayoutProps {
   config: Pick<DocsConfig, 'name' | 'logo' | 'theme'> &
     Partial<
@@ -77,14 +81,15 @@ export function DocsLayout({
     flattenSidebar(tab.sidebar)[0]?.path;
   const shortcuts = config.shortcuts !== false;
   // Only what the browser needs. Never the provider, model or any address of the model's API.
-  const ai = config.ai?.enabled
-    ? {
-        endpoint: config.ai.endpoint,
-        navigateEndpoint: config.ai.navigateEndpoint,
-        navigation: config.ai.navigation,
-        maxQuestionLength: config.ai.limits.maxQuestionLength,
-      }
-    : undefined;
+  const ai =
+    config.ai?.enabled && !STATIC_EXPORT
+      ? {
+          endpoint: config.ai.endpoint,
+          navigateEndpoint: config.ai.navigateEndpoint,
+          navigation: config.ai.navigation,
+          maxQuestionLength: config.ai.limits.maxQuestionLength,
+        }
+      : undefined;
   const actions = config.actions;
   const siteUrl = config.seo?.siteUrl?.replace(/\/+$/, '');
   const editUrl = actions?.editUrl
@@ -156,7 +161,11 @@ export function DocsLayout({
                 path={page.path}
                 title={page.title}
                 markdownEndpoint={
-                  actions.copyPage ? actions.endpoint : undefined
+                  actions.copyPage
+                    ? STATIC_EXPORT
+                      ? STATIC_MARKDOWN
+                      : actions.endpoint
+                    : undefined
                 }
                 editUrl={editUrl}
                 pageUrl={
@@ -200,9 +209,11 @@ export function DocsLayout({
                 {shortcuts && <ShortcutsHint />}
               </div>
             )}
-            {config.kudos?.enabled && page.kudos !== false && (
-              <Kudos path={page.path} endpoint={config.kudos.endpoint} />
-            )}
+            {config.kudos?.enabled &&
+              page.kudos !== false &&
+              !STATIC_EXPORT && (
+                <Kudos path={page.path} endpoint={config.kudos.endpoint} />
+              )}
             <PrevNext prev={prev} next={next} />
           </article>
         </main>

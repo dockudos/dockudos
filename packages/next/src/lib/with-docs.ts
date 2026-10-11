@@ -33,6 +33,17 @@ export const markdownRewrites = () => [
   },
 ];
 
+/**
+ * `dockudos build --static` sets `DOCKUDOS_STATIC=1` (and `DOCKUDOS_BASE_PATH` for hosts that serve from a
+ * sub-path, such as GitHub Pages project sites). The site is then written to `out/` as plain files.
+ * Export supports no `rewrites`, `headers` or `redirects`, so those are left out here.
+ */
+const isStatic = () => process.env.DOCKUDOS_STATIC === '1';
+const basePath = () =>
+  (process.env.DOCKUDOS_BASE_PATH ?? '')
+    .replace(/\/+$/, '')
+    .replace(/^(?!\/|$)/, '/');
+
 export interface WithDocsOptions {
   /** Project root, where `docs.json` lives. Default `process.cwd()`. */
   root?: string;
@@ -69,6 +80,26 @@ export function withDocs(
       prefix: config.urlPrefix,
     }),
   });
+
+  if (isStatic()) {
+    const base = basePath();
+    return withMdx({
+      ...nextConfig,
+      output: 'export',
+      trailingSlash: true,
+      images: { ...nextConfig.images, unoptimized: true },
+      ...(base && { basePath: base }),
+      env: {
+        ...nextConfig.env,
+        NEXT_PUBLIC_DOCKUDOS_STATIC: '1',
+        NEXT_PUBLIC_DOCKUDOS_BASE_PATH: base,
+      },
+      pageExtensions: [
+        ...pageExtensions,
+        ...DOC_EXTENSIONS.filter((ext) => !pageExtensions.includes(ext)),
+      ],
+    });
+  }
 
   return withMdx({
     ...nextConfig,
