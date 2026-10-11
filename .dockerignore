@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/dist
+**/out-tsc
+**/test-output
+**/test-results
+**/playwright-report
+.git
+.nx
+tmp
+*.log
+.env
+.env.*
+!.env.example

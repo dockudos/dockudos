@@ -1,0 +1,134 @@
+# Default values for the dockudos chart.
+#
+# A trial install needs only the secrets below (and bundled services on):
+#   helm install docs ./deploy/helm/dockudos \
+#     --set secrets.sessionSecret=$(openssl rand -hex 32) \
+#     --set postgresql.auth.password=$(openssl rand -hex 16) \
+#     --set minio.auth.password=$(openssl rand -hex 16) \
+#     --set config.publicUrl=https://docs-admin.example.com --set config.sitesDomain=sites.example.com
+# For production use external Postgres and S3-compatible storage (postgresql.enabled=false, minio.enabled=false) and
+# `secrets.existingSecret`, so no secret value passes through Helm values.
+
+image:
+  repository: ghcr.io/dockudos/platform
+  tag: ""            # defaults to the chart's appVersion
+  pullPolicy: IfNotPresent
+editorImage:
+  repository: ghcr.io/dockudos/editor
+  tag: ""
+imagePullSecrets: []
+
+config:
+  # The URL people use for the dashboard. Your Git host calls <publicUrl>/hooks/<provider>/<site id>.
+  publicUrl: https://docs-admin.example.com
+  # Built sites are served at <slug>.<sitesDomain>. Must not be the dashboard's host or a parent of it.
+  sitesDomain: sites.example.com
+  logLevel: info
+  workerConcurrency: 2
+  dbPoolMax: 10
+  trustProxy: true       # the ingress sets X-Forwarded-For
+  s3:
+    # Used when minio.enabled is false.
+    endpoint: ""
+    region: us-east-1
+    bucket: dockudos
+  git:
+    githubApiUrl: https://api.github.com
+    gitlabApiUrl: https://gitlab.com/api/v4
+  oidc:
+    issuer: ""
+    clientId: ""
+    rolesClaim: roles
+    groupsClaim: groups
+    adminEmail: ""
+  analytics:
+    logConversations: false
+    retentionDays: 90
+    conversationRetentionDays: 30
+  agent:
+    enabled: false
+    llmProvider: ""       # anthropic | openai
+    llmModel: ""
+    llmBaseUrl: ""
+  cookieDomain: ""
+  fetchAllowHosts: ""
+  extraEnv: []            # [{ name: FOO, value: bar }]
+
+secrets:
+  # Name of a Secret you manage. Keys (any may be omitted if unused):
+  #   DOCKUDOS_SESSION_SECRET (required), DOCKUDOS_DATABASE_URL, DOCKUDOS_S3_ACCESS_KEY, DOCKUDOS_S3_SECRET_KEY,
+  #   DOCKUDOS_GITHUB_TOKEN, DOCKUDOS_GITLAB_TOKEN, DOCKUDOS_OIDC_CLIENT_SECRET, DOCKUDOS_LLM_API_KEY,
+  #   DOCKUDOS_DOCS_AUTH_SECRET, DOCKUDOS_METRICS_TOKEN
+  existingSecret: ""
+  # Otherwise the chart creates one from these (fine for trials; use existingSecret for production).
+  sessionSecret: ""
+  databaseUrl: ""         # required when postgresql.enabled is false and no existingSecret
+  s3AccessKey: ""
+  s3SecretKey: ""
+  githubToken: ""
+  gitlabToken: ""
+  oidcClientSecret: ""
+  llmApiKey: ""
+  docsAuthSecret: ""
+  metricsToken: ""
+
+# Bundled single-instance services, for trials and small installs. Not highly available: back them up.
+postgresql:
+  enabled: false
+  image: postgres:17
+  auth: { username: dockudos, database: dockudos, password: "" }
+  persistence: { size: 8Gi, storageClass: "" }
+  resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 1Gi } }
+minio:
+  enabled: false
+  image: minio/minio:latest
+  auth: { username: dockudos, password: "" }
+  persistence: { size: 20Gi, storageClass: "" }
+  resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 1Gi } }
+
+# One workload per role. They share one image; replicas and resources are independent.
+api:
+  replicas: 2
+  services: "web,hooks,analytics,auth,editor"
+  resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 512Mi } }
+  autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 8, targetCPUUtilizationPercentage: 70 }
+worker:
+  replicas: 1
+  resources: { requests: { cpu: 250m, memory: 512Mi }, limits: { memory: 2Gi } }
+  workDir: { sizeLimit: 5Gi }     # builds check out and install into this scratch space
+agent:
+  replicas: 1      # it schedules work; one is enough, and more is safe (jobs are claimed once)
+  resources: { requests: { cpu: 50m, memory: 128Mi }, limits: { memory: 512Mi } }
+site:
+  replicas: 2
+  resources: { requests: { cpu: 50m, memory: 128Mi }, limits: { memory: 512Mi } }
+  autoscaling: { enabled: false, minReplicas: 2, maxReplicas: 10, targetCPUUtilizationPercentage: 70 }
+editor:
+  replicas: 2
+  resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 512Mi } }
+
+service: { type: ClusterIP }
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  # TLS for the dashboard host. For the wildcard sites host you need a wildcard certificate (cert-manager DNS-01).
+  tls:
+    enabled: false
+    secretName: dockudos-tls
+    sitesSecretName: dockudos-sites-tls
+
+podDisruptionBudget: { enabled: true, minAvailable: 1 }
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+serviceAccount: { create: true, annotations: {} }
+
+# Restrict what the build worker can reach. It runs code from your repositories: allow it only the Git hosts and
+# package registries it needs, and block the cluster's internal ranges and the cloud metadata address.
+networkPolicy:
+  enabled: false
+  workerEgress: []        # extra `to:` rules, e.g. - ipBlock: { cidr: 0.0.0.0/0, except: [169.254.169.254/32, 10.0.0.0/8] }

@@ -1,0 +1,57 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "dockudos.fullname" . }}-postgresql
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "dockudos.fullname" . }}-postgresql
+  replicas: 1
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" . "component" "postgresql") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "dockudos.selector" (dict "ctx" . "component" "postgresql") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: { fsGroup: 999, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresql.image }}
+          ports: [{ name: pg, containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_USER, value: {{ .Values.postgresql.auth.username | quote }} }
+            - { name: POSTGRES_DB, value: {{ .Values.postgresql.auth.database | quote }} }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ include "dockudos.fullname" . }}-postgresql, key: password } }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+          readinessProbe: { exec: { command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""] }, periodSeconds: 5 }
+          resources: {{- toYaml .Values.postgresql.resources | nindent 12 }}
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        {{- with .Values.postgresql.persistence.storageClass }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources: { requests: { storage: {{ .Values.postgresql.persistence.size }} } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dockudos.fullname" . }}-postgresql
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  selector: {{- include "dockudos.selector" (dict "ctx" . "component" "postgresql") | nindent 4 }}
+  ports: [{ name: pg, port: 5432, targetPort: pg }]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "dockudos.fullname" . }}-postgresql
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+stringData:
+  password: {{ required "postgresql.auth.password is required when postgresql.enabled" .Values.postgresql.auth.password | quote }}
+{{- end }}

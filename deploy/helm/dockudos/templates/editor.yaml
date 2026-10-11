@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dockudos.fullname" . }}-editor
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+    app.kubernetes.io/component: editor
+spec:
+  replicas: {{ .Values.editor.replicas }}
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" . "component" "editor") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "dockudos.selector" (dict "ctx" . "component" "editor") | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "dockudos.fullname" . }}
+      automountServiceAccountToken: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- include "dockudos.podSecurity" . | nindent 8 }}
+      containers:
+        - name: editor
+          image: {{ include "dockudos.editorImage" . }}
+          imagePullPolicy: {{ .Values.editorImage.pullPolicy | default .Values.image.pullPolicy }}
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: DOCKUDOS_API_URL, value: {{ printf "http://%s-api:4000" (include "dockudos.fullname" .) | quote }} }
+            - { name: PORT, value: "3000" }
+            - { name: HOSTNAME, value: "0.0.0.0" }
+          startupProbe: { httpGet: { path: /, port: http }, periodSeconds: 3, failureThreshold: 40 }
+          livenessProbe: { httpGet: { path: /, port: http }, periodSeconds: 15, timeoutSeconds: 5 }
+          readinessProbe: { httpGet: { path: /, port: http }, periodSeconds: 10, timeoutSeconds: 5 }
+          resources: {{- toYaml .Values.editor.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # Next.js writes its cache under .next at run time
+            capabilities: { drop: [ALL] }
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dockudos.fullname" . }}-editor
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector: {{- include "dockudos.selector" (dict "ctx" . "component" "editor") | nindent 4 }}
+  ports: [{ name: http, port: 3000, targetPort: http }]
+{{- if and .Values.podDisruptionBudget.enabled (gt (int .Values.editor.replicas) 1) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "dockudos.fullname" . }}-editor
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" . "component" "editor") | nindent 6 }}
+{{- end }}

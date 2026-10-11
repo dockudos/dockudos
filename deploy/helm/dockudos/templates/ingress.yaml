@@ -1,0 +1,41 @@
+{{- if .Values.ingress.enabled }}
+{{- $platformHost := (urlParse .Values.config.publicUrl).host | splitList ":" | first }}
+{{- $name := include "dockudos.fullname" . }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $name }}
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ $platformHost | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}
+    - hosts: [{{ printf "*.%s" .Values.config.sitesDomain | quote }}]
+      secretName: {{ .Values.ingress.tls.sitesSecretName }}
+  {{- end }}
+  rules:
+    # The dashboard, and the webhook URL your Git host calls.
+    - host: {{ $platformHost | quote }}
+      http:
+        paths:
+          - path: /hooks
+            pathType: Prefix
+            backend: { service: { name: {{ $name }}-api, port: { number: 4000 } } }
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: {{ $name }}-editor, port: { number: 3000 } } }
+    # Hosted documentation: <slug>.<sitesDomain>, each on its own origin.
+    - host: {{ printf "*.%s" .Values.config.sitesDomain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: {{ $name }}-site, port: { number: 4000 } } }
+{{- end }}

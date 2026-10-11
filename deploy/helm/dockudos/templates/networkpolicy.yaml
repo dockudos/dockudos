@@ -1,0 +1,24 @@
+{{- if .Values.networkPolicy.enabled }}
+# The build worker runs code from your repositories. It may talk to DNS, the in-cluster services it needs, and whatever
+# you list in networkPolicy.workerEgress (your Git host and package registry); nothing else.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "dockudos.fullname" . }}-worker
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" . "component" "worker") | nindent 6 }}
+  policyTypes: [Ingress, Egress]
+  ingress: []
+  egress:
+    - ports: [{ port: 53, protocol: UDP }, { port: 53, protocol: TCP }]
+    - to:
+        - podSelector: { matchLabels: { app.kubernetes.io/instance: {{ .Release.Name }}, app.kubernetes.io/component: postgresql } }
+        - podSelector: { matchLabels: { app.kubernetes.io/instance: {{ .Release.Name }}, app.kubernetes.io/component: minio } }
+    {{- with .Values.networkPolicy.workerEgress }}
+    {{- range . }}
+    - to: [{{ toYaml . | nindent 8 }}]
+    {{- end }}
+    {{- end }}
+{{- end }}

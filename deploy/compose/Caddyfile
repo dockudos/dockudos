@@ -1,0 +1,32 @@
+# Routing for the front door. Edit the two addresses in .env, not this file.
+#
+# Local trial: http://localhost (port 8080 on the host) and http://*.sites.localhost.
+# Production: use real names (https://docs-admin.example.com and https://*.sites.example.com). Caddy gets a certificate for
+# the first on its own; a wildcard certificate needs a DNS challenge, so many people terminate TLS in front of Caddy instead.
+
+{
+	# Plain HTTP unless an address above starts with https://.
+	auto_https disable_redirects
+}
+
+{$DOCKUDOS_PLATFORM_ADDRESS} {
+	# Your Git host posts push events here; the secret is checked by the platform, not the proxy.
+	@hooks path /hooks/*
+	handle @hooks {
+		reverse_proxy api:4000
+	}
+	# The platform's own metrics are for your monitoring, not the internet.
+	@internal path /metrics /readyz /healthz
+	respond @internal 404
+	handle {
+		reverse_proxy editor:3000
+	}
+	header {
+		-Server
+	}
+}
+
+# Hosted documentation. Each site is its own origin, never the dashboard's.
+{$DOCKUDOS_SITES_ADDRESS} {
+	reverse_proxy site:4000
+}

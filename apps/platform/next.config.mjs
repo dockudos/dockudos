@@ -1,7 +1,13 @@
 // The dashboard reaches the platform API through its own origin (see src/proxy.ts), so the session cookie and the
 // CSRF check (`Origin` must be the dashboard) work without CORS. The target is read at run time, not build time.
+import { join } from 'node:path';
+
+// The container image builds a self-contained server (`.next/standalone`); development and tests use the normal one.
+const standalone = process.env['DOCKUDOS_STANDALONE'] === '1';
+
 /** @type {import('next').NextConfig} */
 export default {
+  ...(standalone && { output: 'standalone', outputFileTracingRoot: join(import.meta.dirname, '../..') }),
   transpilePackages: ['@dockudos/ui'],
   poweredByHeader: false,
   // Uploads of up to 10 MB pass through the proxy.

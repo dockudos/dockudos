@@ -1,0 +1,21 @@
+dockudos is installing. When the pods are ready:
+
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+  helm test {{ .Release.Name }}
+
+Dashboard: {{ .Values.config.publicUrl }}
+Hosted sites: https://<slug>.{{ .Values.config.sitesDomain }}
+Webhook URL (shown again when you connect a repository): {{ .Values.config.publicUrl }}/hooks/github/<site id>
+
+First credentials, without sign-in configured:
+  kubectl exec deploy/{{ include "dockudos.fullname" . }}-api -- node dist/server.js bootstrap "My team"
+
+{{- if not .Values.config.oidc.issuer }}
+
+Sign-in is not configured (config.oidc.issuer is empty): only API keys work until you set it.
+{{- end }}
+{{- if or .Values.postgresql.enabled .Values.minio.enabled }}
+
+You are using the bundled {{ if .Values.postgresql.enabled }}PostgreSQL{{ end }}{{ if and .Values.postgresql.enabled .Values.minio.enabled }} and {{ end }}{{ if .Values.minio.enabled }}MinIO{{ end }}: single instances, not highly available.
+Back them up (see the self-hosting notes) or switch to managed services for production.
+{{- end }}

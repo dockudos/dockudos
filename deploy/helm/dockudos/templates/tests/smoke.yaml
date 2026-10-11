@@ -1,0 +1,29 @@
+# `helm test <release>`: the API reports ready (database and storage reachable) and the dashboard answers.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "dockudos.fullname" . }}-smoke
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext: {{- include "dockudos.podSecurity" . | nindent 4 }}
+  containers:
+    - name: smoke
+      image: {{ include "dockudos.image" . }}
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      command:
+        - node
+        - -e
+        - |
+          const get = async (url, ok) => { const r = await fetch(url); if (!ok(r)) throw new Error(url + ' -> ' + r.status); console.log('ok', url, r.status); };
+          (async () => {
+            await get('http://{{ include "dockudos.fullname" . }}-api:4000/readyz', (r) => r.ok);
+            await get('http://{{ include "dockudos.fullname" . }}-api:4000/api/v1/me', (r) => r.status === 401);
+            await get('http://{{ include "dockudos.fullname" . }}-site:4000/healthz', (r) => r.ok);
+            await get('http://{{ include "dockudos.fullname" . }}-editor:3000/', (r) => r.ok);
+          })().catch((e) => { console.error(String(e)); process.exit(1); });
+      securityContext: {{- include "dockudos.containerSecurity" . | nindent 8 }}

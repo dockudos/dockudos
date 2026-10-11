@@ -1,0 +1,56 @@
+{{- if .Values.minio.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dockudos.fullname" . }}-minio
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" . "component" "minio") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "dockudos.selector" (dict "ctx" . "component" "minio") | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: minio
+          image: {{ .Values.minio.image }}
+          # A top-level folder in MinIO's data directory is a bucket: create it before the server starts.
+          command: ["/bin/sh", "-c", "mkdir -p /data/dockudos && exec minio server /data --address :9000"]
+          ports: [{ name: s3, containerPort: 9000 }]
+          env:
+            - { name: MINIO_ROOT_USER, value: {{ .Values.minio.auth.username | quote }} }
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ include "dockudos.secretName" . }}, key: DOCKUDOS_S3_SECRET_KEY } }
+          readinessProbe: { httpGet: { path: /minio/health/ready, port: s3 }, periodSeconds: 5 }
+          resources: {{- toYaml .Values.minio.resources | nindent 12 }}
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+          volumeMounts: [{ name: data, mountPath: /data }]
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: {{ include "dockudos.fullname" . }}-minio }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "dockudos.fullname" . }}-minio
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  accessModes: [ReadWriteOnce]
+  {{- with .Values.minio.persistence.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources: { requests: { storage: {{ .Values.minio.persistence.size }} } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dockudos.fullname" . }}-minio
+  labels: {{- include "dockudos.labels" . | nindent 4 }}
+spec:
+  selector: {{- include "dockudos.selector" (dict "ctx" . "component" "minio") | nindent 4 }}
+  ports: [{ name: s3, port: 9000, targetPort: s3 }]
+{{- end }}

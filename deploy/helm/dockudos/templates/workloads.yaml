@@ -1,0 +1,112 @@
+{{- $roles := dict "api" (dict "cfg" .Values.api "services" .Values.api.services "http" true) "worker" (dict "cfg" .Values.worker "services" "worker" "http" false) "agent" (dict "cfg" .Values.agent "services" "agent" "http" false) "site" (dict "cfg" .Values.site "services" "site" "http" true) }}
+{{- range $role, $r := $roles }}
+{{- $cfg := $r.cfg }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dockudos.fullname" $ }}-{{ $role }}
+  labels: {{- include "dockudos.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $role }}
+spec:
+  {{- if not (and $cfg.autoscaling $cfg.autoscaling.enabled) }}
+  replicas: {{ $cfg.replicas }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" $ "component" $role) | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    metadata:
+      labels: {{- include "dockudos.selector" (dict "ctx" $ "component" $role) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include "dockudos.env" (dict "ctx" $ "services" $r.services) | sha256sum }}
+        {{- with $.Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{- end }}
+    spec:
+      serviceAccountName: {{ include "dockudos.fullname" $ }}
+      automountServiceAccountToken: false
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- include "dockudos.podSecurity" $ | nindent 8 }}
+      # Every pod applies pending migrations before it starts; they are safe to run together (an advisory lock serializes them).
+      initContainers:
+        - name: migrate
+          image: {{ include "dockudos.image" $ }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          args: ["migrate"]
+          env: {{- include "dockudos.env" (dict "ctx" $ "services" "worker") | nindent 12 }}
+          securityContext: {{- include "dockudos.containerSecurity" $ | nindent 12 }}
+          volumeMounts: [{ name: tmp, mountPath: /tmp }, { name: data, mountPath: /var/lib/dockudos }]
+      containers:
+        - name: {{ $role }}
+          image: {{ include "dockudos.image" $ }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports: [{ name: http, containerPort: 4000 }]
+          env: {{- include "dockudos.env" (dict "ctx" $ "services" $r.services) | nindent 12 }}
+          startupProbe: { httpGet: { path: /healthz, port: http }, periodSeconds: 3, failureThreshold: 40 }
+          livenessProbe: { httpGet: { path: /healthz, port: http }, periodSeconds: 15, timeoutSeconds: 5 }
+          readinessProbe: { httpGet: { path: /readyz, port: http }, periodSeconds: 10, timeoutSeconds: 5 }
+          resources: {{- toYaml $cfg.resources | nindent 12 }}
+          securityContext: {{- include "dockudos.containerSecurity" $ | nindent 12 }}
+          volumeMounts: [{ name: tmp, mountPath: /tmp }, { name: data, mountPath: /var/lib/dockudos }]
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - name: data
+          emptyDir:
+            {{- if eq $role "worker" }}
+            sizeLimit: {{ $.Values.worker.workDir.sizeLimit }}
+            {{- else }}
+            sizeLimit: 1Gi
+            {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if $r.http }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dockudos.fullname" $ }}-{{ $role }}
+  labels: {{- include "dockudos.labels" $ | nindent 4 }}
+spec:
+  type: {{ $.Values.service.type }}
+  selector: {{- include "dockudos.selector" (dict "ctx" $ "component" $role) | nindent 4 }}
+  ports: [{ name: http, port: 4000, targetPort: http }]
+{{- end }}
+{{- if and $cfg.autoscaling $cfg.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "dockudos.fullname" $ }}-{{ $role }}
+  labels: {{- include "dockudos.labels" $ | nindent 4 }}
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: {{ include "dockudos.fullname" $ }}-{{ $role }} }
+  minReplicas: {{ $cfg.autoscaling.minReplicas }}
+  maxReplicas: {{ $cfg.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: {{ $cfg.autoscaling.targetCPUUtilizationPercentage }} } }
+{{- end }}
+{{- if and $.Values.podDisruptionBudget.enabled (gt (int $cfg.replicas) 1) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "dockudos.fullname" $ }}-{{ $role }}
+  labels: {{- include "dockudos.labels" $ | nindent 4 }}
+spec:
+  minAvailable: {{ $.Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels: {{- include "dockudos.selector" (dict "ctx" $ "component" $role) | nindent 6 }}
+{{- end }}
+{{- end }}
