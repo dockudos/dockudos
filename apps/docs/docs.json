@@ -31,7 +31,12 @@
         },
         {
           "group": "Structure",
-          "pages": ["guides/navigation", "guides/layouts", "guides/redirects"]
+          "pages": [
+            "guides/navigation",
+            "guides/layouts",
+            "guides/redirects",
+            "guides/static-export"
+          ]
         },
         {
           "group": "Customize",

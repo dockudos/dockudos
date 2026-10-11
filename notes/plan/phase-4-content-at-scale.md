@@ -32,7 +32,7 @@
 - [ ] P4.15 Protected content excluded from sitemap, RSS, OG images and static export.
 
 ### 4E. Export, images, layouts
-- [ ] P4.16 Static export mode with keyword search working; clear message that AI needs a server or external endpoint.
+- [x] P4.16 Static export: `dockudos build --static [--base-path /x]` writes plain files to `out/`; keyword search from a static index, `.md` twins, redirect pages; AI, feedback, MCP and the proxy are left out and their buttons hidden; fails on `access` rules. *Built with `apps/docs` (125 pages, `--base-path /demo`); tests in `cli.spec.ts` and `with-docs.spec.ts`. Not yet run in a browser.*
 - [ ] P4.17 OG image generation for every page.
 - [ ] P4.18 PDF and EPUB export of pages/sections.
 - [ ] P4.19 Custom page layouts for landing/marketing pages built from components.
@@ -51,7 +51,7 @@
 - [ ] The version switcher keeps the reader on the equivalent page when it exists, and falls back gracefully when it does not.
 - [ ] Changelog renders and its RSS feed validates.
 - [ ] A private section requires login; an unauthenticated user cannot see it in pages, search results, ask answers, `llms.txt`, Markdown twins, sitemap or MCP (verified by tests for each surface).
-- [ ] Static export builds and works for pages and keyword search without a server.
+- [ ] Static export builds and works for pages and keyword search without a server. *Builds; the browser check is the test below.*
 - [ ] Every page has an OG image; PDF/EPUB export produces valid, readable files.
 - [ ] Feedback submissions reach the configured hook and respect the no-personal-data default.
 

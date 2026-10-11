@@ -86,7 +86,7 @@ Details of how these work are in [ai.md](./ai.md).
 | Changelog | Date-based entries with an RSS feed | 4 |
 | Page feedback | Thumbs up/down with hooks to send data to your own backend | 4 |
 | Private docs | OAuth login, plus access control to limit which content each user sees | 4 |
-| Static export | Self-contained static output, for hosting anywhere (AI features need a server or external endpoint) | 4 |
+| Static export | Self-contained static output, for hosting anywhere (`dockudos build --static`; AI, feedback and `access` rules need a server and are left out) | 4 |
 | OG images | Generated social preview image for every page | 4 |
 | Export | PDF and EPUB export of docs pages | 4 |
 | RSS | Feeds for docs and blog content | 4 |

@@ -28,7 +28,7 @@ Pick the lightest option that covers the features you need.
 
 | Option | Pages | Search | AI features | Platform services | Effort |
 | --- | --- | --- | --- | --- | --- |
-| Static export on any static host | Yes | Keyword, in the browser | No (needs a server or external endpoint) | No | Lowest |
+| Static export on any static host (`dockudos build --static`) | Yes | Keyword, in the browser | No | No | Lowest |
 | Vercel, Netlify or similar | Yes | Yes | Yes (serverless functions) | Optional, run separately | Low |
 | Node server (`next start`) | Yes | Yes | Yes | Optional | Medium |
 | Docker image | Yes | Yes | Yes | Yes, with Compose | Medium |

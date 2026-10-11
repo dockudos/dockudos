@@ -1,0 +1,40 @@
+---
+icon: file-archive
+title: Static export
+description: Build the site as plain files and host it anywhere, for free.
+---
+
+```bash
+npx dockudos build --static
+```
+
+writes the whole site to `out/`. Upload that folder to GitHub Pages, Netlify, Cloudflare Pages, S3 or any file server.
+
+For a host that serves your site from a sub-path, such as a GitHub Pages project site at `https://you.github.io/docs/`:
+
+```bash
+npx dockudos build --static --base-path /docs
+```
+
+## What works
+
+- Every page, the navigation, themes, code blocks, diagrams, math and the API reference.
+- Search in the browser. The index is written to `out/api/search/index`.
+- "Copy page" and a `.md` file next to every page (`/guides/search.md`).
+- `llms.txt`, `llms-full.txt`, the sitemap and `robots.txt`.
+- [Redirects](/guides/redirects) from `docs.json`, as small pages that send the visitor on. Redirects that use patterns (`:id`, `*`) cannot be written; add them to your host's own redirect rules.
+
+## What is left out
+
+These need a server, so a static build does not include them, and hides their buttons:
+
+- The assistant, AI navigation, and the MCP server.
+- Page feedback (kudos).
+- Access rules. A build with `access` rules **stops with an error**, because every page would otherwise be public.
+- The API playground's optional proxy. The playground itself still works, as it sends requests from the browser.
+
+The same project still builds as a normal Next.js site with `dockudos build`. Nothing in your files changes between the two.
+
+## Page dates
+
+"Last updated" comes from Git history. CI checkouts are shallow by default, which gives every page the same date. In GitHub Actions use `fetch-depth: 0` on `actions/checkout`.
