@@ -6,7 +6,9 @@ import { init } from './init.ts';
 import { indexCommand } from './index-command.ts';
 import { kudos } from './kudos.ts';
 import { mcp } from './mcp.ts';
+import { epub } from './epub.ts';
 import { pdf } from './pdf.ts';
+import { sync } from './sync.ts';
 import { type Env, CliError } from './io.ts';
 
 const HELP = `dockudos: documentation sites for Next.js
@@ -16,12 +18,14 @@ Usage: dockudos <command> [options]
 Commands:
   init [folder]     Create a new docs site (--name, --package-manager, --yes)
   dev [next args]   Start the dev server; restarts when docs.json changes
-  build [next args] Validate docs.json, check links, then build the site (--static for a plain-file site in out/, --base-path /name for a sub-path)
+  build [next args] Sync sources, validate docs.json, check links, then build the site (--static for a plain-file site in out/, --base-path /name for a sub-path, --no-sync to skip the sources)
   generate          Write API reference pages from the specs in docs.json (--force)
   index             Build the search index (and embeddings, when configured) without building the site
   mcp               Serve the docs to AI coding tools over the Model Context Protocol (stdio)
   broken-links      Check internal links and anchors (--external also checks http links)
-  pdf               Print every page into one PDF (-o file, --no-build, --page-size, --chrome, --user, --token)
+  sync [name...]    Fetch or convert the content sources of docs.json (remote, Obsidian, HTML, Notion, Sanity) into docs/
+  pdf               Print pages into one PDF (-o file, --no-build, --page-size, --chrome, --user, --token, --path /guides, --version v1, --locale fr)
+  epub              Write pages as an EPUB book (-o file, --path /guides, --version v1, --locale fr)
   kudos             Show page feedback collected by the kudos widget (--path, --json, --file)
 
 Options:
@@ -40,6 +44,8 @@ const COMMANDS: Record<string, (env: Env, args: string[]) => Promise<number>> =
     'broken-links': brokenLinks,
     kudos,
     pdf,
+    epub,
+    sync,
   };
 
 /** Run the CLI. Returns the process exit code; never throws for expected failures. */

@@ -49,6 +49,7 @@ export async function mcp(env: Env, _args: string[]): Promise<number> {
       docsDir: project.docsDir,
       config: project.config,
       tree: project.tree,
+      views: project.views,
       components: await siteComponents(env.cwd),
     }),
   );

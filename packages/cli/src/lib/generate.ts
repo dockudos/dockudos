@@ -1,4 +1,4 @@
-import { ApiSpecError } from '@dockudos/core';
+import { ApiSpecError, defaultVariant, variantDir } from '@dockudos/core';
 import { generateApiDocs, loadConfig } from '@dockudos/core/node';
 import { isAbsolute, resolve } from 'node:path';
 import { CliError, type Env } from './io.ts';
@@ -21,9 +21,12 @@ export async function generatePages(
   if (!config.openapi.sources.length && !config.reference.sources.length)
     return 0;
   try {
+    // Generated pages go into the default version and language, like any page written by hand.
+    const dir = variantDir(config, defaultVariant(config));
     const reports = await generateApiDocs({
       root: env.cwd,
       config,
+      ...(dir && { docsDir: `docs/${dir}` }),
       force,
       log: (line) => !quiet && env.out(`${line}\n`),
     });

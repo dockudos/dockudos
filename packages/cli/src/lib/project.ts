@@ -4,10 +4,12 @@ import {
   type PageTree,
   buildNavigation,
   resolveRedirects,
+  versionInfos,
 } from '@dockudos/core';
 import {
+  type ContentView,
   checkLinks,
-  discoverPages,
+  discoverSite,
   formatLinkProblems,
   loadConfig,
   loadIconPacks,
@@ -20,6 +22,8 @@ export interface Project {
   tree: PageTree;
   nav: Navigation;
   docsDir: string;
+  /** Every version and language, the default first (one view on a site with neither). */
+  views: ContentView[];
 }
 
 /**
@@ -31,14 +35,27 @@ export async function loadProject(root: string): Promise<Project> {
   const docsDir = join(root, 'docs');
   try {
     const config = await loadConfig(root);
-    const tree = await discoverPages(docsDir, { prefix: config.urlPrefix });
-    const nav = buildNavigation(config, tree);
+    const { tree, views } = await discoverSite(docsDir, config);
+    // The default version and language must match `navigation` exactly; the others may have fewer pages.
+    const versions = versionInfos(config);
+    const navs = views.map((view, n) =>
+      buildNavigation(
+        {
+          navigation:
+            versions.find((v) => v.name === view.variant.version)?.navigation ??
+            config.navigation,
+        },
+        view.tree,
+        { lenient: n > 0 },
+      ),
+    );
+    const nav = navs[0] as Navigation;
     await loadIconPacks(root, config);
     resolveRedirects(
       config.redirects,
       tree.pages.map((p) => p.path),
     );
-    return { config, tree, nav, docsDir };
+    return { config, tree, nav, docsDir, views };
   } catch (e) {
     throw new CliError((e as Error).message);
   }

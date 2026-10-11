@@ -359,16 +359,26 @@ describe('build', () => {
         () => false,
       );
 
-    it('refuses a site with access rules, before building anything', async () => {
+    it('leaves out the pages behind access rules, and says so', async () => {
       await project({
         ...GOOD,
         'docs.json':
           '{"name":"T","access":{"rules":[{"paths":["/a"],"require":"basic","realm":"R"}]}}',
       });
       const t = makeEnv();
-      expect(await run(['build', '--static'], t.env)).toBe(1);
-      expect(t.errText()).toContain('has 1 `access` rule');
-      expect(t.children).toHaveLength(0);
+      const done = run(['build', '--static'], t.env);
+      await vi.waitFor(() => expect(t.children).toHaveLength(1));
+      t.children[0]!.child.emit('exit', 0);
+      expect(await done).toBe(0);
+      expect(t.text()).toContain('leaving out 1 page behind `access` rules');
+      // not as Markdown, not in the index the browser downloads
+      expect(await exists('out/a.md')).toBe(false);
+      expect(await exists('out/index.md')).toBe(true);
+      const index = JSON.parse(
+        await readFile(join(dir, 'out/api/search/index'), 'utf8'),
+      );
+      expect(index.pages.map((p: { path: string }) => p.path)).toEqual(['/']);
+      expect(JSON.stringify(index)).not.toContain('"/a"');
     });
 
     it('builds with the static switches, sets server files aside and writes the extra files', async () => {

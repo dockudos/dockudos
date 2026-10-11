@@ -43,6 +43,23 @@ const slug = (name: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'docs';
 
+/** `?version=…&locale=…&path=…` for the options given, or ''. A path is an address inside the version and language. */
+export function printQuery(values: {
+  path?: string;
+  version?: string;
+  locale?: string;
+}): string {
+  if (values.path !== undefined && !/^\/[^\s?#]*$/.test(values.path))
+    throw new CliError(
+      '--path must be an address like /guides (starting with /).',
+    );
+  const params = new URLSearchParams();
+  if (values.version) params.set('version', values.version);
+  if (values.locale) params.set('locale', values.locale);
+  if (values.path) params.set('path', values.path);
+  return params.size ? `?${params}` : '';
+}
+
 /**
  * `dockudos pdf`: build the site, serve it, and print the `/print` page (every page in one
  * document) to a single PDF with headless Chrome.
@@ -59,8 +76,12 @@ export async function pdf(env: Env, args: string[]): Promise<number> {
       timeout: { type: 'string', default: '120' },
       user: { type: 'string' },
       token: { type: 'string' },
+      path: { type: 'string' },
+      version: { type: 'string' },
+      locale: { type: 'string' },
     },
   });
+  const query = printQuery(values);
 
   const pageSize =
     (values['page-size'] ?? 'A4').toLowerCase() === 'letter'
@@ -132,7 +153,7 @@ export async function pdf(env: Env, args: string[]): Promise<number> {
           `The server stopped before it was ready:\n${log.trim().split('\n').slice(-10).join('\n')}`,
         );
       try {
-        const res = await env.fetch(`${url}/print`, authHeaders(auth));
+        const res = await env.fetch(`${url}/print${query}`, authHeaders(auth));
         if (res.status === 200) break;
         if (res.status === 401 || res.status === 403) {
           throw new CliError(
@@ -164,7 +185,7 @@ export async function pdf(env: Env, args: string[]): Promise<number> {
 
     env.out('Printing...\n');
     const bytes = await env.renderPdf({
-      url: `${url}/print`,
+      url: `${url}/print${query}`,
       chrome: values.chrome,
       pageSize,
       title: project.config.name,
@@ -175,7 +196,7 @@ export async function pdf(env: Env, args: string[]): Promise<number> {
     await writeFile(out, bytes);
     const kb = Math.max(1, Math.round(bytes.length / 1024));
     env.out(
-      `Wrote ${out} (from ${project.tree.pages.length} pages, ${kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} kB`}).\n`,
+      `Wrote ${out} (${query ? '' : `from ${project.tree.pages.length} pages, `}${kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} kB`}).\n`,
     );
     return 0;
   } finally {
