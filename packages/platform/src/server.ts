@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
+import { backup, createFsSink, restore } from './lib/backup.ts';
 import { ConfigError, loadConfig } from './lib/config.ts';
 import { createPlatform } from './lib/runtime.ts';
 
@@ -24,6 +25,18 @@ async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === 'migrate') {
     process.stdout.write(`${JSON.stringify({ applied: migrated })}\n`);
+    await platform.stop();
+    process.exit(0);
+  }
+  if (command === 'backup' || command === 'restore') {
+    const dir = rest[0];
+    if (!dir) {
+      process.stderr.write(`Usage: server.js ${command} <directory>\n`);
+      process.exit(64);
+    }
+    const sink = createFsSink(dir);
+    const manifest = command === 'backup' ? await backup(platform.db, platform.storage, sink) : await restore(platform.db, platform.storage, sink);
+    process.stdout.write(`${JSON.stringify({ [command]: 'ok', createdAt: manifest.createdAt, tables: Object.fromEntries(Object.entries(manifest.tables).map(([t, v]) => [t, v.rows])), objects: manifest.objects.count })}\n`);
     await platform.stop();
     process.exit(0);
   }

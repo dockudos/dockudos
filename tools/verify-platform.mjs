@@ -28,6 +28,7 @@ const cleanup = [];
 let base = remote;
 let key = flag('api-key');
 let githubRepo = flag('github-repo') ?? 'acme/docs';
+let local = { }; // filled in local mode: how to run the server binary against other databases
 
 if (!remote) {
   const root = new URL('..', import.meta.url).pathname;
@@ -66,6 +67,7 @@ if (!remote) {
     c.on('exit', (status) => resolve({ status, stdout, stderr }));
   });
   const node = (a) => run(a);
+  Object.assign(local, { run, env, deploy, work, newDatabase: async () => { const l = await PGlite.create(); const p = await freePort(); const sv = new PGLiteSocketServer({ db: l, port: p, host: '127.0.0.1' }); await sv.start(); cleanup.push(async () => { await sv.stop(); await l.close(); }); return p; } });
   const bad = await node(['nonsense']);
   check('unknown command is refused', bad.status === 64, bad.stderr);
   const boot = await node(['bootstrap', 'Smoke Team']);
@@ -74,7 +76,9 @@ if (!remote) {
   const noConfig = await run([], { PATH: process.env.PATH });
   check('missing configuration stops the server with a clear message (exit 78)', noConfig.status === 78 && /DOCKUDOS_DATABASE_URL/.test(noConfig.stderr), noConfig.stderr);
   const child = spawn(process.execPath, ['dist/server.js'], { cwd: deploy, env, stdio: ['ignore', 'inherit', 'inherit'] });
-  cleanup.push(() => new Promise((res) => { child.once('exit', res); child.kill('SIGTERM'); setTimeout(() => child.kill('SIGKILL'), 5000); }));
+  const stopMain = () => new Promise((res) => { if (child.exitCode !== null) return res(); child.once('exit', res); child.kill('SIGTERM'); setTimeout(() => child.kill('SIGKILL'), 5000); });
+  cleanup.push(stopMain);
+  local.stopMain = stopMain;
 }
 
 const j = async (r) => r.json().catch(() => ({}));
@@ -117,6 +121,30 @@ try {
 
   const metrics = await fetch(`${base}/metrics`, { headers: { authorization: `Bearer ${process.env.DOCKUDOS_METRICS_TOKEN ?? ''}` } });
   check('metrics are served (or protected by a token)', metrics.status === 200 || metrics.status === 401);
+
+  if (local.run) {
+    // The test database accepts a single connection, so stop the server first: a cold backup, which is a valid way to do it too.
+    await local.stopMain();
+    // Backup, then restore into a second, empty database, and prove the copy works with the same credentials.
+    const dir = join(local.work, 'backup');
+    const b = await local.run(['backup', dir]);
+    check('backup writes a directory', b.status === 0 && JSON.parse(b.stdout.trim().split('\n').at(-1)).backup === 'ok', b.stderr);
+    const db2 = await local.newDatabase();
+    const port2 = await freePort();
+    const env2 = { ...local.env, DOCKUDOS_DATABASE_URL: `postgres://postgres:postgres@127.0.0.1:${db2}/postgres`, DOCKUDOS_PORT: String(port2), DOCKUDOS_PUBLIC_URL: `http://127.0.0.1:${port2}`, DOCKUDOS_DATA_DIR: join(local.work, 'data2') };
+    const r = await local.run(['restore', dir], env2);
+    check('restore loads it into a new, empty instance', r.status === 0 && JSON.parse(r.stdout.trim().split('\n').at(-1)).restore === 'ok', r.stderr);
+    const again = await local.run(['restore', dir], env2);
+    check('restoring over existing data is refused', again.status !== 0 && /already has data/.test(again.stderr + again.stdout), again.stderr);
+    const second = spawn(process.execPath, ['dist/server.js'], { cwd: local.deploy, env: env2, stdio: ['ignore', 'inherit', 'inherit'] });
+    cleanup.push(() => new Promise((res) => { second.once('exit', res); second.kill('SIGTERM'); setTimeout(() => second.kill('SIGKILL'), 5000); }));
+    await until(async () => (await fetch(`http://127.0.0.1:${port2}/readyz`)).ok);
+    const restored = await fetch(`http://127.0.0.1:${port2}/api/v1/teams/${teamId}/sites`, { headers: { authorization: `Bearer ${key}` } });
+    const list = await j(restored);
+    check('the same API key works on the restored instance and lists the site', restored.status === 200 && list.sites?.[0]?.id === site.site.id, JSON.stringify(list));
+    const board2 = await j(await fetch(`http://127.0.0.1:${port2}/api/v1/sites/${site.site.id}/analytics`, { headers: { authorization: `Bearer ${key}` } }));
+    check('and its analytics came across', board2.topPages?.[0]?.path === '/guide');
+  }
 } catch (error) {
   check('smoke test ran to the end', false, String(error));
 } finally {
