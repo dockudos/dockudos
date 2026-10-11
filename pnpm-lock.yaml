@@ -185,6 +185,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^21.2.3
         version: 21.2.3
+      '@dockudos/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@dockudos/platform':
         specifier: workspace:*
         version: link:packages/platform

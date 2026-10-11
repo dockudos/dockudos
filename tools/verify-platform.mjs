@@ -85,11 +85,18 @@ const j = async (r) => r.json().catch(() => ({}));
 const api = (path, init = {}) => fetch(`${base}${path}`, { ...init, headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json', ...init.headers } });
 
 try {
-  await until(async () => (await fetch(`${base}/readyz`)).ok);
-  check('readiness reports the database and storage', true);
-  const live = await fetch(`${base}/healthz`);
-  check('liveness answers', live.ok);
-  check('sign-in is reported as not configured, not as an error page', (await fetch(`${base}/auth/login`)).status === 404);
+  if (remote) {
+    // Behind the stack's front door only the public surface is reachable: wait for the API through the dashboard's proxy.
+    await until(async () => (await fetch(`${base}/api/v1/me`)).status === 401);
+    check('the stack answers through its front door', true);
+    check('the dashboard is served', (await fetch(`${base}/`)).ok);
+    check('internal endpoints are not exposed', (await fetch(`${base}/metrics`)).status === 404 && (await fetch(`${base}/readyz`)).status === 404);
+  } else {
+    await until(async () => (await fetch(`${base}/readyz`)).ok);
+    check('readiness reports the database and storage', true);
+    check('liveness answers', (await fetch(`${base}/healthz`)).ok);
+  }
+  if (!remote) check('sign-in is reported as not configured, not as an error page', (await fetch(`${base}/auth/login`)).status === 404);
   check('unauthenticated API calls are refused', (await fetch(`${base}/api/v1/me`)).status === 401);
   const me = await j(await api('/api/v1/me'));
   check('the API key identifies a team', me.type === 'key' && me.teams?.length === 1, JSON.stringify(me));
@@ -119,8 +126,10 @@ try {
   check('the dashboard reads it back', board.topPages?.[0]?.path === '/guide', JSON.stringify(board.topPages));
   check('and stores no query string, address or agent', !JSON.stringify(board).match(/203\.0\.113|Firefox|token=/));
 
-  const metrics = await fetch(`${base}/metrics`, { headers: { authorization: `Bearer ${process.env.DOCKUDOS_METRICS_TOKEN ?? ''}` } });
-  check('metrics are served (or protected by a token)', metrics.status === 200 || metrics.status === 401);
+  if (!remote) {
+    const metrics = await fetch(`${base}/metrics`, { headers: { authorization: `Bearer ${process.env.DOCKUDOS_METRICS_TOKEN ?? ''}` } });
+    check('metrics are served (or protected by a token)', metrics.status === 200 || metrics.status === 401);
+  }
 
   if (local.run) {
     // The test database accepts a single connection, so stop the server first: a cold backup, which is a valid way to do it too.

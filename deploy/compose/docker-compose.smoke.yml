@@ -1,0 +1,23 @@
+# Adds a stand-in GitHub API so the stack can be smoke-tested without a real repository or token (used by CI):
+#   docker compose -f docker-compose.yml -f docker-compose.smoke.yml up -d --build --wait
+#   node ../../tools/verify-platform.mjs --url http://localhost:8080 --api-key "$KEY"
+services:
+  mock-github:
+    image: node:24-slim
+    command: ["node", "/tools/mock-github.mjs", "4600"]
+    volumes: ["../../tools/mock-github.mjs:/tools/mock-github.mjs:ro"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4600/repos/acme/docs').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [internal]
+
+  api: &mock
+    environment:
+      DOCKUDOS_GITHUB_API_URL: http://mock-github:4600
+    depends_on:
+      mock-github: { condition: service_healthy }
+  worker: *mock
+  agent: *mock
+  site: *mock

@@ -24,13 +24,15 @@
     "verify:platform": "node tools/verify-platform.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify:helm": "node tools/verify-helm.mjs"
+    "verify:helm": "node tools/verify-helm.mjs",
+    "eval:agent": "node tools/eval-agent-live.mjs"
   },
   "private": true,
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@dockudos/core": "workspace:*",
     "@dockudos/platform": "workspace:*",
     "@electric-sql/pglite": "0.5.8",
     "@electric-sql/pglite-socket": "^0.2.11",

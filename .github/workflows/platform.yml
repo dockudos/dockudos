@@ -1,0 +1,107 @@
+name: Platform
+
+# The platform's own checks beyond unit tests and the browser tests in ci.yml: the production tree running as a process, the
+# Helm chart, the Docker Compose stack and a real cluster. Path-filtered so docs-only changes skip them.
+on:
+  push:
+    branches: [main, master]
+    paths: ['packages/platform/**', 'packages/core/**', 'apps/platform/**', 'deploy/**', 'tools/**', '.github/workflows/platform.yml']
+  pull_request:
+    paths: ['packages/platform/**', 'packages/core/**', 'apps/platform/**', 'deploy/**', 'tools/**', '.github/workflows/platform.yml']
+
+concurrency:
+  group: platform-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  process:
+    name: Production tree, as a process
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx build @dockudos/platform
+      # pnpm deploy, a real Postgres wire protocol, the server binary, migrations, bootstrap, webhooks, analytics, backup and restore.
+      - run: pnpm verify:platform
+
+  helm:
+    name: Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: azure/setup-helm@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx build @dockudos/platform
+      - run: helm lint deploy/helm/dockudos --set secrets.sessionSecret=0123456789abcdef0123456789abcdef --set postgresql.enabled=true --set postgresql.auth.password=x --set minio.enabled=true --set minio.auth.password=y
+      - run: pnpm verify:helm
+
+  compose:
+    name: Docker Compose stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - name: Configure
+        working-directory: deploy/compose
+        run: |
+          cp .env.example .env
+          sed -i "s/^POSTGRES_PASSWORD=$/POSTGRES_PASSWORD=$(openssl rand -hex 12)/; s/^MINIO_ROOT_PASSWORD=$/MINIO_ROOT_PASSWORD=$(openssl rand -hex 12)/; s/^DOCKUDOS_SESSION_SECRET=$/DOCKUDOS_SESSION_SECRET=$(openssl rand -hex 32)/" .env
+      - name: Build and start (cp .env.example .env && docker compose up)
+        working-directory: deploy/compose
+        run: docker compose -f docker-compose.yml -f docker-compose.smoke.yml up -d --build --wait --wait-timeout 600
+      - name: Smoke test through the front door
+        working-directory: deploy/compose
+        run: |
+          KEY=$(docker compose exec -T api node dist/server.js bootstrap "Smoke Team" | tail -1 | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).apiKey))")
+          node ../../tools/verify-platform.mjs --url http://localhost:8080 --api-key "$KEY"
+      - name: Logs
+        if: failure()
+        working-directory: deploy/compose
+        run: docker compose logs --no-color --tail=200
+      - name: Stop
+        if: always()
+        working-directory: deploy/compose
+        run: docker compose down -v
+
+  kubernetes:
+    name: Helm install on kind
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - uses: helm/kind-action@v1
+      - name: Build images into the cluster
+        run: |
+          docker build -f deploy/docker/platform.Dockerfile -t dockudos/platform:ci .
+          docker build -f deploy/docker/editor.Dockerfile -t dockudos/editor:ci .
+          kind load docker-image dockudos/platform:ci dockudos/editor:ci
+      - name: Install
+        run: |
+          helm install docs deploy/helm/dockudos --wait --timeout 10m \
+            --set image.repository=dockudos/platform --set image.tag=ci --set image.pullPolicy=Never \
+            --set editorImage.repository=dockudos/editor --set editorImage.tag=ci --set editorImage.pullPolicy=Never \
+            --set secrets.sessionSecret=$(openssl rand -hex 32) \
+            --set postgresql.enabled=true --set postgresql.auth.password=$(openssl rand -hex 12) \
+            --set minio.enabled=true --set minio.auth.password=$(openssl rand -hex 12) \
+            --set ingress.enabled=false --set api.replicas=1 --set site.replicas=1 --set editor.replicas=1
+      - name: Smoke tests (helm test)
+        run: helm test docs --timeout 5m --logs
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl get pods -o wide
+          kubectl describe pods | tail -120
+          kubectl logs -l app.kubernetes.io/instance=docs --all-containers --tail=100 --prefix
