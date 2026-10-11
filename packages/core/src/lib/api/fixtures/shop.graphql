@@ -1,5 +1,11 @@
-"""The shop API"""
-schema { query: Query mutation: Mutation subscription: Subscription }
+"""
+The shop API
+"""
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
 
 type Query {
   "Find a product"
@@ -20,10 +26,23 @@ type Product implements Node {
   price: Price
   related: [Product!]
 }
-interface Node { id: ID! }
-type Price { amount: Float! currency: String! }
-input ProductInput { name: String! price: Float }
-input ProductFilter { search: String }
-enum Locale { EN DE @deprecated(reason: "no") }
+interface Node {
+  id: ID!
+}
+type Price {
+  amount: Float!
+  currency: String!
+}
+input ProductInput {
+  name: String!
+  price: Float
+}
+input ProductFilter {
+  search: String
+}
+enum Locale {
+  EN
+  DE @deprecated(reason: "no")
+}
 union SearchResult = Product | Price
 scalar Date

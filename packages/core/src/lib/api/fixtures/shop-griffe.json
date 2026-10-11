@@ -72,10 +72,7 @@
             },
             "endlineno": 10,
             "kind": "attribute",
-            "labels": [
-              "class-attribute",
-              "instance-attribute"
-            ],
+            "labels": ["class-attribute", "instance-attribute"],
             "lineno": 10,
             "name": "base_url",
             "runtime": true,
@@ -148,9 +145,7 @@
             "analysis": "static",
             "endlineno": 13,
             "kind": "attribute",
-            "labels": [
-              "instance-attribute"
-            ],
+            "labels": ["instance-attribute"],
             "lineno": 13,
             "name": "token",
             "runtime": true,

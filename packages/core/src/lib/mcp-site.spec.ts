@@ -26,7 +26,10 @@ beforeEach(async () => {
     'docs/guide.mdx',
     '---\ntitle: Guide\ndescription: A guide\n---\n\n## Setup\n\nInstall the zebra package.\n',
   );
-  await write('docs/private/secret.mdx', '---\ntitle: Secret\n---\n\nHidden.\n');
+  await write(
+    'docs/private/secret.mdx',
+    '---\ntitle: Secret\n---\n\nHidden.\n',
+  );
 });
 afterEach(() => rm(root, { recursive: true, force: true }));
 

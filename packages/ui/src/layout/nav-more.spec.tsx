@@ -21,18 +21,33 @@ describe('Sidebar', () => {
         items: [page('/one', { icon: 'rocket' }), page('/two')],
       },
     ];
-    const { container } = render(<Sidebar items={items as never} path="/one" />);
+    const { container } = render(
+      <Sidebar items={items as never} path="/one" />,
+    );
     expect(container.querySelectorAll('.dk-nav-step')).toHaveLength(2);
     // A numbered step shows its number instead of an icon.
     expect(container.querySelectorAll('.dk-nav-icon')).toHaveLength(1);
-    expect(container.querySelector('[data-method="get"]')?.textContent).toBe('GET');
-    expect(container.querySelector('[data-method="purge"]')?.textContent).toBe('PURGE');
+    expect(container.querySelector('[data-method="get"]')?.textContent).toBe(
+      'GET',
+    );
+    expect(container.querySelector('[data-method="purge"]')?.textContent).toBe(
+      'PURGE',
+    );
   });
 
   it('scrolls its panel to the current page when that is out of view', () => {
     const items = [page('/a'), page('/b')];
     const rect = (top: number, height: number) =>
-      ({ top, bottom: top + height, height, left: 0, right: 0, width: 0, x: 0, y: top }) as DOMRect;
+      ({
+        top,
+        bottom: top + height,
+        height,
+        left: 0,
+        right: 0,
+        width: 0,
+        x: 0,
+        y: top,
+      }) as DOMRect;
     const spy = vi
       .spyOn(Element.prototype, 'getBoundingClientRect')
       .mockImplementation(function (this: Element) {
@@ -62,12 +77,20 @@ describe('Sidebar', () => {
 });
 
 describe('Navbar', () => {
-  const base = { name: 'Acme', tabs: [], defaultMode: 'system' as const, drawer: <a href="/x">In drawer</a> };
+  const base = {
+    name: 'Acme',
+    tabs: [],
+    defaultMode: 'system' as const,
+    drawer: <a href="/x">In drawer</a>,
+  };
 
   it('shows no section links for a single tab, and links the logo where it says', () => {
     render(<Navbar {...base} logo={{ light: '/l.svg', dark: '/d.svg' }} />);
     expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
-    expect(screen.getByRole('link', { name: /Acme/ })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Acme/ })).toHaveAttribute(
+      'href',
+      '/',
+    );
   });
 
   it('shows a logo given as one address', () => {
@@ -79,7 +102,9 @@ describe('Navbar', () => {
     const user = userEvent.setup();
     render(<Navbar {...base} logo={undefined as never} />);
     await user.click(screen.getByRole('button', { name: 'Open navigation' }));
-    await user.click(await screen.findByText('Acme', { selector: '[role="dialog"] *' }));
+    await user.click(
+      await screen.findByText('Acme', { selector: '[role="dialog"] *' }),
+    );
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'In drawer' }));
     expect(screen.queryByRole('dialog')).toBeNull();

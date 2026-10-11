@@ -18,9 +18,11 @@ describe('entry points', () => {
   });
 
   it('falls back to the default mode when storage is blocked', () => {
-    const blocked = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('blocked');
-    });
+    const blocked = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
     expect(readStoredMode('dark')).toBe('dark');
     blocked.mockRestore();
   });

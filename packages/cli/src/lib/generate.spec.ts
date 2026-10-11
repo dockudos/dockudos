@@ -45,7 +45,10 @@ describe('generatePages', () => {
 
   it('writes the pages and logs each report unless quiet', async () => {
     await site(
-      { name: 'T', openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] } },
+      {
+        name: 'T',
+        openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] },
+      },
       { 'pets.json': SPEC },
     );
     const loud = makeEnv();
@@ -57,13 +60,19 @@ describe('generatePages', () => {
   });
 
   it('names the spec that cannot be read', async () => {
-    await site({ name: 'T', openapi: { sources: [{ name: 'm', spec: 'missing.json' }] } });
+    await site({
+      name: 'T',
+      openapi: { sources: [{ name: 'm', spec: 'missing.json' }] },
+    });
     await expect(generatePages(makeEnv().env)).rejects.toBeInstanceOf(CliError);
   });
 
   it('lets an unexpected error through', async () => {
     await site(
-      { name: 'T', openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] } },
+      {
+        name: 'T',
+        openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] },
+      },
       { 'pets.json': SPEC },
     );
     const env = {
@@ -124,7 +133,10 @@ describe('generate', () => {
 
   it('generates with --force', async () => {
     await site(
-      { name: 'T', openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] } },
+      {
+        name: 'T',
+        openapi: { sources: [{ name: 'pets', spec: 'pets.json' }] },
+      },
       { 'pets.json': SPEC },
     );
     const t = makeEnv();

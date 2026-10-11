@@ -1,4 +1,9 @@
-import { type Navigation, buildNavigation, buildPageTree, parseConfig } from '@dockudos/core';
+import {
+  type Navigation,
+  buildNavigation,
+  buildPageTree,
+  parseConfig,
+} from '@dockudos/core';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DocsLayout } from './docs-layout.tsx';
@@ -36,7 +41,9 @@ describe('DocsLayout, tutorials and actions', () => {
         body
       </DocsLayout>,
     );
-    const steps = within(screen.getByRole('navigation', { name: 'Learn, tutorial steps' }));
+    const steps = within(
+      screen.getByRole('navigation', { name: 'Learn, tutorial steps' }),
+    );
     expect(screen.getByText(/Step 2 of 2/)).toBeInTheDocument();
     expect(steps.getByRole('link', { name: /One/ })).toBeInTheDocument();
     expect(steps.getByRole('link', { name: /Step two/ })).toBeInTheDocument();
@@ -59,37 +66,57 @@ describe('DocsLayout, tutorials and actions', () => {
         body
       </DocsLayout>,
     );
-    expect(screen.getByRole('button', { name: 'Copy page' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Copy page' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Edit/ })).toHaveAttribute(
       'href',
       'https://github.com/acme/docs/edit/main/learn/one.mdx',
     );
-    await user.click(screen.getByRole('button', { name: /More actions for Step one/ }));
-    const claude = await screen.findByRole('menuitem', { name: /Open in Claude/ });
+    await user.click(
+      screen.getByRole('button', { name: /More actions for Step one/ }),
+    );
+    const claude = await screen.findByRole('menuitem', {
+      name: /Open in Claude/,
+    });
     expect(claude).toHaveAttribute(
       'href',
-      expect.stringContaining(encodeURIComponent('https://acme.test/learn/one')),
+      expect.stringContaining(
+        encodeURIComponent('https://acme.test/learn/one'),
+      ),
     );
   });
 
   it('copies the page as Markdown from the menu', async () => {
     const user = userEvent.setup();
-    const copied = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('# Page')));
+    const copied = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('# Page')),
+    );
     render(
       <DocsLayout config={config} nav={nav} page={page('/learn/one')} toc={[]}>
         body
       </DocsLayout>,
     );
-    await user.click(screen.getByRole('button', { name: /More actions for Step one/ }));
-    await user.click(await screen.findByRole('menuitem', { name: /Copy as Markdown/ }));
+    await user.click(
+      screen.getByRole('button', { name: /More actions for Step one/ }),
+    );
+    await user.click(
+      await screen.findByRole('menuitem', { name: /Copy as Markdown/ }),
+    );
     await waitFor(() => expect(copied).toHaveBeenCalledWith('# Page'));
     vi.unstubAllGlobals();
     copied.mockRestore();
   });
 
   it('has no sidebar for a site with no sections, and no actions when none are on', () => {
-    const bare = parseConfig({ name: 'Bare', actions: { copyPage: false, assistants: false } });
+    const bare = parseConfig({
+      name: 'Bare',
+      actions: { copyPage: false, assistants: false },
+    });
     const empty = { tabs: [], unlisted: [] } as unknown as Navigation;
     const { container } = render(
       <DocsLayout config={bare} nav={empty} page={page('/')} toc={[]}>
@@ -104,11 +131,20 @@ describe('DocsLayout, tutorials and actions', () => {
     const editOnly = parseConfig({
       name: 'Acme',
       seo: { siteUrl: 'https://acme.test' },
-      actions: { copyPage: false, assistants: false, editUrl: 'https://github.com/acme/{file}' },
+      actions: {
+        copyPage: false,
+        assistants: false,
+        editUrl: 'https://github.com/acme/{file}',
+      },
       navigation: config.navigation as never,
     });
     render(
-      <DocsLayout config={editOnly} nav={nav} page={page('/learn/one')} toc={[]}>
+      <DocsLayout
+        config={editOnly}
+        nav={nav}
+        page={page('/learn/one')}
+        toc={[]}
+      >
         body
       </DocsLayout>,
     );

@@ -12,7 +12,8 @@ channels:
     messages:
       created:
         name: OrderCreated
-        payload: { type: object, properties: { id: { type: string, format: uuid } } }
+        payload:
+          { type: object, properties: { id: { type: string, format: uuid } } }
 operations:
   publishOrder:
     action: send

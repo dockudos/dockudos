@@ -47,11 +47,19 @@ describe('paletteEntries', () => {
           sidebar: [
             { type: 'page', page: page('/a', { sidebarTitle: 'Alpha' }) },
             { type: 'page', page: page('/a') },
-            { type: 'group', title: 'G', items: [{ type: 'page', page: page('/b') }] },
+            {
+              type: 'group',
+              title: 'G',
+              items: [{ type: 'page', page: page('/b') }],
+            },
             { type: 'link', title: 'x', href: '/x' },
           ],
         },
-        { title: 'Site', href: 'https://example.test', sidebar: [{ type: 'page', page: page('/skipped') }] },
+        {
+          title: 'Site',
+          href: 'https://example.test',
+          sidebar: [{ type: 'page', page: page('/skipped') }],
+        },
       ],
       unlisted: [page('/b'), page('/c', { description: 'C' })],
     };
@@ -68,7 +76,11 @@ describe('Breadcrumb', () => {
   it('shows a crumb without a link as text', () => {
     render(
       <Breadcrumb
-        crumbs={[{ title: 'Home', href: '/' }, { title: 'Group' }, { title: 'Page', href: '/p' }]}
+        crumbs={[
+          { title: 'Home', href: '/' },
+          { title: 'Group' },
+          { title: 'Page', href: '/p' },
+        ]}
       />,
     );
     expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
@@ -79,10 +91,15 @@ describe('Breadcrumb', () => {
 
 describe('tabLinks', () => {
   it('leaves out a tab with nowhere to go', () => {
-    const tabs = [{ title: 'Empty' }, { title: 'Full' }, { title: 'Ext', href: 'https://x.test' }];
+    const tabs = [
+      { title: 'Empty' },
+      { title: 'Full' },
+      { title: 'Ext', href: 'https://x.test' },
+    ];
     const links = tabLinks(
       tabs as never,
-      (tab) => ((tab as { title: string }).title === 'Full' ? '/full' : undefined),
+      (tab) =>
+        (tab as { title: string }).title === 'Full' ? '/full' : undefined,
       tabs[1] as never,
     );
     expect(links).toEqual([
@@ -94,7 +111,11 @@ describe('tabLinks', () => {
 
 describe('ShortcutsDialog', () => {
   it('puts a shortcut with no group under General', async () => {
-    const off = hotkeys.register({ keys: ['f8'], handler: () => undefined, description: 'No group' });
+    const off = hotkeys.register({
+      keys: ['f8'],
+      handler: () => undefined,
+      description: 'No group',
+    });
     render(<ShortcutsDialog />);
     await userEvent.keyboard('?');
     expect(await screen.findByText('No group')).toBeInTheDocument();
@@ -135,7 +156,9 @@ describe('BookLinks', () => {
         <a id="own" href="#x">own</a>
       </section>`;
     const { unmount } = render(<BookLinks />);
-    expect(document.getElementById('bad')?.getAttribute('href')).toBe('http://[');
+    expect(document.getElementById('bad')?.getAttribute('href')).toBe(
+      'http://[',
+    );
     expect(document.getElementById('own')?.getAttribute('href')).toBe('#a--x');
     unmount();
     document.body.innerHTML = '';

@@ -2,7 +2,11 @@ import type { SearchBackend, SearchHit } from '@dockudos/core';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DocsProvider } from '../provider.tsx';
-import { CommandPalette, type PaletteEntry, scoreEntry } from './command-palette.tsx';
+import {
+  CommandPalette,
+  type PaletteEntry,
+  scoreEntry,
+} from './command-palette.tsx';
 
 const hit = (over: Partial<SearchHit> = {}): SearchHit => ({
   id: 'c1',
@@ -17,7 +21,13 @@ const hit = (over: Partial<SearchHit> = {}): SearchHit => ({
 });
 
 const entries: PaletteEntry[] = [
-  { title: 'Authentication', path: '/guides/auth', group: 'Guides', icon: 'rocket', description: 'Log in' },
+  {
+    title: 'Authentication',
+    path: '/guides/auth',
+    group: 'Guides',
+    icon: 'rocket',
+    description: 'Log in',
+  },
   { title: 'Plain', path: '/plain' },
 ];
 
@@ -39,7 +49,10 @@ function setup({
   const fetchMock = vi.fn(async (url: string) => {
     if (respond) return respond(url);
     return new Response(
-      [{ type: 'token', text: 'An answer.' }, { type: 'done', citations: [] }]
+      [
+        { type: 'token', text: 'An answer.' },
+        { type: 'done', citations: [] },
+      ]
         .map((e) => `data: ${JSON.stringify(e)}\n\n`)
         .join(''),
     );
@@ -81,8 +94,22 @@ describe('palette rows', () => {
   it('shows a page’s icon, description and section, and marks the matched words of a hit', async () => {
     const { user } = setup({
       search: async () => [
-        hit({ snippet: { text: 'abcdefgh', ranges: [[2, 4], [3, 5], [6, 7]] } }),
-        hit({ id: 'c2', url: '/guides/auth#x', anchor: 'x', snippet: { text: 'abc', ranges: [[0, 3]] } }),
+        hit({
+          snippet: {
+            text: 'abcdefgh',
+            ranges: [
+              [2, 4],
+              [3, 5],
+              [6, 7],
+            ],
+          },
+        }),
+        hit({
+          id: 'c2',
+          url: '/guides/auth#x',
+          anchor: 'x',
+          snippet: { text: 'abc', ranges: [[0, 3]] },
+        }),
       ],
     });
     await open(user);
@@ -90,8 +117,14 @@ describe('palette rows', () => {
     expect(screen.getByText('Guides')).toBeInTheDocument();
     await user.type(screen.getByRole('combobox'), 'abc');
     const options = await screen.findAllByRole('option');
-    const first = options.find((o) => o.textContent?.includes('abcdefgh')) as HTMLElement;
-    expect(within(first).getAllByText(/^(cd|g)$/).map((m) => m.tagName)).toEqual(['MARK', 'MARK']);
+    const first = options.find((o) =>
+      o.textContent?.includes('abcdefgh'),
+    ) as HTMLElement;
+    expect(
+      within(first)
+        .getAllByText(/^(cd|g)$/)
+        .map((m) => m.tagName),
+    ).toEqual(['MARK', 'MARK']);
   });
 
   it('does nothing on Enter when nothing matches', async () => {

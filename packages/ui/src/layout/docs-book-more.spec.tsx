@@ -15,7 +15,10 @@ const config = parseConfig({
       groups: [
         {
           group: 'Start',
-          pages: ['index', { title: 'GitHub', href: 'https://github.com/acme' }],
+          pages: [
+            'index',
+            { title: 'GitHub', href: 'https://github.com/acme' },
+          ],
         },
         { group: 'Hidden', pages: ['hidden/only'] },
       ],
@@ -31,7 +34,13 @@ const sectionsFor = (paths: string[]) =>
 
 describe('DocsBook, contents', () => {
   it('names each section when there are several, and skips groups with no page in the book', () => {
-    render(<DocsBook config={config} nav={nav} sections={sectionsFor(['/', '/api/users'])} />);
+    render(
+      <DocsBook
+        config={config}
+        nav={nav}
+        sections={sectionsFor(['/', '/api/users'])}
+      />,
+    );
     const toc = within(screen.getByRole('navigation', { name: 'Contents' }));
     expect(toc.getByRole('heading', { name: 'Docs' })).toBeInTheDocument();
     expect(toc.getByRole('heading', { name: 'API' })).toBeInTheDocument();
@@ -41,12 +50,16 @@ describe('DocsBook, contents', () => {
   });
 
   it('has no cover date without one, and puts a page outside the navigation under More', () => {
-    const loose = buildPageTree([{ file: 'loose.mdx', title: 'Loose' }]).pages[0]!;
+    const loose = buildPageTree([{ file: 'loose.mdx', title: 'Loose' }])
+      .pages[0]!;
     render(
       <DocsBook
         config={config}
         nav={nav}
-        sections={[...sectionsFor(['/']), { page: loose, toc: [], node: <p>x</p> }]}
+        sections={[
+          ...sectionsFor(['/']),
+          { page: loose, toc: [], node: <p>x</p> },
+        ]}
       />,
     );
     expect(document.querySelector('.dk-book-date')).toBeNull();

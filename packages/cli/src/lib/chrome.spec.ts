@@ -73,7 +73,10 @@ describe('renderPdf', () => {
   });
 
   it('sends basic credentials', async () => {
-    await renderPdf({ ...base, chrome, auth: { user: 'u', password: 'p' } }, {});
+    await renderPdf(
+      { ...base, chrome, auth: { user: 'u', password: 'p' } },
+      {},
+    );
     expect(calls['context'][0]).toEqual([
       { httpCredentials: { username: 'u', password: 'p', send: 'always' } },
     ]);

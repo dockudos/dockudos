@@ -43,17 +43,23 @@ describe('requestNavigation', () => {
   });
 
   it('says none for a 404, and uses the message of a failed answer', async () => {
-    expect(await requestNavigation('q', { fetch: async () => json({}, 404) })).toEqual({
+    expect(
+      await requestNavigation('q', { fetch: async () => json({}, 404) }),
+    ).toEqual({
       kind: 'none',
     });
     expect(
-      await requestNavigation('q', { fetch: async () => json({ error: 'Too many' }, 429) }),
+      await requestNavigation('q', {
+        fetch: async () => json({ error: 'Too many' }, 429),
+      }),
     ).toEqual({ kind: 'error', message: 'Too many' });
     expect(
       await requestNavigation('q', { fetch: async () => json({}, 500) }),
     ).toEqual({ kind: 'error', message: 'Could not find a page (500).' });
     expect(
-      await requestNavigation('q', { fetch: async () => new Response('oops', { status: 502 }) }),
+      await requestNavigation('q', {
+        fetch: async () => new Response('oops', { status: 502 }),
+      }),
     ).toEqual({ kind: 'error', message: 'Could not find a page (502).' });
   });
 

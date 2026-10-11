@@ -14,7 +14,11 @@ export default defineConfig(() => ({
       reportsDirectory: './test-output/vitest/coverage',
       provider: 'v8' as const,
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['**/*.{test,spec}.{ts,tsx}', '**/*.d.ts', 'src/lib/api/fixtures/**'],
+      exclude: [
+        '**/*.{test,spec}.{ts,tsx}',
+        '**/*.d.ts',
+        'src/lib/api/fixtures/**',
+      ],
       // The bar for this package; `nx test-ci` fails below it.
       thresholds: { statements: 98, lines: 98 },
     },

@@ -95,9 +95,16 @@ export async function AutoTypeTable({ path, name }: AutoTypeTableProps) {
 /** The same table as Markdown, from the types as they are now. If the file cannot be read, a line names the table. */
 AutoTypeTable.toMarkdown = (async (props) => {
   try {
-    const fields = await readTypeFields(resolve(process.cwd(), props.path), props.name);
+    const fields = await readTypeFields(
+      resolve(process.cwd(), props.path),
+      props.name,
+    );
     return TypeTable.toMarkdown({ type: fields });
   } catch {
-    return md.block(md.italic(`Type table of ${md.code(props.name)} from ${md.code(props.path)}.`));
+    return md.block(
+      md.italic(
+        `Type table of ${md.code(props.name)} from ${md.code(props.path)}.`,
+      ),
+    );
   }
 }) satisfies ToMarkdown<AutoTypeTableProps>;

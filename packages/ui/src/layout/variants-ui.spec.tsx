@@ -350,7 +350,9 @@ describe('Update and Changelog', () => {
   });
 
   it('writes itself as Markdown', () => {
-    expect(Changelog.toMarkdown({} as never, 'inner', {} as never)).toContain('inner');
+    expect(Changelog.toMarkdown({} as never, 'inner', {} as never)).toContain(
+      'inner',
+    );
   });
 });
 
