@@ -40,19 +40,26 @@ still open. See "Not covered".
 
 ## Found and fixed during the work
 
+Real defects that a test, a tool or a second look turned up after the code was written:
+
 1. **Event name collision.** The first analytics event for assistant answers reused `dockudos:assistant`, which already means "open the
    assistant panel", so every answer would have popped the panel open. A Phase 2 test caught it; analytics now has its own `dockudos:track` event.
-2. **Vulnerable Next.js.** The workspace pins Next 16.1, which has critical and high advisories patched in 16.3.8 or later. The dashboard is
-   network-exposed, so it was moved to Next 16.4. The other apps were left alone (see below).
-3. **Zero-length trust in the build log.** Build output was stored unscrubbed; a failing `git fetch` could echo a URL carrying a token. The log is now
-   scrubbed of configured secrets before it is stored (`builds.spec.ts`).
-4. **Unverified email as owner.** A provider that lets users assert an unverified address could have made someone instance owner via `DOCKUDOS_ADMIN_EMAIL`.
-   An address with `email_verified: false` is now ignored.
-5. **Browser-claimed AI traffic.** Anyone could inflate "AI tool" counts by sending `traffic: ai`. Browsers can no longer set it.
-6. **Deadlock risk with small pools.** Running the production tree with a pool of one connection (the test database allows one) proved no code
-   path opens a second connection inside a transaction.
-7. **Editor selection and conflicts.** Not security, but found by the same tests: creating a page selected `docs.json`; deleting a page created in
-   the same session still asked the server to delete a file that never existed.
+2. **Vulnerable Next.js.** `pnpm audit` showed the workspace pins Next 16.1, which has critical and high advisories patched in 16.3.8 or later.
+   The dashboard is network-exposed, so it was moved to Next 16.4. The other apps were left alone (see below).
+3. **Ambiguous "latest" run.** Agent runs were ordered by timestamp alone; two runs in the same millisecond could be taken in the wrong order, so a
+   change could be diffed against the wrong base. A sequence column now breaks ties.
+4. **Config errors hidden by other errors.** When one variable was invalid, the checks that depend on others (S3, OIDC, roles) never ran, so
+   problems were not all reported at once. They now read the raw environment independently.
+5. **A body-size error reported as a syntax error** on the ingest endpoint (413 became 400). Fixed so a client can tell them apart.
+6. **Editor bugs.** Creating a page selected `docs.json` instead of the page; deleting a page created in the same session asked the server to delete a
+   file that never existed. Found by the unit and browser tests.
+7. **A parent process that froze its child.** The first smoke harness hosted the test database in the same process that waited synchronously on the
+   server using it. Not a product bug, but it showed the server has no startup timeout on the database; it retries until the pool connects.
+
+Mitigations designed in from the start, each with a test, listed here because they are easy to get wrong in a rewrite: an address the provider has
+not verified cannot make someone instance owner; a browser cannot label its own traffic as AI; build logs and error messages are scrubbed of
+configured secrets before they are stored; unknown site, wrong provider and bad signature give the same webhook response; hosted sites cannot share a
+host with the dashboard.
 
 ## Not covered, and what to do about it
 
