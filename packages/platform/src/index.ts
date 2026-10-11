@@ -28,3 +28,5 @@ export * from './lib/agent-draft.ts';
 export * from './lib/agent.ts';
 export * from './lib/agent-eval.ts';
 export { AGENT_EVAL_SET } from './lib/agent-eval-set.ts';
+export * from './lib/http.ts';
+export * from './lib/runtime.ts';

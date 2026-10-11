@@ -148,6 +148,7 @@ export function createBuilds({
         flush = flush.then(() => appendLog(buildId, text)).catch(() => undefined);
       }
     };
+    await mkdir(workRoot, { recursive: true });
     const work = await mkdtemp(join(workRoot, 'dockudos-build-'));
     try {
       const checkout = join(work, 'src');
