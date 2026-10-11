@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { type Clock, systemClock } from './clock.ts';
-import type { Db } from './db.ts';
+import type { Db, Queryable } from './db.ts';
 import { type Logger, silentLogger } from './logger.ts';
 import type { MetricsRegistry } from './metrics.ts';
 
@@ -18,6 +18,8 @@ export interface EnqueueOptions {
   maxAttempts?: number;
   /** Do not run before this time. */
   runAt?: Date;
+  /** Enqueue inside this transaction, so the job exists if and only if the surrounding change committed. */
+  via?: Queryable;
 }
 
 /** Throw this from a handler when retrying cannot help (bad input, repository gone): the job goes straight to `dead`. */
@@ -63,10 +65,10 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
     async enqueue(
       queue: string,
       payload: Record<string, unknown>,
-      { idempotencyKey, maxAttempts = 5, runAt }: EnqueueOptions = {},
+      { idempotencyKey, maxAttempts = 5, runAt, via = db }: EnqueueOptions = {},
     ): Promise<number> {
       const now = clock();
-      const { rows } = await db.query<{ id: string | number }>(
+      const { rows } = await via.query<{ id: string | number }>(
         `INSERT INTO jobs (queue, payload, max_attempts, run_at, idempotency_key, created_at)
          VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT (queue, idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING
@@ -74,7 +76,7 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
         [queue, JSON.stringify(payload), maxAttempts, runAt ?? now, idempotencyKey ?? null, now],
       );
       if (rows[0]) return Number(rows[0].id);
-      const existing = await db.query<{ id: string | number }>(
+      const existing = await via.query<{ id: string | number }>(
         'SELECT id FROM jobs WHERE queue = $1 AND idempotency_key = $2',
         [queue, idempotencyKey],
       );

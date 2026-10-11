@@ -11,6 +11,12 @@ const ORDER: Record<LogLevel, number> = {
 const SENSITIVE_KEY = /secret|token|password|passwd|authorization|api[-_]?key|cookie|signature|credential|private/i;
 const REDACTED = '[redacted]';
 
+/** A function that replaces every given secret in a string. Used for build logs and error messages. */
+export function createScrubber(secrets: readonly (string | undefined)[]): (text: string) => string {
+  const list = secrets.filter((s): s is string => typeof s === 'string' && s.length >= 6);
+  return (text) => list.reduce((out, s) => out.split(s).join(REDACTED), text);
+}
+
 export interface Logger {
   debug(msg: string, fields?: Record<string, unknown>): void;
   info(msg: string, fields?: Record<string, unknown>): void;

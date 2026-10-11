@@ -86,6 +86,11 @@ export function createGitLab({ token, apiUrl = 'https://gitlab.com/api/v4', webU
       });
       return { url: data!.web_url, number: data!.iid };
     },
+    async reportStatus({ repo, sha, state, url, description }) {
+      const params = new URLSearchParams({ state: state === 'failure' ? 'failed' : state === 'pending' ? 'running' : 'success', name: 'dockudos/build', description: description.slice(0, 140) });
+      if (url) params.set('target_url', url);
+      await api.post(`${p(repo)}/statuses/${q(sha)}?${params}`);
+    },
     async compare(repo, base: string, head: string): Promise<ChangedFile[]> {
       const { data } = await api.get<{ diffs?: { new_path: string; new_file: boolean; deleted_file: boolean; renamed_file: boolean; diff?: string }[] }>(
         `${p(repo)}/repository/compare?from=${q(base)}&to=${q(head)}`);

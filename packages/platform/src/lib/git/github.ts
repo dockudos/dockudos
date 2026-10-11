@@ -83,6 +83,11 @@ export function createGitHub({ token, apiUrl = 'https://api.github.com', webUrl 
       const { data } = await api.post<{ html_url: string; number: number }>(`${r(repo)}/pulls`, { title, head, base, body });
       return { url: data!.html_url, number: data!.number };
     },
+    async reportStatus({ repo, sha, state, url, description }) {
+      await api.post(`${r(repo)}/statuses/${encodeURIComponent(sha)}`, {
+        state, description: description.slice(0, 140), context: 'dockudos/build', ...(url && { target_url: url }),
+      });
+    },
     async compare(repo, base, head): Promise<ChangedFile[]> {
       const { data } = await api.get<{ files?: { filename: string; status: string; patch?: string }[] }>(
         `${r(repo)}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`);

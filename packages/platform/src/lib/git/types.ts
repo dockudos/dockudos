@@ -71,6 +71,8 @@ export interface GitProvider {
   }): Promise<string>;
   openPullRequest(input: { repo: string; head: string; base: string; title: string; body: string }): Promise<PullRequest>;
   compare(repo: string, base: string, head: string): Promise<ChangedFile[]>;
+  /** Show a build's result next to the commit. Optional: hosts or tokens without the permission skip it. */
+  reportStatus?(input: { repo: string; sha: string; state: 'pending' | 'success' | 'failure'; url?: string; description: string }): Promise<void>;
 }
 
 const REPO = /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)+$/;

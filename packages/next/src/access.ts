@@ -286,3 +286,5 @@ export async function authorizePage(
   );
   return rule ? authorize(request, rule, options) : undefined;
 }
+
+export { createPlatformVerify, type PlatformVerifyOptions } from './platform-verify.ts';

@@ -16,6 +16,7 @@ export function createMemoryGit(
   interface Commit { sha: string; files: Map<string, Uint8Array>; parent?: string }
   const commits = new Map<string, Commit>();
   const repos = new Map<string, { branches: Map<string, string>; defaultBranch: string }>();
+  const statuses: { repo: string; sha: string; state: string }[] = [];
   const pulls: { repo: string; head: string; base: string; title: string; body: string; number: number }[] = [];
   const pushes: { repo: string; branch: string; sha: string }[] = [];
   let n = 0;
@@ -83,6 +84,9 @@ export function createMemoryGit(
       pulls.push({ repo: name, head, base, title, body, number });
       return { url: `https://git.test/${name}/pull/${number}`, number };
     },
+    async reportStatus({ repo: name, sha, state }) {
+      statuses.push({ repo: name, sha, state });
+    },
     async compare(name, base, head): Promise<ChangedFile[]> {
       const a = at(name, base).files;
       const b = at(name, head).files;
@@ -100,6 +104,7 @@ export function createMemoryGit(
   return Object.assign(provider, {
     pulls,
     pushes,
+    statuses,
     /** Create a repository with a first commit on the default branch. Returns that commit's sha. */
     seed(name: string, files: Record<string, string>): string {
       const s = sha('seed');
