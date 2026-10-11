@@ -39,6 +39,10 @@
           ]
         },
         {
+          "group": "Content at scale",
+          "pages": ["guides/versions", "guides/languages", "guides/sources"]
+        },
+        {
           "group": "Customize",
           "pages": ["guides/theming", "guides/branding"]
         },
@@ -77,6 +81,8 @@
           "group": "Publish",
           "pages": [
             "guides/seo",
+            "guides/changelog",
+            "guides/login",
             "guides/printing",
             "guides/broken-links",
             "guides/protecting-pages"
@@ -134,11 +140,13 @@
                 "components/tree",
                 "components/github-info",
                 "components/update",
+                "components/changelog",
                 "components/stats",
                 "components/timeline",
                 "components/quote",
                 "components/checklist",
-                "components/hero"
+                "components/hero",
+                "components/section"
               ]
             },
             {
@@ -178,6 +186,10 @@
             {
               "group": "Feedback",
               "pages": ["components/kudos"]
+            },
+            {
+              "group": "Examples",
+              "pages": ["components/story"]
             }
           ]
         }

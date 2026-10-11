@@ -1,0 +1,55 @@
+{
+  "name": "@dockudos/scale",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Phase 4 example: two versions in two languages, a changelog with a feed, and a private section behind login.",
+  "nx": {
+    "sourceRoot": "apps/scale/src",
+    "tags": [
+      "scope:app"
+    ],
+    "targets": {
+      "e2e": {
+        "command": "dockudos build --static --base-path '' && next build && playwright test",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "dependsOn": [
+          "^build"
+        ],
+        "cache": false
+      },
+      "build": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@dockudos/core": "workspace:*",
+    "@dockudos/next": "workspace:*",
+    "@dockudos/ui": "workspace:*",
+    "next": "~16.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@dockudos/cli": "workspace:*"
+  }
+}

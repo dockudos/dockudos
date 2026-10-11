@@ -1,0 +1,100 @@
+---
+icon: log-in
+title: Sign-in and roles
+description: Keep part of the docs for signed-in people, with OpenID Connect and roles, and keep it out of search, the assistant and MCP.
+---
+
+A private section for staff, customers or a beta: readers sign in through your identity provider (Auth0, Okta, Entra ID, Keycloak,
+Google, Authentik...), and the rules decide who sees what.
+
+## Set it up
+
+<Steps>
+  <Step title="Register the docs with your provider">
+    Create an OpenID Connect application. The redirect address is `https://docs.acme.com/api/auth/callback`
+    (use `seo.siteUrl`; it must match exactly). Note the issuer URL and the client id, and the client secret if the provider gives one.
+  </Step>
+  <Step title="Say how people sign in">
+    ```json title="docs.json"
+    {
+      "name": "Acme",
+      "seo": { "siteUrl": "https://docs.acme.com" },
+      "auth": {
+        "issuer": "https://acme.eu.auth0.com/",
+        "clientId": "AbC123",
+        "clientSecretEnv": "ACME_CLIENT_SECRET",
+        "rolesClaim": "https://acme.com/roles"
+      },
+      "access": {
+        "rules": [
+          { "paths": ["/team/**"], "require": "login", "roles": ["staff"] },
+          { "paths": ["/beta/**"], "require": "login" }
+        ]
+      }
+    }
+    ```
+  </Step>
+  <Step title="Give the server its secrets">
+    ```bash
+    DOCKUDOS_AUTH_SECRET="$(openssl rand -base64 48)"   # signs the session, 32 characters at least
+    ACME_CLIENT_SECRET="..."                              # from the provider; leave out for a public client
+    ```
+  </Step>
+</Steps>
+
+Nothing secret is in `docs.json`: `clientSecretEnv` names an environment variable. A rule with `"require": "login"` without an `auth` block is
+an error, and without `DOCKUDOS_AUTH_SECRET` the route answers 503 and nobody gets in.
+
+## Who gets in
+
+| Rule                                         | Lets in                             |
+| -------------------------------------------- | ----------------------------------- |
+| `{ "require": "login" }`                     | Any signed-in user.                 |
+| `{ "require": "login", "roles": ["staff"] }` | A user whose roles include `staff`. |
+| `{ "require": "login", "groups": ["eng"] }`  | A user in the `eng` group.          |
+| `roles` and `groups` together                | Either is enough.                   |
+
+Roles and groups are read from claims of the ID token: `rolesClaim` (default `roles`) and `groupsClaim` (default `groups`). A dot reaches
+into an object (`realm_access.roles` for Keycloak); a name with dots that is itself a claim (`https://acme.com/roles`) is used as written.
+Matching is exact and case sensitive. **Access is denied by default**: no session, an expired or tampered one, or no matching role never
+opens a page. A visitor who is not signed in is sent to the provider and returned to the page afterwards; a signed-in user without the
+role gets a 403 and is not sent round again. Rules for the default version and language cover every version and language.
+
+## How it works
+
+- The sign-in is the authorization-code flow with PKCE, a random `state` and a `nonce`. The ID token's signature (RS256 or ES256,
+  against the provider's published keys, which are refreshed once if they rotate), issuer, audience, expiry and nonce are all checked
+  before anyone is signed in.
+- The session is a signed cookie (HMAC-SHA-256 with `DOCKUDOS_AUTH_SECRET`): `HttpOnly`, `SameSite=Lax`, `Secure` on https, valid for
+  `auth.sessionHours` (12 by default). It holds the user id, name, email, roles and groups; nothing else.
+- Only paths on your own site are accepted as a place to return to, so the sign-in page cannot send people to someone else's site.
+- Pages let through are `private, no-store` and `noindex`.
+
+The routes are served by `createDocsApi()` under `/api/auth/`: `login`, `callback`, `session` (who is signed in, as JSON) and a `POST`
+to `logout`. A sign-out button is a form:
+
+```html
+<form method="post" action="/api/auth/logout?returnTo=/">
+  <button>Sign out</button>
+</form>
+```
+
+## What stays private
+
+For someone who is not allowed in, a protected page is absent from the page itself, the sidebar, search results, "Take me there", the
+assistant's answers and sources, `llms.txt` and `llms-full.txt`, Markdown twins, the sitemap, feeds, social cards, the PDF and EPUB,
+and MCP. This is not done by hiding things in the browser: each of those is computed on the server **for the caller**, with the same
+rules as the pages, and what a protected reader sees is never cached for anyone else. See [Protecting pages](./protecting-pages.mdx#what-protection-covers).
+
+<Callout type="note">
+  The assistant and `search_docs` for a *signed-in* reader include the protected
+  pages they may open. A reader with another role asking the same question gets
+  other sources. MCP clients and scripts cannot sign in through a browser: give
+  them a rule with `"require": "token"` (see [Protecting
+  pages](./protecting-pages.mdx)); a coding tool then sends the token with its
+  requests.
+</Callout>
+
+## Static export
+
+A [static export](./static-export.mdx) has no server to sign anyone in, so it leaves the protected pages out entirely.

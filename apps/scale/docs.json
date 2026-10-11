@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@dockudos/core/docs.schema.json",
+  "name": "Scale Docs",
+  "seo": {
+    "siteUrl": "http://localhost:4310",
+    "description": "Two versions, two languages, a changelog and a private section."
+  },
+  "theme": { "primary": "#5DD988" },
+  "versions": {
+    "default": "v2",
+    "list": [
+      { "name": "v2", "label": "2.x" },
+      { "name": "v1", "label": "1.x", "status": "deprecated" }
+    ]
+  },
+  "i18n": {
+    "default": "en",
+    "locales": ["en", { "code": "ar", "label": "العربية" }, "fr"],
+    "detect": true
+  },
+  "auth": {
+    "issuer": "http://127.0.0.1:4311",
+    "clientId": "scale",
+    "clientSecretEnv": "SCALE_CLIENT_SECRET",
+    "rolesClaim": "roles"
+  },
+  "access": {
+    "rules": [{ "paths": ["/team/**"], "require": "login", "roles": ["staff"] }]
+  },
+  "feeds": { "changelog": true, "posts": true },
+  "kudos": { "enabled": true },
+  "search": { "limit": 10 },
+  "navigation": [
+    {
+      "tab": "Docs",
+      "groups": [
+        {
+          "group": "Start",
+          "pages": ["index", "guides/auth", "guides/only-english"]
+        },
+        { "group": "Team", "pages": ["team/handbook"] },
+        { "group": "News", "pages": ["changelog", "blog/launch"] }
+      ]
+    }
+  ]
+}

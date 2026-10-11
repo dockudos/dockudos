@@ -1,7 +1,7 @@
 ---
 icon: monitor
 title: Layouts
-description: Six page layouts, chosen for the site or per page.
+description: Seven page layouts, chosen for the site or per page.
 ---
 
 Set the default in `docs.json`, and override it in a page's frontmatter:
@@ -25,8 +25,41 @@ layout: home
 | `flux`     | Minimal chrome: no rules between regions and no table of contents.       |
 | `glass`    | Translucent navbar and sidebar over a soft gradient of your brand color. |
 | `home`     | A landing page: centered, no sidebar and no table of contents.           |
+| `landing`  | A page of full-width bands built from components, with no docs frame.    |
 
 Every layout works in light and dark mode. This site uses `home` for its front page.
+
+## Landing and marketing pages
+
+`layout: landing` removes the sidebar, table of contents, breadcrumb, title and pager, and lets the content run the full width. Build
+the page from [`Section`](../components/section.mdx) bands holding [`Hero`](../components/hero.mdx), [`Cards`](../components/cards.mdx),
+[`Columns`](../components/columns.mdx), [`Stats`](../components/stats.mdx) and any other component:
+
+```mdx
+---
+title: Acme
+layout: landing
+---
+
+<Section
+  tone="primary"
+  align="center"
+  title="Docs that answer back"
+  lead="Search, ask and read in one place."
+>
+  <LinkButton href="/getting-started">Start</LinkButton>
+</Section>
+
+<Section title="Why Acme">
+  <Columns cols={3}>
+    <Tile title="Fast">Builds in seconds.</Tile>
+    <Tile title="Open">Plain files you own.</Tile>
+    <Tile title="Smart">Ask the docs.</Tile>
+  </Columns>
+</Section>
+```
+
+The page is still a page: it is in search, the sitemap and the Markdown twins, with its components written as plain text.
 
 ## Changing a layout's look
 

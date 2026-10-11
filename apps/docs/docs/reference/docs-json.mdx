@@ -17,7 +17,7 @@ Errors name the key and the file:
 Invalid docs config in /my-docs/docs.json:
   - name: Invalid input: expected string, received undefined
   - unknown key theem
-  - theme.layout: Invalid option: expected one of "docs"|"notebook"|"spacious"|"flux"|"glass"|"home"
+  - theme.layout: Invalid option: expected one of "docs"|"notebook"|"spacious"|"flux"|"glass"|"home"|"landing"
 ```
 
 ## Top level
@@ -201,6 +201,12 @@ A group is `{ group: string, pages: Item[], tutorial?: boolean }`, and an item i
       default: 'false',
       description: 'Ask search engines to skip the whole site.',
     },
+    ogImages: {
+      type: 'boolean',
+      default: 'true',
+      description:
+        'Give every page a social-card image (og:image). Needs siteUrl. See Social cards.',
+    },
   }}
 />
 
@@ -218,6 +224,11 @@ A group is `{ group: string, pages: Item[], tutorial?: boolean }`, and an item i
       default: '"/api/kudos"',
       description:
         'Path of the route that receives votes. Must start with "/".',
+    },
+    webhook: {
+      type: 'object',
+      description:
+        "Also send each vote and comment to your own backend: url (https), secretEnv (the environment variable with a bearer secret), includeUser (add the signed-in user's id; off by default). No address, cookie, name or email is ever sent. See Page feedback.",
     },
   }}
 />
@@ -357,10 +368,20 @@ See [Page actions](../guides/page-actions.mdx) and [Keyboard shortcuts](../guide
         'URL paths: "/print", "/team/*" (one level), "/team/**" (the folder and below). Include urlPrefix.',
     },
     require: {
-      type: '"basic" | "token" | "custom" | "deny"',
+      type: '"login" | "basic" | "token" | "custom" | "deny"',
       required: true,
       description:
-        'basic: username and password. token: a bearer token. custom: your verify function. deny: answer 404.',
+        'login: a signed-in user (needs auth). basic: username and password. token: a bearer token. custom: your verify function. deny: answer 404.',
+    },
+    roles: {
+      type: 'string[]',
+      description:
+        'login only: the user needs one of these roles. Leave out to let any signed-in user in.',
+    },
+    groups: {
+      type: 'string[]',
+      description:
+        'login only: the user needs to be in one of these groups. With roles, either is enough.',
     },
     secretEnv: {
       type: 'string',
@@ -374,7 +395,7 @@ See [Page actions](../guides/page-actions.mdx) and [Keyboard shortcuts](../guide
   }}
 />
 
-See [Protecting pages](../guides/protecting-pages.mdx).
+See [Protecting pages](../guides/protecting-pages.mdx) and [Sign-in and roles](../guides/login.mdx).
 
 ## icons
 
@@ -489,6 +510,208 @@ API reference pages from OpenAPI, AsyncAPI and GraphQL. See [API reference](../g
     'sources[].title': {
       type: 'string',
       description: 'Title of the overview page.',
+    },
+  }}
+/>
+
+## versions
+
+Several versions of the docs, each in its own folder. See [Versions](../guides/versions.mdx).
+
+<TypeTable
+  type={{
+    default: {
+      type: 'string',
+      required: true,
+      description:
+        'The version served at the site root, without a prefix: the latest one.',
+    },
+    list: {
+      type: 'object[]',
+      required: true,
+      description:
+        'Every version: name (required), label (what the switcher shows), dir (folder below docs/, default the name), status ("stable", "deprecated" or "unreleased"), and navigation (this version\'s own sidebar).',
+    },
+  }}
+/>
+
+## i18n
+
+Several languages, each in its own folder. See [Languages](../guides/languages.mdx).
+
+<TypeTable
+  type={{
+    default: {
+      type: 'string',
+      required: true,
+      description:
+        'The language of the pages without a translation, served at the site root.',
+    },
+    locales: {
+      type: '(string | { code: string; label?: string; rtl?: boolean })[]',
+      required: true,
+      description:
+        'Every language, the default included. label is what the switcher shows; rtl is detected for Arabic, Hebrew, Persian and Urdu.',
+    },
+    detect: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        "Send first-time visitors to their browser's language (remembered in a cookie).",
+    },
+    messages: {
+      type: 'Record<string, Record<string, string>>',
+      default: '{}',
+      description:
+        'Your own wording for interface text, by language: { "fr": { "search": "Chercher" } }.',
+    },
+  }}
+/>
+
+## auth
+
+How people sign in, for `access` rules with `require: "login"`. See [Sign-in and roles](../guides/login.mdx). The secrets are environment variables, never keys here.
+
+<TypeTable
+  type={{
+    provider: {
+      type: '"oidc"',
+      default: '"oidc"',
+      description:
+        'OpenID Connect: Auth0, Okta, Entra ID, Keycloak, Google and the like.',
+    },
+    issuer: {
+      type: 'string (URL)',
+      required: true,
+      description:
+        "The provider's issuer URL. Must be https (http only for localhost).",
+    },
+    clientId: {
+      type: 'string',
+      required: true,
+      description: "Your application's id at the provider.",
+    },
+    clientSecretEnv: {
+      type: 'string',
+      description:
+        'The environment variable holding the client secret. Leave out for a public client (PKCE only).',
+    },
+    scopes: {
+      type: 'string[]',
+      default: '["openid", "profile", "email"]',
+      description: 'What to ask the provider for.',
+    },
+    rolesClaim: {
+      type: 'string',
+      default: '"roles"',
+      description:
+        'The claim in the ID token with the roles. Dots reach into objects: "realm_access.roles".',
+    },
+    groupsClaim: {
+      type: 'string',
+      default: '"groups"',
+      description: 'The claim with the groups.',
+    },
+    sessionHours: {
+      type: 'number',
+      default: '12',
+      description: 'How long a sign-in lasts.',
+    },
+  }}
+/>
+
+## changelog
+
+<TypeTable
+  type={{
+    path: {
+      type: 'string',
+      default: '"/changelog"',
+      description:
+        'The page whose `<Update>` entries make the changelog and its feed.',
+    },
+  }}
+/>
+
+## feeds
+
+RSS feeds. Both need `seo.siteUrl`. See [Changelog and RSS](../guides/changelog.mdx).
+
+<TypeTable
+  type={{
+    changelog: {
+      type: 'boolean',
+      default: 'false',
+      description: '/changelog.xml, from the entries on the changelog page.',
+    },
+    posts: {
+      type: 'boolean',
+      default: 'false',
+      description: '/rss.xml, from the pages with a date in their frontmatter.',
+    },
+    limit: {
+      type: 'number',
+      default: '50',
+      description: 'Most items in a feed.',
+    },
+  }}
+/>
+
+## sources
+
+Content that `dockudos sync` fetches or converts into the docs folder. See [Content sources](../guides/sources.mdx). A list of objects; every one has a `type`, a `name` and an `into` folder.
+
+<TypeTable
+  type={{
+    type: {
+      type: '"remote" | "obsidian" | "html" | "notion" | "sanity"',
+      required: true,
+      description: 'Where the content comes from.',
+    },
+    name: {
+      type: 'string',
+      required: true,
+      description: 'A short name, used by `dockudos sync <name>`.',
+    },
+    into: {
+      type: 'string',
+      required: true,
+      description:
+        'The folder below docs/ the pages are written to. On a site with versions or languages, include them: "v2/en/imported".',
+    },
+    url: {
+      type: 'string (URL)',
+      description: 'remote: a JSON list of { path, url } (https only).',
+    },
+    mdx: {
+      type: 'boolean',
+      default: 'false',
+      description:
+        'remote: use the pages as MDX exactly as served. Off, they are read as Markdown and anything MDX would run is escaped.',
+    },
+    dir: {
+      type: 'string',
+      description: 'obsidian, html: the folder, relative to the project.',
+    },
+    rootId: {
+      type: 'string',
+      description: 'notion: the page whose sub-pages become the docs.',
+    },
+    projectId: { type: 'string', description: 'sanity: the project id.' },
+    dataset: {
+      type: 'string',
+      default: '"production"',
+      description: 'sanity: the dataset.',
+    },
+    query: {
+      type: 'string',
+      description:
+        'sanity: a GROQ query returning documents with title, slug and body.',
+    },
+    tokenEnv: {
+      type: 'string',
+      description:
+        'remote, notion, sanity: the environment variable with the access token (NOTION_TOKEN by default for Notion).',
     },
   }}
 />

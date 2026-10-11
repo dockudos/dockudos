@@ -1,0 +1,56 @@
+---
+icon: panels-top-left
+title: Section
+description: A full-width band for landing pages, with a title, a lead sentence and any components inside.
+---
+
+`Section` builds [landing pages](../guides/layouts.mdx#landing-and-marketing-pages): stack bands on a page with `layout: landing`. Each band
+holds a title, a lead sentence and anything else.
+
+```mdx
+---
+title: Acme
+layout: landing
+---
+
+<Section
+  tone="primary"
+  align="center"
+  title="Docs that answer back"
+  lead="Search, ask and read in one place."
+>
+  <LinkButton href="/getting-started">Start</LinkButton>
+</Section>
+
+<Section title="Why Acme" id="why">
+  <Columns cols={3}>
+    <Tile title="Fast">Builds in seconds.</Tile>
+    <Tile title="Open">Plain files you own.</Tile>
+    <Tile title="Smart">Ask the docs.</Tile>
+  </Columns>
+</Section>
+
+<Section tone="muted" title="Numbers">
+  <Stats items={[{ label: 'Pages', value: '1,200' }]} />
+</Section>
+```
+
+<TypeTable
+  type={{
+    title: { type: 'string', description: 'The heading of the band.' },
+    lead: { type: 'string', description: 'A sentence under it.' },
+    tone: {
+      type: '"default" | "muted" | "primary"',
+      default: '"default"',
+      description: 'The background: plain, a quiet tint, or the brand color.',
+    },
+    align: {
+      type: '"start" | "center"',
+      default: '"start"',
+      description: 'Where the heading and lead sit.',
+    },
+    id: { type: 'string', description: 'An address to link to this band.' },
+  }}
+/>
+
+On a page with another layout it is the same band, inside the content width. In the Markdown twin it is a `##` heading, the lead sentence and the content.

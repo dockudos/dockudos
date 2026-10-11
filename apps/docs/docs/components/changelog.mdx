@@ -1,0 +1,45 @@
+---
+icon: list-filter
+title: Changelog
+description: A list of Update entries with buttons to filter by tag.
+---
+
+Wrap your [`Update`](./update.mdx) entries in `Changelog` and readers get a button for each tag in use. Pressing one shows only the entries with that
+tag; pressing it again shows everything.
+
+<Changelog>
+
+<Update label="2.0.0" date="2026-03-31" tags={['Added', 'Breaking']}>
+
+- Tokens replace API keys.
+
+</Update>
+
+<Update label="1.9.0" date="2026-01-15" tags={['Fixed']}>
+
+Fixed rotation of keys.
+
+</Update>
+
+<Update label="1.8.0" date="2025-12-01" tags={['Added']}>
+
+New `scopes` option.
+
+</Update>
+
+</Changelog>
+
+```mdx
+<Changelog>
+
+<Update label="2.0.0" date="2026-03-31" tags={['Added', 'Breaking']}>
+
+- Tokens replace API keys.
+
+</Update>
+
+</Changelog>
+```
+
+The tags are read from the entries, so there is nothing to configure; without JavaScript every entry shows. Each entry has an `id`
+(the label as a slug, `2-0-0`) that you can link to and that the [changelog feed](../guides/changelog.mdx) uses.

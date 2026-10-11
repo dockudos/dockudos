@@ -1,0 +1,111 @@
+---
+icon: languages
+title: Languages
+description: Translate the docs, with a language switcher, fallbacks for pages not yet translated, hreflang and right-to-left support.
+---
+
+## Set it up
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "i18n": {
+    "default": "en",
+    "locales": ["en", "fr", { "code": "ar", "label": "العربية" }],
+    "detect": true
+  }
+}
+```
+
+Put each language's pages in a folder named by its code:
+
+```text
+docs/
+├── en/
+│   ├── index.mdx
+│   └── guides/auth.mdx
+├── fr/
+│   ├── index.mdx
+│   └── guides/auth.mdx
+└── ar/
+    └── index.mdx
+```
+
+(With [versions](./versions.mdx) the language folder goes inside the version's: `docs/v2/fr/guides/auth.mdx`.)
+
+| Page                 | Address                                       |
+| -------------------- | --------------------------------------------- |
+| English (default)    | `/guides/auth`                                |
+| French               | `/fr/guides/auth`                             |
+| English, spelled out | `/en/guides/auth` redirects to `/guides/auth` |
+
+Page ids in `navigation` are the same in every language (`guides/auth`), so you write the sidebar once and translate its titles in the pages.
+Only the page titles are translated, which is what you want.
+
+## The language switcher
+
+The navbar gets a language selector. Choosing a language goes to **the same page** in it, or the language's home page when that page is not
+translated yet. With `"detect": true`, a first visit goes to the language of the browser (`Accept-Language`), once: choosing a language in
+the switcher is remembered in a cookie and wins from then on. Search engines and crawlers, which send no preference, always get the default.
+
+## Pages that are not translated yet
+
+You do not have to translate everything before shipping. A page missing in a language is **shown in the default language** at the
+language's address, with a notice at the top ("This page is not available in Français yet. It is shown in English."). Such a page is
+`noindex, follow`, has the original as its canonical address, is not in the sitemap, and is not offered as a translation by the
+switcher. Translate it by adding the file.
+
+## hreflang
+
+Pages that exist in more than one language list each other:
+
+```html
+<link rel="alternate" hreflang="en" href="https://docs.acme.com/guides/auth" />
+<link
+  rel="alternate"
+  hreflang="fr"
+  href="https://docs.acme.com/fr/guides/auth"
+/>
+<link
+  rel="alternate"
+  hreflang="x-default"
+  href="https://docs.acme.com/guides/auth"
+/>
+```
+
+in the page and in `sitemap.xml`. Set `seo.siteUrl`; the links are absolute.
+
+## Words of the interface
+
+The interface's own words (the table of contents heading, "Previous" and "Next", "Last updated", the version notices, the feedback
+question, "Search") come in English, Spanish, French, German, Portuguese, Japanese, Chinese and Arabic. For another language, or other
+wording, override them by key:
+
+```json
+{
+  "i18n": {
+    "default": "en",
+    "locales": ["en", "fr"],
+    "messages": { "fr": { "search": "Chercher" } }
+  }
+}
+```
+
+The keys are those of `en` in `@dockudos/core` (`skipToContent`, `onThisPage`, `previous`, `next`, `lastUpdated`, `search`, `helpful`,
+`thanks`, `version`, `language`, and the notices). Parts of the interface that are not in that list, such as the assistant panel, stay in English.
+
+## Right to left
+
+Arabic, Hebrew, Persian and Urdu are right to left. The page frame gets `dir="rtl"` and `lang`, and the layout, written with
+logical CSS properties, mirrors itself: sidebar and table of contents change sides, borders and padding follow the reading direction.
+Code, diagrams and numbers stay left to right. Mark another language with `{ "code": "...", "rtl": true }`.
+
+## Search and the assistant
+
+Search, "Ask the docs", "Take me there", MCP and `llms.txt` only ever look at the reader's language. The assistant is also asked to
+**answer in that language**, whatever language the question is in, whenever the model can. See [Versions](./versions.mdx#search-the-assistant-and-mcp)
+for how the scope is chosen.
+
+## Feeds and printing
+
+`dockudos pdf --locale fr` and `dockudos epub --locale fr` make a book in one language; feeds take `?locale=fr`.

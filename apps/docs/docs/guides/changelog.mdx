@@ -1,0 +1,78 @@
+---
+icon: rss
+title: Changelog and RSS
+description: A changelog page of dated, tagged entries, and RSS feeds for it and for your posts.
+---
+
+## A changelog page
+
+Write one page of [`Update`](../components/update.mdx) entries, newest first, inside a [`Changelog`](../components/changelog.mdx) to get filtering by tag:
+
+```mdx title="docs/changelog.mdx"
+---
+title: Changelog
+description: What changed in each release.
+---
+
+<Changelog>
+
+<Update label="2.0.0" date="2026-03-31" tags={['Added', 'Breaking']}>
+
+- Tokens replace API keys.
+
+</Update>
+
+<Update label="1.9.0" date="2026-01-15" tags={['Fixed']}>
+
+Fixed rotation of keys.
+
+</Update>
+
+</Changelog>
+```
+
+Each entry has an address (`/changelog#2-0-0`) that links straight to it. Readers can filter by tag with the buttons above the list.
+
+## RSS feeds
+
+```json title="docs.json"
+{
+  "seo": { "siteUrl": "https://docs.acme.com" },
+  "changelog": { "path": "/changelog" },
+  "feeds": { "changelog": true, "posts": true }
+}
+```
+
+Two routes serve them:
+
+```ts title="src/app/changelog.xml/route.ts"
+import { createFeedHandler } from '@dockudos/next/feeds';
+
+export const dynamic = 'force-static';
+export const GET = createFeedHandler('changelog');
+```
+
+```ts title="src/app/rss.xml/route.ts"
+import { createFeedHandler } from '@dockudos/next/feeds';
+
+export const dynamic = 'force-static';
+export const GET = createFeedHandler('posts');
+```
+
+- **`/changelog.xml`** has one item per `<Update>` on the changelog page, newest first, with the date, tags as categories, the description and
+  the text of the entry as plain Markdown, and a link to the entry.
+- **`/rss.xml`** has one item per page with a `date` in its frontmatter (a post, an announcement), with its description and `tags`.
+
+```mdx
+---
+title: Version 2 is out
+description: A new major version.
+date: 2026-03-31
+tags: [news]
+---
+```
+
+The feeds are RSS 2.0, with absolute links (so `seo.siteUrl` is needed), `atom:link rel="self"`, RFC 822 dates and a stable `guid`, and the
+same content gives the same file. Pages announce them to readers' feed apps with `<link rel="alternate" type="application/rss+xml">`. Hidden
+pages, pages behind an `access` rule and pages shown in place of a missing translation are never in a feed, and a protected changelog is no
+feed at all. `?version=v1` and `?locale=fr` pick another version or language; a static export writes the defaults.

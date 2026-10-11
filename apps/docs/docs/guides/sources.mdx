@@ -1,0 +1,88 @@
+---
+icon: import
+title: Content sources
+description: Write docs from an Obsidian vault, HTML files, a remote list, Notion or Sanity, with dockudos sync.
+---
+
+Your docs do not have to start as MDX files in the docs folder. A _source_ reads content from somewhere else and `dockudos sync`
+writes it into the docs folder as pages, which the rest of dockudos treats like any other.
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "sources": [
+    {
+      "type": "obsidian",
+      "name": "handbook",
+      "dir": "vault",
+      "into": "handbook"
+    },
+    { "type": "html", "name": "legacy", "dir": "old-site", "into": "legacy" },
+    {
+      "type": "notion",
+      "name": "wiki",
+      "rootId": "8f3c2a9e1b7d4c5a9e0f1a2b3c4d5e6f",
+      "into": "wiki"
+    }
+  ]
+}
+```
+
+```bash
+npx dockudos sync            # all sources
+npx dockudos sync handbook   # one
+```
+
+`dockudos build` runs it first (`--no-sync` skips it). Add the synced folders to `navigation`, or leave them to the folder-derived sidebar.
+Commit them to Git, or leave them out and sync in CI. With [versions or languages](./versions.mdx) set `into` to the right folder
+(`v2/en/handbook`).
+
+## What sync does
+
+- A source produces files; `into` is the folder below `docs/` they are written to.
+- Only files a source wrote last time are ever replaced or removed (the list is kept in `.dockudos/sources/<name>.json`), so pages you
+  write by hand in the same folder are never touched, and a page that disappears from the source disappears from the docs.
+- A file is only rewritten when its content changed, so builds stay incremental.
+- Every path is checked (no `..`, no absolute paths, nothing hidden) and must stay inside `into`.
+
+## The sources
+
+| `type`     | Reads                                                                                                 | Needs                        |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `obsidian` | A vault folder: `[[wikilinks]]`, `![[images]]` (copied), callouts, frontmatter `title`/`date`/`tags`. | `dir`                        |
+| `html`     | A folder of `.html` files: the title, the meta description and the main content as Markdown.          | `dir`                        |
+| `remote`   | A JSON list of `{ "path", "url" }` pages and files, over https.                                       | `url`, optionally `tokenEnv` |
+| `notion`   | A Notion page and its sub-pages (the root is the home page of `into`).                                | `rootId`, `NOTION_TOKEN`     |
+| `sanity`   | The result of a GROQ query: documents with `title`, `slug` and `body` (Markdown or Portable Text).    | `projectId`, `query`         |
+
+Tokens are environment variables named in the config (`tokenEnv`), never values in `docs.json`. A Notion token is an internal
+integration token with access to the page.
+
+## Imported content is not trusted
+
+Content from outside is written by someone else and MDX runs code. So imported pages are made safe: braces and `<` are escaped in
+text (code stays as it is), a line that starts with `import` or `export` is neutralised, links and images that run code
+(`javascript:`, `data:`) are removed, and raw HTML does not survive. A `remote` source may serve MDX with components if you set
+`"mdx": true`, for content you control. The token of a `remote` source is only sent to the host of the list, never to a host the
+list names, and all requests are https (http only for localhost), size limited and time limited.
+
+## Write your own
+
+A source is a small object:
+
+```ts
+import type { ContentSource } from '@dockudos/core/node';
+
+export const mySource: ContentSource = {
+  name: 'cms',
+  async read() {
+    // sorted by path, unique, safe, pages are text
+    return [
+      { path: 'welcome.md', content: '---\ntitle: Welcome\n---\n\nHello.' },
+    ];
+  },
+};
+```
+
+`assertSourceFiles(files)` checks the contract (safe unique sorted paths, text pages), and `syncSource(root, docsDir, { source, into })` does the writing.
+The docs folder itself is a source too: `createLocalSource(dir)`.

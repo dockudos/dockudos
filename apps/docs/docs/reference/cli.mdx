@@ -34,6 +34,7 @@ server stays up.
 dockudos build [next build options]
 ```
 
+0. Runs [`sync`](#sync) when `docs.json` has `sources` (skip with `--no-sync`).
 1. Runs [`generate`](#generate) when `docs.json` has API or reference sources.
 2. Validates `docs.json`, the frontmatter of every page, navigation entries and redirects.
 3. Checks every link, anchor and image. Any error stops here.
@@ -41,6 +42,8 @@ dockudos build [next build options]
 5. Runs `next build`.
 
 Exits with the status of `next build`, or 1 when a check fails, with the reason printed.
+
+`--static` writes a plain-file site to `out/` (see [Static export](../guides/static-export.mdx)); `--base-path /name` is for hosts that serve from a sub-path.
 
 ## generate
 
@@ -87,12 +90,34 @@ See [broken links](../guides/broken-links.mdx). Exit status 0 when there are no 
 
 ```bash
 dockudos pdf [-o <file>] [--no-build] [--page-size A4|Letter] [--chrome <path>] [--port <n>] [--timeout <s>]
-            [--user <user:password>] [--token <token>]
+            [--user <user:password>] [--token <token>] [--version <name>] [--locale <code>] [--path </section>]
 ```
 
 Builds the site (unless `--no-build`), serves it on a free local port, and prints the `/print` page,
-which holds every page, into one PDF. Needs a Chrome or Chromium. If `/print` is [protected](../guides/protecting-pages.mdx#the-pdf-of-a-protected-site), give `--user` or `--token`. See
+which holds every page, into one PDF. `--version` and `--locale` print one version and language, and `--path /guides` only that
+section (an address inside the version and language). Needs a Chrome or Chromium. If `/print` is [protected](../guides/protecting-pages.mdx#the-pdf-of-a-protected-site), give `--user` or `--token`. See
 [Printing and PDF](../guides/printing.mdx#the-whole-site-as-one-pdf).
+
+## epub
+
+```bash
+dockudos epub [-o <file>] [--version <name>] [--locale <code>] [--path </section>]
+```
+
+Writes the docs as an EPUB 3 book, in the order of the sidebar, with the sidebar groups as the table of contents. It needs
+no server and no browser. Pages behind an `access` rule and pages that are only shown in another language are left out, and the
+command says how many. Images that are files of the project are embedded; others show their alt text. See
+[Printing and PDF](../guides/printing.mdx#epub).
+
+## sync
+
+```bash
+dockudos sync [name...]
+```
+
+Fetches or converts the [content sources](../guides/sources.mdx) of `docs.json` and writes their pages into the docs folder. Name
+sources to run only those. Pages the source no longer has are removed, files you wrote by hand in the same folder never are, and a
+file is only rewritten when its content changed. `dockudos build` runs it first; `--no-sync` skips that.
 
 ## kudos
 

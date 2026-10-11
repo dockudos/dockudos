@@ -1,0 +1,94 @@
+---
+icon: sliders-horizontal
+title: Story
+description: A live example of a component with controls to change its props, and the code for what is shown.
+---
+
+`Story` shows a component with a control for each prop, and the JSX for the values chosen. Use it in the docs of your own UI components.
+
+<Story
+  of="Badge"
+  title="Badge"
+  controls={{ color: ['gray', 'blue', 'green', 'amber', 'red'] }}
+>
+  New
+</Story>
+
+```mdx
+<Story
+  of="Badge"
+  controls={{ color: ['gray', 'blue', 'green', 'amber', 'red'] }}
+>
+  New
+</Story>
+```
+
+## Controls
+
+A control is described by its value:
+
+| You write                                                      | Control                                                                                               |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `['primary', 'secondary']`                                     | A choice; the first is the default.                                                                   |
+| `false` or `true`                                              | A switch.                                                                                             |
+| `'Save'`                                                       | A text field.                                                                                         |
+| `3`                                                            | A number field.                                                                                       |
+| `{ type: 'number', min: 0, max: 10, step: 1, label: 'Count' }` | The long form of each: `boolean`, `text`, `number`, `select` (`options`), with `default` and `label`. |
+
+The key of each control is the name of the prop it sets.
+
+## Which component
+
+`of` names the component: one of `Badge`, `Button`, `Callout`, `Kbd` and `LinkButton`, or any you register. A story changes props
+in the browser, so it needs the component itself, not the page's already-rendered copy. Register yours once, from a client module that your
+`mdx-components` file imports:
+
+```tsx title="src/stories.tsx"
+'use client';
+
+import { registerStoryComponents } from '@dockudos/ui';
+import { PricingCard } from './pricing-card';
+
+registerStoryComponents({ PricingCard });
+```
+
+Fixed props go in `props`, and whatever is between the tags is the component's children:
+
+```mdx
+<Story
+  of="PricingCard"
+  props={{ currency: 'EUR' }}
+  controls={{ price: 9, highlighted: false }}
+/>
+```
+
+Without `of`, give one element as the child and the controls set its props; that works for HTML elements and client components.
+
+<TypeTable
+  type={{
+    controls: {
+      type: 'Record<string, control>',
+      required: true,
+      description: 'One control per prop to change.',
+    },
+    of: {
+      type: 'string',
+      description: 'The component, by the name it was registered under.',
+    },
+    props: {
+      type: 'object',
+      description: 'Props that stay as they are. With of.',
+    },
+    name: {
+      type: 'string',
+      description:
+        "The name in the code line. Default: of, or the element's name.",
+    },
+    title: {
+      type: 'string',
+      description: 'A label for the example, read by screen readers.',
+    },
+  }}
+/>
+
+In the Markdown twin of the page (`/page.md`, `llms.txt`, "Copy page") a story is its content and the list of props you can change.

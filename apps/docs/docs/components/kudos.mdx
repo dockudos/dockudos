@@ -44,6 +44,28 @@ thumbs up or down, and then invites an optional comment. You read the answers wi
 `--path /guides/auth` shows one page, `--json` prints everything for a script, and `--file` points at a
 different log.
 
+## Send feedback to your own backend
+
+Votes and comments are kept in `.dockudos/kudos.jsonl`. To also send each one to a service of yours, add a webhook:
+
+```json title="docs.json"
+{
+  "kudos": {
+    "enabled": true,
+    "webhook": {
+      "url": "https://hooks.acme.com/docs-feedback",
+      "secretEnv": "FEEDBACK_SECRET"
+    }
+  }
+}
+```
+
+Every vote and comment is then also `POST`ed to that address as JSON, `{ "id", "at", "path", "vote" }` for a vote and
+`{ "id", "at", "path", "comment" }` for a comment, with `Authorization: Bearer <secret>` when `secretEnv` names a variable that is
+set. Nothing else goes with it: no address, no cookie, no name or email. `"includeUser": true` adds the signed-in user's id
+(`user`), and only that. A webhook that is down or slow never loses the vote, which is already stored. The request has a three-second
+limit and does not follow redirects.
+
 ## What a visitor sees
 
 1. A question with **Yes** and **No** buttons.

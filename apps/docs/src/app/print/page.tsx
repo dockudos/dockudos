@@ -1,4 +1,4 @@
-import { getSite } from '@dockudos/next/server';
+import { bookRequest, getSite } from '@dockudos/next/server';
 import { DocsBook } from '@dockudos/ui';
 import type { Metadata } from 'next';
 
@@ -12,9 +12,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PrintPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function PrintPage({ searchParams }: Props) {
   const site = await getSite();
-  const book = await site.book();
+  // `?version=`, `?locale=` and `?path=` print one version, language or section; `dockudos pdf` sets them.
+  const { scope, under, nav } = await bookRequest(site, searchParams);
+  const book = await site.book({ scope, under });
   const sections = await Promise.all(
     book.map(async ({ page, toc }) => {
       const { default: Content } = await import(`../../../docs/${page.file}`);
@@ -24,7 +30,7 @@ export default async function PrintPage() {
   return (
     <DocsBook
       config={site.config}
-      nav={site.nav}
+      nav={nav}
       sections={sections}
       generatedAt={new Date()}
     />

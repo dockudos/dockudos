@@ -82,6 +82,31 @@ export default async function PrintPage() {
 it, so rename that page. Heading ids are made unique per page inside the book, so two pages can both have
 a "Setup" heading, and links such as `/guides/auth#keys` still land in the right place.
 
+### One version, language or section
+
+On a site with [versions or languages](./versions.mdx), the PDF is of the defaults. Choose another, or only one part:
+
+```bash
+dockudos pdf --version v1 --locale fr
+dockudos pdf --path /guides
+```
+
+The same options work on the page: `/print?version=v1&locale=fr&path=/guides`. Pages behind an `access` rule are never in a book
+made from an open `/print`.
+
+## EPUB
+
+```bash
+dockudos epub -o acme.epub
+dockudos epub --version v1 --locale fr --path /guides
+```
+
+writes an EPUB 3 book: one chapter per page in the order of the sidebar, the sidebar's groups as the table of contents, links
+between pages kept, and the images that are files of your project inside the book. It needs no server and no browser, and the
+file is the same every time for the same content (set `SOURCE_DATE_EPOCH` to fix the date). Right-to-left languages get a
+right-to-left book. Pages behind an `access` rule, and pages that are only shown in another language, are left out; the command
+tells you how many.
+
 ## Component by component
 
 | Component                                   | On paper                                                                           |

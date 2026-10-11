@@ -31,8 +31,17 @@ description: The keys at the top of a page.
         'Leave out of the generated sidebar and the sitemap, and mark noindex. The URL still works.',
     },
     layout: {
-      type: '"docs" | "notebook" | "spacious" | "flux" | "glass" | "home"',
+      type: '"docs" | "notebook" | "spacious" | "flux" | "glass" | "home" | "landing"',
       description: 'Override theme.layout for this page.',
+    },
+    date: {
+      type: 'string',
+      description:
+        '`YYYY-MM-DD`. Pages with a date are the items of the posts feed (feeds.posts).',
+    },
+    tags: {
+      type: 'string[]',
+      description: 'Categories of the page, shown as feed categories.',
     },
     kudos: {
       type: 'boolean',

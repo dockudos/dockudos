@@ -37,3 +37,21 @@ uncommitted changes, the file's modification time is used instead.
   in the latest commit. Fetch full history (for example `fetch-depth: 0` in
   GitHub Actions) for accurate dates.
 </Callout>
+
+## Versions and languages
+
+On a site with [versions](./versions.mdx) or [languages](./languages.mdx), each page declares one canonical address and its
+translations:
+
+- A page of an older version points its `canonical` at the same page of the latest version, when there is one.
+- A page shown in place of a missing translation points at the original, and is marked `noindex, follow`.
+- Pages that are translated list each other with `hreflang` (and `x-default` for the default language), in the page and in the
+  sitemap, which also leaves out the stand-ins and old copies.
+
+## Social cards
+
+With `seo.siteUrl` set, every page gets an `og:image`: a 1200 by 630 card with the site name, the page title and description and the
+version, on your brand color, at `/og/guides/auth.png`. `withDocs()` routes those addresses to `createOgHandler()`
+(served by `createDocsApi()`), so nothing is stored: cards are drawn on request and cached by the host. A page behind an
+[access rule](./protecting-pages.mdx) gets a card with only the site name. `dockudos build --static` draws the cards into `out/og/`.
+Turn them off with `"seo": { "ogImages": false }`. Text is drawn with the font that comes with Next.js, which covers Latin scripts.

@@ -1,0 +1,106 @@
+---
+icon: git-branch
+title: Versions
+description: Serve several versions of the docs, with a switcher, a notice on old versions and search that stays inside one.
+---
+
+Keep the docs of each release next to each other. Readers get the latest at the short address, a switcher, and a notice on pages of an
+old version that links to the same page in the latest.
+
+## Set it up
+
+```json title="docs.json"
+{
+  "name": "Acme",
+  "versions": {
+    "default": "v2",
+    "list": [
+      { "name": "v2", "label": "2.x" },
+      { "name": "v1", "label": "1.x", "status": "deprecated" },
+      { "name": "next", "status": "unreleased" }
+    ]
+  }
+}
+```
+
+Each version's pages live in their own folder below `docs/`, named like the version (or by `dir`):
+
+```text
+docs/
+├── v2/
+│   ├── index.mdx
+│   └── guides/auth.mdx
+├── v1/
+│   ├── index.mdx
+│   └── guides/auth.mdx
+└── next/
+    └── index.mdx
+```
+
+The folder layout is the whole convention: to start a new version, copy the folder. With [languages](./languages.mdx) too, each
+version has a folder per language: `docs/v2/en/guides/auth.mdx`. A branch-per-version workflow works as well: check out each
+branch's `docs/` into its folder in CI before building.
+
+## Addresses
+
+| Page                    | Address                                       |
+| ----------------------- | --------------------------------------------- |
+| Latest (`v2`)           | `/guides/auth`                                |
+| Another version (`v1`)  | `/v1/guides/auth`                             |
+| The latest, spelled out | `/v2/guides/auth` redirects to `/guides/auth` |
+
+The latest version has no prefix, so links to it keep working when you release the next one. A page or folder at the top level of the
+latest version may not be named like another version (or a language code), since the address could not tell them apart; the build says
+so.
+
+## The switcher and the notice
+
+The navbar gets a version switcher. Choosing a version goes to **the same page** there, or the nearest parent that exists, or the
+version's home page: you are never sent to a 404. Pages of an old version show a notice:
+
+| `status`     | Notice                                                                                                         |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| `stable`     | On every version but the latest: "You are reading the documentation for version 1.x, which is not the latest." |
+| `deprecated` | "Version 1.x is deprecated and no longer maintained."                                                          |
+| `unreleased` | "This is a preview of version next, which is not released yet."                                                |
+
+Each links to the same page of the latest version when it has one.
+
+## Navigation
+
+`navigation` in `docs.json` is read for every version, using page ids relative to the version's folder. The latest version must match it
+exactly (a missing page is an error, as always). Older versions may have fewer pages: entries they lack are skipped and groups left
+empty are dropped. When an old version is organised differently, give it its own sidebar:
+
+```json
+{
+  "name": "v1",
+  "navigation": [
+    {
+      "tab": "Docs",
+      "groups": [{ "group": "Guides", "pages": ["index", "guides/auth"] }]
+    }
+  ]
+}
+```
+
+## Search, the assistant and MCP
+
+Everything that reads the docs stays inside **one** version (and one language): the search palette, `/api/search`, the assistant
+("Ask the docs"), "Take me there", the `search_docs` and `list_pages` tools of [MCP](./mcp.mdx), `llms.txt` and the PDF. A request that
+does not say which one gets the defaults, never a mix, and one that names a version the site does not have is refused with the list of
+those it has. On the pages themselves the assistant and the palette know the page's version; programs say it:
+
+```bash
+curl '/api/search?q=rotate&version=v1'
+curl -X POST /api/ask -d '{"question":"How do I rotate a key?","version":"v1"}'
+curl '/llms.txt?version=v1'
+```
+
+Search engines are told too: pages of an old version point their canonical address at the latest version's page, and the sitemap lists
+each page once. See [SEO](./seo.mdx#versions-and-languages).
+
+## In your app
+
+Pages come from the same `[[...slug]]` route; `dockudos init` writes one that already knows about versions. If you wrote your own,
+use `site.navFor(page)`, `site.variantUi(page)` and `site.redirectFor(slug)`, as the template does.
