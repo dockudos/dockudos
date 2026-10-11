@@ -85,6 +85,13 @@ describe('metadata', () => {
     expect(pageMetadata(site, site.find(['guides', 'auth']) as never)).toEqual({
       title: { absolute: 'Auth | Acme' },
       alternates: { canonical: 'https://docs.acme.com/guides/auth' },
+      openGraph: {
+        title: 'Auth',
+        images: [
+          { url: '/og/guides/auth.png', width: 1200, height: 630, alt: 'Auth' },
+        ],
+      },
+      twitter: { card: 'summary_large_image', images: ['/og/guides/auth.png'] },
     });
     const home = pageMetadata(site, site.find() as never);
     expect(home.description).toBe('Welcome');

@@ -1,5 +1,10 @@
-import { resolveRedirects } from '@dockudos/core';
-import { discoverPages, loadConfigSync } from '@dockudos/core/node';
+import {
+  expandAccessRules,
+  localeInfos,
+  resolveRedirects,
+  versionInfos,
+} from '@dockudos/core';
+import { discoverSite, loadConfigSync } from '@dockudos/core/node';
 import createMDX from '@next/mdx';
 import type { NextConfig } from 'next';
 import { resolve } from 'node:path';
@@ -21,6 +26,7 @@ export const markdownRewrites = () => [
     source: '/:path(.+)\\.md',
     destination: MARKDOWN_ROUTE,
   },
+
   {
     source: '/',
     has: WANTS_MARKDOWN,
@@ -31,6 +37,11 @@ export const markdownRewrites = () => [
     has: WANTS_MARKDOWN,
     destination: MARKDOWN_ROUTE,
   },
+];
+
+/** Social-card images: `/og/guides/auth.png` is drawn on request by the og route. */
+export const ogRewrites = () => [
+  { source: '/og/:path(.+)\\.png', destination: '/api/og' },
 ];
 
 /**
@@ -106,7 +117,24 @@ export function withDocs(
     // The rules (not the secrets) go into the build, so `src/proxy.ts` needs no file access.
     env: {
       ...nextConfig.env,
-      DOCKUDOS_ACCESS: JSON.stringify(config.access.rules),
+      // Rules written for the default version and language also cover every other one.
+      DOCKUDOS_ACCESS: JSON.stringify(
+        expandAccessRules(config.access.rules, config),
+      ),
+      ...(config.i18n?.detect && {
+        DOCKUDOS_I18N: JSON.stringify({
+          default: config.i18n.default,
+          locales: localeInfos(config).map((l) => l.code),
+          ...(config.versions && {
+            // The default version first: the proxy reads it as such.
+            versions: versionInfos(config)
+              .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+              .map((v) => v.name),
+          }),
+          ...(config.urlPrefix && { urlPrefix: config.urlPrefix }),
+          detect: true,
+        }),
+      }),
     },
     pageExtensions: [
       ...pageExtensions,
@@ -114,7 +142,7 @@ export function withDocs(
     ],
     async rewrites() {
       const own = await nextConfig.rewrites?.();
-      const mine = markdownRewrites();
+      const mine = [...markdownRewrites(), ...ogRewrites()];
       if (!own) return { beforeFiles: mine, afterFiles: [], fallback: [] };
       if (Array.isArray(own))
         return { beforeFiles: mine, afterFiles: own, fallback: [] };
@@ -140,14 +168,12 @@ export function withDocs(
     async redirects() {
       const own = (await nextConfig.redirects?.()) ?? [];
       if (config.redirects.length === 0) return own;
-      const pages = await discoverPages(absoluteDocsDir, {
-        prefix: config.urlPrefix,
-      });
+      const { tree } = await discoverSite(absoluteDocsDir, config);
       return [
         ...own,
         ...resolveRedirects(
           config.redirects,
-          pages.pages.map((p) => p.path),
+          tree.pages.map((p) => p.path),
         ),
       ];
     },

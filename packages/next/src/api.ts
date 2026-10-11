@@ -1,7 +1,9 @@
 import {
   type ContentIndex,
   type MarkdownComponents,
+  filterIndex,
   hashText,
+  scopeFilter,
 } from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
 import {
@@ -11,14 +13,19 @@ import {
   createGuard,
   preflight,
 } from './ai-api.ts';
+import { type AuthOptions, createAuthHandlers } from './auth.ts';
 import {
   MAX_LIMIT,
   MAX_QUERY_LENGTH,
   apiError,
   engineFor,
+  inScope,
   json,
+  requestScope,
 } from './api-common.ts';
+import { resolveViewer } from './viewer.ts';
 import { createMarkdownHandler } from './markdown.ts';
+import { createOgHandler } from './og.ts';
 import { createPlaygroundHandler } from './playground-proxy.ts';
 import { getSite } from './server.ts';
 
@@ -29,9 +36,11 @@ export interface DocsApiOptions {
   ai?: AiOptions;
   /** The site's own components, so their `toMarkdown` is used in the Markdown of a page. */
   components?: MarkdownComponents;
+  /** Sign-in: where secrets come from, and a `fetch` for the identity provider. */
+  auth?: AuthOptions;
 }
 
-export type { AiOptions };
+export type { AiOptions, AuthOptions };
 export { apiError, json, clientKey } from './api-common.ts';
 export { createAskHandler, createNavigateHandler } from './ai-api.ts';
 
@@ -46,10 +55,11 @@ const integer = (
 };
 
 /**
- * `GET /api/search?q=…&limit=…&maxPerPage=…` answers `{ hits }` from the built-in keyword engine, for
- * `search.backend: "server"` and for tools that cannot download the index.
+ * `GET /api/search?q=…&limit=…&maxPerPage=…&version=…&locale=…` answers `{ hits }` from the built-in keyword engine,
+ * for `search.backend: "server"` and for tools that cannot download the index. It searches one version and
+ * language (the defaults when not named) and the protected pages the caller may see, and only those.
  */
-export function createSearchHandler() {
+export function createSearchHandler({ access }: DocsApiOptions = {}) {
   return async function GET(request: Request): Promise<Response> {
     const params = new URL(request.url).searchParams;
     const q = (params.get('q') ?? '').trim();
@@ -58,44 +68,85 @@ export function createSearchHandler() {
         400,
         `The query is longer than ${MAX_QUERY_LENGTH} characters.`,
       );
-    const index = await (await getSite()).index();
+    const site = await getSite();
+    const asked = requestScope(site.config, {
+      version: params.get('version'),
+      locale: params.get('locale'),
+    });
+    if ('response' in asked) return asked.response;
+    const viewer = await resolveViewer(
+      request,
+      site.config.access.rules,
+      access,
+    );
+    const index = await site.indexFor(viewer);
     const hits = engineFor(index).search(q, {
       limit: integer(params.get('limit'), 10, 1, MAX_LIMIT),
       ...(params.get('maxPerPage') && {
         maxPerPage: integer(params.get('maxPerPage'), 1, 1, MAX_LIMIT),
       }),
+      filter: scopeFilter(asked.scope, viewer.canSee),
     });
     return json({ hits }, 200, {
-      'cache-control': 'public, max-age=60, stale-while-revalidate=600',
+      // What a signed-in reader sees must not be kept for the next visitor.
+      'cache-control':
+        viewer.scope === ''
+          ? 'public, max-age=60, stale-while-revalidate=600'
+          : 'private, no-store',
     });
   };
 }
 
-const serialized = new WeakMap<ContentIndex, { body: string; etag: string }>();
+const serialized = new WeakMap<
+  ContentIndex,
+  Map<string, { body: string; etag: string }>
+>();
 
 /**
- * `GET /api/search/index` serves the content index for the in-browser engine: public pages only, without
- * vectors (the browser does not need them). Cached by the browser and CDNs and revalidated with an ETag.
+ * `GET /api/search/index?version=…&locale=…` serves the content index for the in-browser engine: one version and
+ * language, without vectors (the browser does not need them), and the protected pages the caller may see. Cached by
+ * the browser and CDNs and revalidated with an ETag, unless it holds protected pages: then it is private.
  */
-export function createIndexHandler() {
+export function createIndexHandler({ access }: DocsApiOptions = {}) {
   return async function GET(request: Request): Promise<Response> {
-    const index = await (await getSite()).index();
-    let entry = serialized.get(index);
+    const params = new URL(request.url).searchParams;
+    const site = await getSite();
+    const asked = requestScope(site.config, {
+      version: params.get('version'),
+      locale: params.get('locale'),
+    });
+    if ('response' in asked) return asked.response;
+    const viewer = await resolveViewer(
+      request,
+      site.config.access.rules,
+      access,
+    );
+    const index = await site.indexFor(viewer);
+    const key = `${asked.scope.version ?? ''}|${asked.scope.locale ?? ''}`;
+    let entries = serialized.get(index);
+    if (!entries) serialized.set(index, (entries = new Map()));
+    let entry = entries.get(key);
     if (!entry) {
-      const { embeddings: _embeddings, ...rest } = index;
+      const { embeddings: _embeddings, ...rest } = filterIndex(
+        index,
+        inScope(asked.scope),
+      );
       entry = {
         body: JSON.stringify({
           ...rest,
-          chunks: index.chunks.map(({ vector: _vector, ...chunk }) => chunk),
+          chunks: rest.chunks.map(({ vector: _vector, ...chunk }) => chunk),
         }),
         // Tied to the content, not to the build time, so a rebuild that changed nothing keeps the ETag.
-        etag: `"${hashText(index.pages.map((p) => p.hash).join() + index.chunks.map((c) => c.id).join())}"`,
+        etag: `"${hashText(rest.pages.map((p) => p.hash).join() + rest.chunks.map((c) => c.id).join())}"`,
       };
-      serialized.set(index, entry);
+      entries.set(key, entry);
     }
     const headers = {
       etag: entry.etag,
-      'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
+      'cache-control':
+        viewer.scope === ''
+          ? 'public, max-age=300, stale-while-revalidate=3600'
+          : 'private, no-cache',
     };
     if (request.headers.get('if-none-match') === entry.etag)
       return new Response(null, { status: 304, headers });
@@ -151,23 +202,31 @@ export type RouteContext = { params: Promise<{ dockudos?: string[] }> };
  *     import { createDocsApi } from '@dockudos/next/api';
  *     export const { GET, POST } = createDocsApi();
  *
- * It answers `/api/search`, `/api/search/index`, `/api/page`, `/api/markdown`, `POST /api/ask`, `POST /api/navigate` and `POST /api/playground` (when `openapi.playground.proxy` is on); routes you add yourself (such as
+ * It answers `/api/search`, `/api/search/index`, `/api/page`, `/api/markdown`, `POST /api/ask`, `POST /api/navigate`,
+ * `POST /api/playground` (when `openapi.playground.proxy` is on) and the sign-in routes under `/api/auth/` (when
+ * `auth` is set); routes you add yourself (such as
  * `/api/kudos`) win over it.
  */
 export function createDocsApi(options: DocsApiOptions = {}) {
+  const auth = createAuthHandlers(options.auth);
   const get: Record<string, Route> = {
-    search: createSearchHandler(),
-    'search/index': createIndexHandler(),
+    search: createSearchHandler(options),
+    'search/index': createIndexHandler(options),
+    'auth/login': auth.login,
+    'auth/callback': auth.callback,
+    'auth/session': auth.session,
     page: createPageHandler(options),
     markdown: createMarkdownHandler(options),
+    og: createOgHandler(),
   };
   // Asking and navigating draw on one budget per visitor.
   const guard = createGuard();
   const post: Record<string, Route> = {
-    ask: createAskHandler(options.ai, guard),
-    navigate: createNavigateHandler(options.ai, guard),
+    ask: createAskHandler(options.ai, guard, options.access),
+    navigate: createNavigateHandler(options.ai, guard, options.access),
     // Off unless `openapi.playground.proxy` is set in docs.json.
     playground: createPlaygroundHandler(),
+    'auth/logout': auth.logout,
   };
 
   const dispatch =

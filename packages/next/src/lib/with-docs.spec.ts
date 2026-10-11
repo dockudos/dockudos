@@ -176,9 +176,11 @@ describe('withDocs: Markdown twins', () => {
       '/api/markdown',
       '/api/markdown',
       '/api/markdown',
+      '/api/og',
     ]);
     expect(beforeFiles[0]?.source).toBe('/:path(.+)\\.md');
-    for (const r of beforeFiles.slice(1))
+    expect(beforeFiles[3]?.source).toBe('/og/:path(.+)\\.png');
+    for (const r of beforeFiles.slice(1, 3))
       expect(r.has).toEqual([
         { type: 'header', key: 'accept', value: '.*text/markdown.*' },
       ]);
@@ -196,7 +198,7 @@ describe('withDocs: Markdown twins', () => {
       }),
     });
     expect(asObject.beforeFiles.at(-1)).toEqual(mine);
-    expect(asObject.beforeFiles).toHaveLength(4);
+    expect(asObject.beforeFiles).toHaveLength(5);
     expect(asObject.fallback).toEqual([mine]);
   });
 

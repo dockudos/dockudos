@@ -3,6 +3,7 @@ import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { type AccessOptions, authorizePage } from './access.ts';
 import { getSite } from './server.ts';
+import { authSecret, readSession } from './session.ts';
 
 /** Where feedback is kept. Replace it to use a database; the handler only calls `add`. */
 export interface KudosStore {
@@ -32,6 +33,10 @@ export interface KudosHandlerOptions {
   access?: AccessOptions;
   /** Clock, for tests. */
   now?: () => number;
+  /** Where the webhook secret is read from. Default `process.env`. */
+  env?: Record<string, string | undefined>;
+  /** For the webhook; default `fetch`. */
+  fetch?: typeof fetch;
 }
 
 const json = (
@@ -69,12 +74,53 @@ export function createKudosHandler(options: KudosHandlerOptions = {}) {
     maxCommentLength = 1000,
     rateLimitPerMinute = 20,
     now = Date.now,
+    env = process.env,
+    fetch: send = fetch,
   } = options;
   const isKnownPath =
     options.isKnownPath ??
     (async (path: string) =>
       (await getSite()).tree.pages.some((p) => p.path === path));
   const hits = new Map<string, number[]>();
+
+  /**
+   * Pass an entry on to the site's own backend (`kudos.webhook`). It gets what the store gets, and the signed-in
+   * user's id only when `includeUser` is set: never an address, a cookie, a name or an email. A slow or failing
+   * backend never fails the vote: the store already has it.
+   */
+  async function forward(request: Request, entry: KudosEntry): Promise<void> {
+    // A site that cannot be loaded here (a custom `isKnownPath`, a test) has no webhook to call.
+    const hook = await getSite().then(
+      (site) => site.config.kudos.webhook,
+      () => undefined,
+    );
+    if (!hook) return;
+    const secret = hook.secretEnv ? env[hook.secretEnv] : undefined;
+    let user: string | undefined;
+    if (hook.includeUser) {
+      const key = authSecret(env);
+      user = key ? (await readSession(request, key))?.sub : undefined;
+    }
+    try {
+      const res = await send(hook.url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(secret && { authorization: `Bearer ${secret}` }),
+        },
+        body: JSON.stringify({ ...entry, ...(user && { user }) }),
+        redirect: 'error',
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!res.ok)
+        console.error(`dockudos kudos: the webhook answered ${res.status}.`);
+    } catch (error) {
+      console.error(
+        'dockudos kudos: the webhook failed:',
+        (error as Error).message,
+      );
+    }
+  }
 
   return async function POST(request: Request): Promise<Response> {
     const origin = request.headers.get('origin');
@@ -137,6 +183,7 @@ export function createKudosHandler(options: KudosHandlerOptions = {}) {
         return json({ error: 'vote must be "up" or "down"' }, 400);
       const entry: KudosEntry = { id: crypto.randomUUID(), at, path, vote };
       await store.add(entry);
+      await forward(request, entry);
       return json({ id: entry.id }, 201);
     }
 
@@ -151,7 +198,9 @@ export function createKudosHandler(options: KudosHandlerOptions = {}) {
         { error: `comment is longer than ${maxCommentLength} characters` },
         400,
       );
-    await store.add({ id, at, path, comment: clean });
+    const entry: KudosEntry = { id, at, path, comment: clean };
+    await store.add(entry);
+    await forward(request, entry);
     return json({ id }, 201);
   };
 }

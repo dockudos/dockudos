@@ -1,9 +1,12 @@
 import {
+  type DocsConfig,
   type MarkdownComponents,
+  McpScopeError,
   createDocsBackend,
   createMcpServer,
   createRateLimiter,
   mcpParseError,
+  scopeFilter,
   publicPages,
 } from '@dockudos/core';
 import { type AccessOptions, authorizePage } from './access.ts';
@@ -12,8 +15,10 @@ import {
   apiError,
   clientKey,
   engineFor,
+  requestScope,
 } from './api-common.ts';
 import { getSite } from './server.ts';
+import { resolveViewer } from './viewer.ts';
 
 /** The version of this MCP server's interface, as clients see it. Not the version of dockudos. */
 export const MCP_SERVER_VERSION = '1';
@@ -30,6 +35,21 @@ export interface McpHandlerOptions {
   allowedOrigins?: readonly string[];
   /** Requests per visitor per minute. Default 120. */
   ratePerMinute?: number;
+}
+
+/** What a caller who named a version or language the docs do not have can choose from. */
+function scopeHelp({
+  versions,
+  i18n,
+}: Pick<DocsConfig, 'versions' | 'i18n'>): string {
+  const parts = [
+    versions && `Versions: ${versions.list.map((v) => v.name).join(', ')}.`,
+    i18n &&
+      `Languages: ${i18n.locales.map((l) => (typeof l === 'string' ? l : l.code)).join(', ')}.`,
+  ].filter(Boolean);
+  return parts.length
+    ? `Unknown version or language. ${parts.join(' ')}`
+    : 'Unknown version or language.';
 }
 
 const JSON_HEADERS = {
@@ -99,8 +119,10 @@ export function createMcpHandler({
     }
 
     const site = await getSite();
-    const index = await site.index();
     const rules = { rules: site.config.access.rules, ...access };
+    // Search sees the protected pages this caller may read (a bearer token for `token` rules), and no others.
+    const viewer = await resolveViewer(request, rules.rules, access);
+    const index = await site.indexFor(viewer);
     const byPath = new Map(site.tree.pages.map((p) => [p.path, p]));
     const server = createMcpServer(
       {
@@ -109,14 +131,30 @@ export function createMcpHandler({
         instructions: `Search and read the documentation of ${site.config.name}. Use search_docs to find sections, then get_page for a whole page.`,
       },
       createDocsBackend({
-        search: (query, { limit }) =>
-          engineFor(index).search(query, { limit, maxPerPage: 2 }),
+        search: (query, { limit, version, locale }) => {
+          const asked = requestScope(site.config, { version, locale });
+          if ('response' in asked)
+            throw new McpScopeError(scopeHelp(site.config));
+          return engineFor(index).search(query, {
+            limit,
+            maxPerPage: 2,
+            filter: scopeFilter(asked.scope, viewer.canSee),
+          });
+        },
         pages: site.tree.pages,
-        listed: publicPages(site.config, site.nav).map(({ page }) => ({
-          path: page.path,
-          title: page.title,
-          ...(page.description && { description: page.description }),
-        })),
+        listed: site.views.flatMap((view) =>
+          publicPages(site.config, view.nav).map(({ page }) => ({
+            path: page.path,
+            title: page.title,
+            ...(page.description && { description: page.description }),
+            ...(page.version && { version: page.version }),
+            ...(page.locale && { locale: page.locale }),
+          })),
+        ),
+        defaults: {
+          version: site.config.versions?.default,
+          locale: site.config.i18n?.default,
+        },
         markdown: (path) => {
           const page = byPath.get(path);
           return page ? site.markdown(page, components) : '';

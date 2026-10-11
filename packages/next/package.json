@@ -93,6 +93,30 @@
       "types": "./dist/widget.d.ts",
       "import": "./dist/widget.js",
       "default": "./dist/widget.js"
+    },
+    "./feeds": {
+      "@dockudos/source": "./src/feeds.ts",
+      "types": "./dist/feeds.d.ts",
+      "import": "./dist/feeds.js",
+      "default": "./dist/feeds.js"
+    },
+    "./og": {
+      "@dockudos/source": "./src/og.ts",
+      "types": "./dist/og.d.ts",
+      "import": "./dist/og.js",
+      "default": "./dist/og.js"
+    },
+    "./auth": {
+      "@dockudos/source": "./src/auth.ts",
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js",
+      "default": "./dist/auth.js"
+    },
+    "./viewer": {
+      "@dockudos/source": "./src/viewer.ts",
+      "types": "./dist/viewer.d.ts",
+      "import": "./dist/viewer.js",
+      "default": "./dist/viewer.js"
     }
   },
   "files": [

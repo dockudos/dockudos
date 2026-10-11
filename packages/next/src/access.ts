@@ -3,11 +3,16 @@ import {
   bearerToken,
   checkBasic,
   checkToken,
+  decideLogin,
   findAccessRule,
+  negotiateLocale,
   parseCredentials,
   parseTokens,
+  pathWithLocale,
+  readCookie,
 } from '@dockudos/core';
 import { NextResponse } from 'next/server.js';
+import { LOGIN_PATH, authSecret, readSession } from './session.ts';
 
 export interface AccessOptions {
   /** Rules to apply. Default: the `access.rules` of `docs.json`, which `withDocs()` passes along. */
@@ -22,6 +27,8 @@ export interface AccessOptions {
   ) => boolean | Response | Promise<boolean | Response>;
   /** Where secrets are read from. Default `process.env`. */
   env?: Record<string, string | undefined>;
+  /** Language detection settings. Default: those of `docs.json`, which `withDocs()` passes along. */
+  i18n?: I18nBuild;
 }
 
 const NO_STORE = { 'cache-control': 'private, no-store' };
@@ -99,6 +106,36 @@ export async function authorize(
       });
     }
 
+    case 'login': {
+      const secret = authSecret(env);
+      if (!secret)
+        return misconfigured(
+          rule,
+          'DOCKUDOS_AUTH_SECRET (at least 32 characters)',
+        );
+      const decision = decideLogin(rule, await readSession(request, secret));
+      if (decision === 'allow') return undefined;
+      if (decision === 'forbidden')
+        return refuse(403, 'Your account does not have access to this page.');
+      // A person opening a page goes to sign in; a script or `fetch` is told it is not signed in.
+      const url = new URL(request.url);
+      const wantsPage =
+        request.method === 'GET' &&
+        (request.headers.get('accept') ?? '').includes('text/html');
+      if (wantsPage) {
+        const back = encodeURIComponent(url.pathname + url.search);
+        return new Response(null, {
+          status: 302,
+          // Absolute, because the proxy of Next.js refuses a redirect it cannot parse as a full URL.
+          headers: {
+            location: new URL(`${LOGIN_PATH}?returnTo=${back}`, url).toString(),
+            ...NO_STORE,
+          },
+        });
+      }
+      return refuse(401, 'Sign in to see this page.');
+    }
+
     case 'custom': {
       if (!verify)
         return misconfigured(
@@ -126,20 +163,112 @@ export async function authorize(
  */
 export function createAccessProxy(options: AccessOptions = {}) {
   return async function proxy(request: Request): Promise<Response | undefined> {
+    const url = new URL(request.url);
+    // Signing in must work for people who are not signed in yet.
+    if (url.pathname.startsWith('/api/auth/')) return undefined;
+
     const rules = options.rules ?? accessRulesFromBuild();
-    if (rules.length === 0) return undefined;
+    const rule = rules.length ? findAccessRule(rules, url.pathname) : undefined;
+    if (rule) {
+      const denied = await authorize(request, rule, options);
+      if (denied) return denied;
+    }
 
-    const rule = findAccessRule(rules, new URL(request.url).pathname);
-    if (!rule) return undefined;
+    const redirect = languageRedirect(
+      request,
+      url,
+      options.i18n ?? i18nFromBuild(),
+    );
+    if (!rule) return redirect;
 
-    const denied = await authorize(request, rule, options);
-    if (denied) return denied;
-
-    const response = NextResponse.next();
+    const response = redirect ?? NextResponse.next();
     response.headers.set('cache-control', 'private, no-store');
     response.headers.set('x-robots-tag', 'noindex, nofollow');
     return response;
   };
+}
+
+/** What the proxy needs to send first-time visitors to their language: from `docs.json`, via `withDocs()`. */
+export interface I18nBuild {
+  default: string;
+  locales: readonly string[];
+  versions?: readonly string[];
+  urlPrefix?: string;
+  /** Send visitors to the language of their browser. */
+  detect: boolean;
+}
+
+/** The language settings `withDocs()` put in the build. */
+export function i18nFromBuild(): I18nBuild | undefined {
+  // Written out as `process.env.NAME` so Next.js can replace it at build time.
+  const raw = process.env.DOCKUDOS_I18N;
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as I18nBuild;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The cookie the language switcher sets. */
+export const LOCALE_COOKIE = 'dockudos-locale';
+
+/**
+ * Send a visitor who has not picked a language to the one their browser asks for, once: a remembered choice
+ * (the switcher's cookie) wins over `Accept-Language`, an address that already names a language is left alone,
+ * and only page requests are redirected, never files or API calls.
+ */
+function languageRedirect(
+  request: Request,
+  url: URL,
+  i18n: I18nBuild | undefined,
+): Response | undefined {
+  if (!i18n?.detect || (request.method !== 'GET' && request.method !== 'HEAD'))
+    return undefined;
+  if (!(request.headers.get('accept') ?? '').includes('text/html'))
+    return undefined;
+  const { pathname } = url;
+  if (pathname.startsWith('/api/') || pathname.startsWith('/_next/'))
+    return undefined;
+  if (/\.[A-Za-z0-9]+$/.test(pathname)) return undefined;
+
+  const remembered = readCookie(request.headers.get('cookie'), LOCALE_COOKIE);
+  const chosen = i18n.locales.includes(remembered ?? '')
+    ? (remembered as string)
+    : negotiateLocale(
+        request.headers.get('accept-language'),
+        i18n.locales,
+        i18n.default,
+      );
+  if (chosen === i18n.default) return undefined;
+
+  const config = {
+    i18n: {
+      default: i18n.default,
+      locales: [...i18n.locales],
+      detect: true,
+      messages: {},
+    },
+    ...(i18n.versions && {
+      versions: {
+        default: i18n.versions[0] as string,
+        list: i18n.versions.map((name) => ({
+          name,
+          status: 'stable' as const,
+        })),
+      },
+    }),
+  };
+  const target = pathWithLocale(config, pathname, chosen, i18n.urlPrefix);
+  if (!target) return undefined;
+  return new Response(null, {
+    status: 307,
+    headers: {
+      location: new URL(target + url.search, url).toString(),
+      vary: 'Accept-Language, Cookie',
+      'cache-control': 'private, no-store',
+    },
+  });
 }
 
 /**

@@ -15,6 +15,7 @@ import {
   navigate,
   parseTokens,
   resolveAiProviders,
+  scopeFilter,
   validateAsk,
   validateNavigate,
 } from '@dockudos/core';
@@ -24,7 +25,10 @@ import {
   clientKey,
   engineFor,
   json,
+  requestScope,
 } from './api-common.ts';
+import { type AccessOptions } from './access.ts';
+import { resolveViewer } from './viewer.ts';
 import { getSite } from './server.ts';
 
 export interface AiOptions {
@@ -218,6 +222,7 @@ const sse = (event: AskEvent) => `data: ${JSON.stringify(event)}\n\n`;
 export function createAskHandler(
   { llm, embeddings, env = process.env, fetch }: AiOptions = {},
   guard: Guard = createGuard(),
+  access?: AccessOptions,
 ) {
   const cache = createAnswerCache<AskEvent[]>({ max: 200 });
   let warned = false;
@@ -249,13 +254,23 @@ export function createAskHandler(
       throw error;
     }
 
+    // What the model may read depends on the version, the language and the protected pages this caller may see.
+    const asked = requestScope(site.config, question);
+    if ('response' in asked) return reply(asked.response);
+    const viewer = await resolveViewer(
+      request,
+      site.config.access.rules,
+      access,
+    );
     const cacheKey = question.history?.length
       ? undefined
       : hashText(
           [
             question.question.toLowerCase().replace(/\s+/g, ' '),
-            question.locale,
-            question.version,
+            asked.scope.locale,
+            asked.scope.version,
+            // An answer written from protected pages is for the callers who could read them, and no one else.
+            viewer.scope,
             JSON.stringify(question.context ?? null),
           ].join('\u0000'),
         );
@@ -275,7 +290,7 @@ export function createAskHandler(
       for (const problem of resolved.problems)
         console.warn(`dockudos: ${problem}`);
     }
-    const index = await site.index();
+    const index = await site.indexFor(viewer);
     const events = ask(
       {
         siteName: site.config.name,
@@ -284,8 +299,10 @@ export function createAskHandler(
         llm: resolved.llm,
         embeddings: resolved.embeddings,
         limits: ai.limits,
+        filter: () => scopeFilter(asked.scope, viewer.canSee),
       },
-      question,
+      // The scope the server resolved, not whatever the body claimed: the answer is asked for in that language.
+      { ...question, ...asked.scope },
       request.signal,
     );
 
@@ -339,6 +356,7 @@ export function createAskHandler(
 export function createNavigateHandler(
   { llm, embeddings, env = process.env, fetch }: AiOptions = {},
   guard: Guard = createGuard(),
+  access?: AccessOptions,
 ) {
   const cache = createAnswerCache<NavigateResult | null>({
     max: 200,
@@ -373,11 +391,19 @@ export function createNavigateHandler(
       throw error;
     }
 
+    const asked = requestScope(site.config, query);
+    if ('response' in asked) return reply(asked.response);
+    const viewer = await resolveViewer(
+      request,
+      site.config.access.rules,
+      access,
+    );
     const key = hashText(
       [
         query.query.toLowerCase().replace(/\s+/g, ' '),
-        query.locale,
-        query.version,
+        asked.scope.locale,
+        asked.scope.version,
+        viewer.scope,
       ].join('\u0000'),
     );
     let result = cache.get(key);
@@ -388,7 +414,7 @@ export function createNavigateHandler(
         for (const problem of resolved.problems)
           console.warn(`dockudos: ${problem}`);
       }
-      const index = await site.index();
+      const index = await site.indexFor(viewer);
       try {
         result =
           (await navigate(
@@ -397,6 +423,7 @@ export function createNavigateHandler(
               keyword: engineFor(index),
               llm: resolved.llm,
               embeddings: resolved.embeddings,
+              filter: () => scopeFilter(asked.scope, viewer.canSee),
             },
             query,
             request.signal,
