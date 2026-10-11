@@ -1,6 +1,6 @@
 # dockudos build plan
 
-Phase-by-phase plan derived from [development.md](../development.md), [features.md](../features.md), [architecture.md](../architecture.md), [ai.md](../ai.md) and [self-hosting-and-cloud.md](../self-hosting-and-cloud.md).
+Phase-by-phase plan derived from [development.md](../development.md), [features.md](../features.md), [architecture.md](../architecture.md), [ai.md](../ai.md) and [self-hosting-and-cloud.md](../self-hosting-and-cloud.md). The paid side has its own notes in [../enterprise/](../enterprise/README.md).
 
 ## Phases
 
@@ -11,7 +11,8 @@ Phase-by-phase plan derived from [development.md](../development.md), [features.
 | 2 | [phase-2-search-and-ai.md](./phase-2-search-and-ai.md) | Visitors can find or ask for anything; AI tools can read the docs | [ ] 2 items left: P2.10b hosted search adapters (deferred by design, on demand) and the "first AI token under 2 s" check, which needs a live key (the `eval-live` workflow measures it) |
 | 3 | [phase-3-api-docs.md](./phase-3-api-docs.md) | A spec becomes an interactive API reference | [x] done. Not run: the playground proxy in a browser (unit-tested only), a `next build` of 2,000 pages (generation of 2,000 operations is benchmarked) |
 | 4 | [phase-4-content-at-scale.md](./phase-4-content-at-scale.md) | Versions, languages, private docs, export | [ ] |
-| 5 | [phase-5-platform-and-cloud.md](./phase-5-platform-and-cloud.md) | Self-hostable platform, then the paid managed cloud | [ ] |
+| 5 | [phase-5-platform-and-cloud.md](./phase-5-platform-and-cloud.md) | Self-hostable platform | [ ] |
+| E | [../enterprise/plan.md](../enterprise/plan.md) | Paid managed cloud and enterprise tier, in a separate private repo | [ ] |
 
 Sequencing (from development.md): ship Phase 1 and publish to npm, then Phase 2 (the differentiator), then Phase 3 and 4 driven by user demand, then Phase 5 once there is real self-hosted usage.
 

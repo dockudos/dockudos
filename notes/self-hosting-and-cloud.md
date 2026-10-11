@@ -1,12 +1,12 @@
-# Self-hosting and the managed cloud
+# Self-hosting
 
-dockudos is fully open source and self-hostable. A paid managed cloud runs the same software for teams that would rather not operate it. This document explains both paths and what you pay for.
+dockudos is fully open source and self-hostable. A paid managed cloud and enterprise tier, built in a separate private repository, run the same software for teams that would rather not operate it. This document covers self-hosting; the paid side is in [enterprise/](./enterprise/README.md).
 
-> **Status:** planned. The deployment kit and cloud are Phase 5 work. Pricing is not decided.
+> **Status:** planned. The deployment kit is Phase 5A work. The paid side is planned separately in [enterprise/plan.md](./enterprise/plan.md).
 
 ## 1. The model in one table
 
-Everything is open source and self-hostable. The cloud sells operations, not exclusive features.
+Everything in this repository is open source and self-hostable. The paid side sells operations, scale and compliance on top. See [enterprise/README.md](./enterprise/README.md).
 
 | | Self-host (free) | Managed cloud (paid) |
 | --- | --- | --- |
@@ -16,7 +16,8 @@ Everything is open source and self-hostable. The cloud sells operations, not exc
 | Web editor with Git sync | Yes | Yes |
 | Analytics and feedback dashboards | Yes | Yes |
 | AI agent that opens doc-update pull requests | Yes | Yes |
-| SSO, teams, roles, private docs | Yes | Yes |
+| OAuth/OIDC login, teams, roles, private docs | Yes | Yes |
+| SAML SSO, audit logs, SLAs, dedicated support | No (enterprise tier) | Enterprise add-on |
 | Hosting, custom domains, SSL, CDN | You run it (Docker, Vercel, Node, Cloudflare) | One-click |
 | Preview deployments per branch | Via your own CI | Built in |
 | Updates, backups, scaling, uptime, support | You handle it | We handle it |
@@ -68,7 +69,7 @@ services:
   site         # the Next.js docs site
   editor       # web editor
   analytics    # event ingestion and dashboards
-  auth         # SSO, teams, roles
+  auth         # OAuth/OIDC, teams, roles
   agent        # AI agent and automations
   hooks        # GitHub and GitLab webhooks
   postgres     # application data
@@ -109,68 +110,22 @@ Open source, run on your infrastructure.
 | --- | --- |
 | **Editor** | Visual Markdown and MDX editor with live preview. Edits are commits in your Git repository, so files stay the source of truth. |
 | **Analytics** | Page views, search queries (including ones with no results), feedback, assistant conversations, and traffic from humans versus AI tools. |
-| **Auth and teams** | SSO (OAuth/OIDC, SAML), teams, roles, and access control for private docs. |
+| **Auth and teams** | OAuth/OIDC login, teams, roles, and access control for private docs. SAML and audit logs are in the [enterprise tier](./enterprise/features.md). |
 | **AI agent** | Watches code and docs repositories and opens pull requests that update docs. Runs scheduled automations. Humans review and merge. |
 | **Hooks** | Receives GitHub and GitLab webhooks and rebuilds on every push. |
 
-## 4. The managed cloud
+## 4. The paid side
 
-### What it is
+The managed cloud (hosting, domains, previews, managed AI, billing) and the enterprise tier (SAML SSO, audit logs, SLAs, dedicated support) live in a separate private repository. Their features, pricing leanings, security and compliance, and plan are in [enterprise/](./enterprise/README.md).
 
-A hosted version of the same platform, run by the dockudos team. It lives in a separate private repository that depends on the published open-source packages, so the free and paid sides stay cleanly separated.
+Your content stays in your Git repository, in plain MDX and `docs.json`, so moving between self-hosting and the cloud means changing where it deploys, not converting content.
 
-### What you get
-
-| Capability | Description |
-| --- | --- |
-| One-click hosting | Connect a GitHub or GitLab repository and get a live site |
-| Custom domains and SSL | Managed certificates, CDN and caching |
-| Preview deployments | A preview URL for every branch or pull request |
-| Managed AI | A hosted assistant, embeddings and vector store. No LLM keys to manage. |
-| Automatic updates | New versions without you doing anything |
-| Backups, scaling, uptime | Monitored and managed |
-| Support | Help from the team |
-
-### Typical flow
-
-1. Sign up and connect a repository.
-2. dockudos detects the docs folder and `docs.json` and builds the site.
-3. Add a custom domain.
-4. Every push deploys automatically. Pull requests get preview URLs.
-
-### Moving between self-hosted and cloud
-
-Your content stays in your Git repository, in plain MDX and `docs.json`. Moving between self-hosting and the cloud means changing where it deploys, not converting content. That is the main promise of the open-core model: no lock-in.
-
-## 5. Pricing (not decided)
-
-Leaning, to be validated with early users.
-
-| Dimension | Leaning |
-| --- | --- |
-| Hosting and support | Per site or per seat |
-| Managed AI | Usage-based, since LLM cost scales with questions |
-| Self-hosting | Free |
-| Enterprise | SSO, audit logs, SLAs and dedicated support as an add-on tier |
-
-Open question: whether any enterprise-only features (for example audit logs) should be paid-only, or whether everything should stay open source and enterprise should pay only for support and SLAs. The current direction is the latter.
-
-## 6. Security and compliance
-
-| Topic | Self-host | Cloud |
-| --- | --- | --- |
-| Data location | Your infrastructure | Region selectable (planned) |
-| LLM provider | Your choice and key | Managed, with a documented provider list |
-| Content retention | You decide | Defined in the privacy policy |
-| Private docs | Access control applied at retrieval and rendering | Same |
-| Compliance | Your responsibility | To be assessed as the cloud matures |
-
-## 7. Decision guide
+## 5. Decision guide
 
 | If you... | Choose |
 | --- | --- |
 | Want a simple docs site with search and no AI | Static export |
 | Want the AI features on a platform you already use | Vercel or Node |
 | Need data to stay in your network | Docker Compose or Helm |
-| Want editor, analytics and agent without operating them | Managed cloud |
+| Want editor, analytics and agent without operating them | [Managed cloud](./enterprise/cloud.md) |
 | Are not sure yet | Start self-hosted; move to the cloud later without changing content |

@@ -1,6 +1,6 @@
 # Features
 
-Every feature planned for dockudos, grouped by area. The **Phase** column matches the build plan in [development.md](./development.md). All features are open source and self-hostable unless marked **Cloud**.
+Every feature planned for dockudos, grouped by area. The **Phase** column matches the build plan in [development.md](./development.md). All features here are open source and self-hostable. Paid features (managed cloud and the enterprise tier) are built in a separate private repository and listed in [enterprise/features.md](./enterprise/features.md).
 
 > **Status:** planned. Nothing here is built yet.
 
@@ -62,7 +62,6 @@ Every feature planned for dockudos, grouped by area. The **Phase** column matche
 | Pluggable LLM provider | Bring your own key; adapters for common providers and a custom adapter interface | 2 |
 | Embeddable assistant | A widget or API to put the assistant inside your own app | 2 |
 | AI agent (platform) | Opens pull requests that update docs when code or content changes; scheduled automations | 5 |
-| Managed AI (**Cloud**) | Hosted assistant, embeddings and vector store, so no keys or infrastructure to run | 5 |
 
 Details of how these work are in [ai.md](./ai.md).
 
@@ -113,27 +112,18 @@ These ship in the open-source repository as Docker services. See [self-hosting-a
 | --- | --- | --- |
 | Web editor | Edit Markdown and MDX visually with live preview, with files in Git as the source of truth | 5 |
 | Analytics | Page views, search queries, feedback and assistant conversations | 5 |
-| Auth and teams | SSO, teams, roles, private docs | 5 |
+| Auth and teams | OAuth/OIDC login, teams, roles, private docs (SAML SSO and audit logs are [enterprise](./enterprise/features.md)) | 5 |
 | AI agent | Opens pull requests that keep docs up to date; scheduled automations | 5 |
 | Git webhook | GitHub and GitLab webhook that rebuilds on every push | 5 |
 | Deployment kit | Docker Compose and Helm chart for one-command deployment | 5 |
 
-## 10. Managed cloud (paid)
+## 10. Enterprise (paid, separate repo)
 
-The cloud runs the platform for you. It adds operations, not exclusive features.
-
-| Capability | Description |
-| --- | --- |
-| One-click hosting | Connect a repository and get a live site |
-| Custom domains, SSL, CDN | Managed for you |
-| Preview deployments | A preview URL per branch |
-| Updates and backups | Automatic |
-| Scaling and uptime | Monitored and managed |
-| Managed AI | No LLM keys or vector store to run |
-| Support | Help from the team |
+The managed cloud and the enterprise tier are built in a separate private repository that consumes the published packages. They add operations, scale and compliance, never a feature taken from this list. See [enterprise/](./enterprise/README.md) for the boundary and [enterprise/features.md](./enterprise/features.md) for every paid feature.
 
 ## Features deliberately out of scope for the library
 
 - A closed-source editor or analytics product. If it ships, it is open source and self-hostable.
+- Moving an open-source feature behind a paywall. Enterprise only adds operations, scale and compliance.
 - Support for the Pages Router. dockudos targets the App Router only.
 - Vendor lock-in to one LLM provider. The provider layer is pluggable.

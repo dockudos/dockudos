@@ -45,7 +45,7 @@ dockudos/
 
 Start with fewer packages. Merge `search`, `mcp` and `openapi` into `core` or `ai` until each needs to stand alone. Fewer packages means less release overhead.
 
-The managed cloud lives in a **separate private repository** that consumes the published packages.
+The managed cloud and enterprise tier live in a **separate private repository** that consumes the published packages. Their notes are in [enterprise/](./enterprise/README.md).
 
 ## 2. Setting up the workspace (PowerShell)
 
@@ -87,7 +87,7 @@ Nx flags change between versions. If one is rejected, run the command with `--he
 | **2. Search and AI** | Visitors can find or ask for anything; AI tools can read the docs | Content index, keyword search, Cmd+K palette, `llms.txt`, assistant with citations, AI navigation, pluggable providers, embeddable widget, semantic search, page-content endpoint, MCP server, pluggable search backends |
 | **3. API docs** | A spec becomes an interactive API reference | OpenAPI, AsyncAPI, GraphQL generation, playground, code samples, hosted spec URLs, docs from TypeScript and Python |
 | **4. Content at scale** | Docs for multiple versions, languages and audiences | Versioning, i18n, changelog and RSS, custom layouts, feedback, private docs and access control, static export, OG images, PDF/EPUB export, extra content sources |
-| **5. Platform and cloud** | Full platform self-hostable; paid managed cloud | Editor, analytics, auth, AI agent, hooks, Docker Compose, Helm; then the managed cloud |
+| **5. Platform** | Full platform self-hostable | Editor, analytics, auth, AI agent, hooks, Docker Compose, Helm |
 
 ### Done-when checks
 
@@ -97,16 +97,16 @@ Nx flags change between versions. If one is rejected, run the command with `--he
 | 2 | A question about any documented topic returns an answer with working citations, and the palette navigates to the right heading for a natural-language request |
 | 3 | A real-world OpenAPI spec renders every endpoint, and the playground can call a live test API |
 | 4 | One docs site serves two versions in two languages, with a changelog feed and a private section behind login |
-| 5 | A team can connect a repository, get a live site on their own domain, and pay for it without talking to us |
+| 5 | A team can self-host the whole platform with `docker compose up`. (The paid-cloud check, "live site on their own domain, and pay without talking to us", is in [enterprise/plan.md](./enterprise/plan.md).) |
 
 ### Sequencing
 
-Ship the open-source library first to build adoption. Launch the cloud once people are self-hosting and asking for it.
+Ship the open-source library first to build adoption. Build the enterprise repo (managed cloud and enterprise tier) once people are self-hosting and asking for it.
 
 1. Phase 1 and publish to npm
 2. Phase 2, the headline differentiator
 3. Phase 3, then Phase 4, driven by what early users ask for
-4. Phase 5, once there is real self-hosted usage to convert
+4. Phase 5, once there is real self-hosted usage to convert; then the [enterprise](./enterprise/plan.md) repo
 
 ## 4. Suggested first build steps
 
@@ -150,7 +150,7 @@ Each step ends with a passing build and a test.
 | Decision | Options | Leaning |
 | --- | --- | --- |
 | License | Apache 2.0 (max adoption) vs AGPL or source-available (protects against resellers) | Apache 2.0 |
-| Repo architecture | Monorepo for library, CLI, examples and platform; separate private repo for the cloud | As stated |
+| Repo architecture | Monorepo for library, CLI, examples and platform; separate private repo for the managed cloud and enterprise tier | As stated |
 | Router support | App Router only vs also Pages Router | App Router only |
 | LLM provider | Pluggable vs one vendor | Pluggable |
 | Retrieval | Keyword first, embeddings later vs embeddings from day one | Keyword first, embeddings in Phase 2 |
@@ -162,7 +162,7 @@ Each step ends with a passing build and a test.
 | Risk | Why it matters | Response |
 | --- | --- | --- |
 | Crowded market | Mintlify, Nextra and Fumadocs are established | Make AI-in-core and self-hosting clearly better, not just present |
-| Phase 5 is a separate business | Hosting, support and billing have their own costs | Do it only after real self-hosted usage exists |
+| Enterprise is a separate business | Hosting, support and billing have their own costs | Do it only after real self-hosted usage exists |
 | AI answer quality | Bad citations damage trust quickly | Citation validation and an evaluation set in CI |
 | Scope | The feature list is very large | Ship Phase 1 and 2 first; cut or defer the rest by demand |
 | Too many packages | Release and maintenance overhead | Start with few packages and split later |
@@ -175,4 +175,4 @@ Each step ends with a passing build and a test.
 - [ ] Target date for the first open-source release.
 - [ ] Solo build or a team, which decides how much of Phase 5 is realistic.
 - [ ] Which LLM and embedding adapters ship first.
-- [ ] Whether any enterprise features should be paid-only.
+- [x] Whether any enterprise features should be paid-only. Decided: enterprise features (SAML SSO, audit logs, SLAs, support, managed cloud) are built in a separate private repo; nothing already open moves behind a paywall. See [enterprise/](./enterprise/README.md).

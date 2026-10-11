@@ -11,7 +11,7 @@ How dockudos is put together: the packages, how content becomes a site, what hap
 3. **Everything pluggable at the edges.** LLM provider, embedding provider, search backend and content source are interfaces with default implementations.
 4. **Static where possible, dynamic where needed.** Pages render statically. Only search-with-AI, the assistant and platform services need a server.
 5. **App Router only.** One routing model keeps the wrapper small and future-proof.
-6. **Open core boundary is a repository boundary.** Platform services are open source in the main repo. The managed cloud is a separate private repo that depends on published packages.
+6. **Open core boundary is a repository boundary.** Platform services are open source in the main repo. The managed cloud and enterprise tier are a separate private repo that depends on published packages (see [enterprise/](./enterprise/README.md)).
 
 ## 2. System overview
 
@@ -170,7 +170,7 @@ Secrets such as LLM keys are never stored in `docs.json`. They come from environ
 | `EmbeddingProvider` | Off (keyword only) | Hosted or local embedding models |
 | `SearchBackend` | Built-in index | Algolia, Meilisearch, Typesense, Orama Cloud, FlexSearch, custom |
 | `ContentSource` | Local MDX files | Notion, Obsidian, Sanity, remote MDX, local HTML, custom |
-| `VectorStore` | In-memory / file index | External vector database (platform and cloud) |
+| `VectorStore` | In-memory / file index | External vector database (platform, and the managed cloud in the enterprise repo) |
 | MDX plugins | Built-in set | Any remark or rehype plugin |
 | Components | Built-in set | Override any component by name |
 
@@ -182,7 +182,7 @@ Run as Docker services alongside the site. Each is optional.
 | --- | --- |
 | `editor` | Web editor with live preview, commits to Git |
 | `analytics` | Ingests page views, searches, feedback and assistant conversations into a database |
-| `auth` | SSO, teams, roles and access control for private docs |
+| `auth` | OAuth/OIDC, teams, roles and access control for private docs (SAML and audit logs are enterprise) |
 | `agent` | Watches repositories and opens pull requests that update docs; runs scheduled automations |
 | `hooks` | Receives GitHub and GitLab webhooks and triggers rebuilds |
 

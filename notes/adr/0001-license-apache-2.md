@@ -1,7 +1,7 @@
 # 0001: Apache 2.0 license
 
 ## Context
-The goal is maximum adoption of the open-source library, with a paid managed cloud as the business. Alternatives were AGPL or a source-available license to deter resellers.
+The goal is maximum adoption of the open-source library, with a paid managed cloud and enterprise tier, built in a separate private repository, as the business. Alternatives were AGPL or a source-available license to deter resellers.
 
 ## Decision
 License all code in this repository under Apache 2.0. It is permissive, includes a patent grant, and is familiar to enterprises.

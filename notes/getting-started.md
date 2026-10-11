@@ -191,7 +191,7 @@ npx dockudos broken-links  # check internal and external links
 | Node server | `pnpm build && pnpm start` behind your reverse proxy |
 | Docker | Use the provided Dockerfile (see [self-hosting-and-cloud.md](./self-hosting-and-cloud.md)) |
 | Static hosting | Use static export. Pages and keyword search work; AI features need a server or a separate endpoint |
-| Managed cloud | Connect the repository and get a live site on your domain. See [self-hosting-and-cloud.md](./self-hosting-and-cloud.md) |
+| Managed cloud | Connect the repository and get a live site on your domain. Paid, built in a separate repo. See [enterprise/cloud.md](./enterprise/cloud.md) |
 
 ## 9. Troubleshooting (expected)
 

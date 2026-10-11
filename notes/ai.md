@@ -24,7 +24,7 @@ Everything starts at build time.
 1. Each page is split into **chunks** at heading boundaries, with a size cap so chunks stay small enough to retrieve precisely.
 2. Each chunk stores: page path, heading path (for example `Authentication > API keys`), anchor, text and optional vector.
 3. If an embedding provider is configured, a vector is computed per chunk. Vectors are cached by content hash, so only changed chunks are re-embedded.
-4. The index is written as a file next to the build output. In the cloud and platform, it can instead be stored in a vector database.
+4. The index is written as a file next to the build output. On the platform, or in the managed cloud, it can instead be stored in a vector database.
 
 Why heading-level chunks: they map cleanly to anchors, so every answer and every navigation target can link to an exact section, not just a page.
 
@@ -188,7 +188,7 @@ A separate service that keeps docs current.
 3. Drafts the edits and opens a pull request against the docs repository.
 4. Humans review and merge. The agent never publishes directly.
 
-It can also run scheduled automations, such as a weekly check for outdated pages or broken links. In the managed cloud it uses managed AI infrastructure. Self-hosters bring their own LLM key.
+It can also run scheduled automations, such as a weekly check for outdated pages or broken links. In the managed cloud (see [enterprise/](./enterprise/README.md)) it uses managed AI infrastructure. Self-hosters bring their own LLM key.
 
 ## 11. Quality and safety
 
