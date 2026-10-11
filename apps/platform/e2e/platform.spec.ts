@@ -138,6 +138,31 @@ test('creates and renames pages (sidebar and redirects stay consistent), saved a
   expect(after.main['docs/guides/signatures.mdx']).toBeUndefined();
 });
 
+test('deleting a page removes its file and its sidebar entry, in a pull request', async ({
+  page,
+}) => {
+  const s = await state();
+  await signIn(page, `/sites/${s.siteId}/editor`);
+  page.on('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: 'docs/guides/webhooks.mdx' }).click();
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(
+    page.getByRole('button', { name: /Save as pull request \(2\)/ }),
+  ).toBeVisible(); // the file and docs.json
+  await page.getByLabel('Commit message').fill('Remove the webhooks guide');
+  await page.getByRole('button', { name: /Save as pull request/ }).click();
+  await expect(
+    page.getByRole('link', { name: 'Review and merge the pull request' }),
+  ).toBeVisible();
+  const after = await state();
+  const branch = after.pullFiles[0];
+  expect(branch['docs/guides/webhooks.mdx']).toBeUndefined();
+  expect(JSON.parse(branch['docs.json']).navigation[0].groups[0].pages).toEqual(
+    ['index'],
+  );
+  expect(after.main['docs/guides/webhooks.mdx']).toBeDefined(); // main only changes when the pull request is merged
+});
+
 test('unsaved work can be discarded in one step', async ({ page }) => {
   const s = await state();
   await signIn(page, `/sites/${s.siteId}/editor`);

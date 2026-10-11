@@ -11,6 +11,9 @@ Open a site in the dashboard and choose **Editor**. Pick a page, edit the Markdo
 The preview compiles your MDX with the same pipeline and the same components as the site, so a `<Callout>`, `<Tabs>` or
 `<Steps>` looks exactly as readers will see it. Syntax errors appear in the preview instead of breaking it.
 
+The preview does not run the site's build-time plugins yet (syntax highlighting of code blocks, math, diagrams), so those render plainly
+there and are right in the built site. It is a check of structure and components, not a pixel-exact proof.
+
 MDX is code, and a page can come from a branch someone else wrote. So the preview runs inside a sandboxed frame with an opaque
 origin and no network (`sandbox` and `connect-src 'none'`): a page cannot read your session or call the API, whatever it contains.
 

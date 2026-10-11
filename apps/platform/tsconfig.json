@@ -73,6 +73,9 @@
       "path": "../../packages/core"
     },
     {
+      "path": "../../packages/next"
+    },
+    {
       "path": "../../packages/platform"
     }
   ]

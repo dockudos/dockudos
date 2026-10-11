@@ -146,6 +146,8 @@ const state = () => ({
   teamId: team.id,
   webhookSecret,
   pulls: git.pulls,
+  // What each pull request's branch contains, so tests can see deletions and renames.
+  pullFiles: git.pulls.map((p) => git.snapshot('acme/docs', p.head)),
   pushes: git.pushes,
   main: git.snapshot('acme/docs', 'main'),
   head: git.branches('acme/docs').main,
