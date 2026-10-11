@@ -53,8 +53,6 @@ Real defects that a test, a tool or a second look turned up after the code was w
 5. **A body-size error reported as a syntax error** on the ingest endpoint (413 became 400). Fixed so a client can tell them apart.
 6. **Editor bugs.** Creating a page selected `docs.json` instead of the page; deleting a page created in the same session asked the server to delete a
    file that never existed. Found by the unit and browser tests.
-7. **A parent process that froze its child.** The first smoke harness hosted the test database in the same process that waited synchronously on the
-   server using it. Not a product bug, but it showed the server has no startup timeout on the database; it retries until the pool connects.
 
 Mitigations designed in from the start, each with a test, listed here because they are easy to get wrong in a rewrite: an address the provider has
 not verified cannot make someone instance owner; a browser cannot label its own traffic as AI; build logs and error messages are scrubbed of
