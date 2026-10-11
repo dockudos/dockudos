@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Db } from './db.ts';
-import { backoffMs, createQueue, createWorker, NonRetryableError } from './queue.ts';
+import {
+  backoffMs,
+  createQueue,
+  createWorker,
+  NonRetryableError,
+} from './queue.ts';
 import { MetricsRegistry } from './metrics.ts';
 import { createTestDb } from './testing/pglite.ts';
 
@@ -29,13 +34,18 @@ describe('queue', () => {
     const a = await q.enqueue('idem', {}, { idempotencyKey: 'k' });
     const b = await q.enqueue('idem', {}, { idempotencyKey: 'k' });
     expect(b).toBe(a);
-    expect((await db.query("SELECT 1 FROM jobs WHERE queue = 'idem'")).rowCount).toBe(1);
+    expect(
+      (await db.query("SELECT 1 FROM jobs WHERE queue = 'idem'")).rowCount,
+    ).toBe(1);
   });
 
   it('hands one job to only one of two concurrent claimers', async () => {
     const q = createQueue({ db, clock });
     await q.enqueue('race', {});
-    const got = await Promise.all([q.claim(['race'], 'a'), q.claim(['race'], 'b')]);
+    const got = await Promise.all([
+      q.claim(['race'], 'a'),
+      q.claim(['race'], 'b'),
+    ]);
     expect(got.filter(Boolean)).toHaveLength(1);
   });
 
@@ -51,7 +61,12 @@ describe('queue', () => {
     expect(await q.fail(job, new Error('second'))).toBe('dead');
     advance(10 * 60_000);
     expect(await q.claim(['retry'], 'w')).toBeUndefined();
-    const row = (await db.query<{ status: string; last_error: string }>('SELECT status, last_error FROM jobs WHERE id = $1', [id])).rows[0]!;
+    const row = (
+      await db.query<{ status: string; last_error: string }>(
+        'SELECT status, last_error FROM jobs WHERE id = $1',
+        [id],
+      )
+    ).rows[0]!;
     expect(row).toEqual({ status: 'dead', last_error: 'second' });
   });
 
@@ -101,19 +116,35 @@ describe('worker', () => {
     advance(10_000);
     while (await worker.runOnce());
     const status = Object.fromEntries(
-      (await db.query<{ queue: string; status: string }>("SELECT queue, status FROM jobs WHERE queue LIKE 'w-%'")).rows.map((r) => [r.queue, r.status]),
+      (
+        await db.query<{ queue: string; status: string }>(
+          "SELECT queue, status FROM jobs WHERE queue LIKE 'w-%'",
+        )
+      ).rows.map((r) => [r.queue, r.status]),
     );
-    expect(status).toEqual({ 'w-ok': 'done', 'w-flaky': 'done', 'w-fatal': 'dead' });
-    expect(metrics.render()).toContain('dockudos_jobs_total{outcome="dead",queue="w-fatal"} 1');
+    expect(status).toEqual({
+      'w-ok': 'done',
+      'w-flaky': 'done',
+      'w-fatal': 'dead',
+    });
+    expect(metrics.render()).toContain(
+      'dockudos_jobs_total{outcome="dead",queue="w-fatal"} 1',
+    );
   });
 
   it('start and stop drain the loop', async () => {
     const q = createQueue({ db });
     let ran = false;
-    const worker = createWorker({ queue: q, pollMs: 5, concurrency: 1, handlers: { 'w-loop': async () => void (ran = true) } });
+    const worker = createWorker({
+      queue: q,
+      pollMs: 5,
+      concurrency: 1,
+      handlers: { 'w-loop': async () => void (ran = true) },
+    });
     await q.enqueue('w-loop', {});
     worker.start();
-    for (let i = 0; i < 100 && !ran; i++) await new Promise((r) => setTimeout(r, 20));
+    for (let i = 0; i < 100 && !ran; i++)
+      await new Promise((r) => setTimeout(r, 20));
     await worker.stop();
     expect(ran).toBe(true);
   });

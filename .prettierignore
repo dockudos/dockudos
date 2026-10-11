@@ -21,3 +21,6 @@ pnpm-lock.yaml
 **/next-env.d.ts
 
 packages/cli/templates
+
+# Helm templates are Go templates, not YAML
+/deploy/helm/dockudos/templates

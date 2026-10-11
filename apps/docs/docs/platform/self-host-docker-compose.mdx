@@ -1,0 +1,76 @@
+---
+icon: box
+title: Self-host with Docker Compose
+description: The whole platform on one machine, with one command.
+---
+
+```bash
+cd deploy/compose
+cp .env.example .env     # set the three secrets, your URLs and a Git token
+docker compose up -d
+docker compose exec api node dist/server.js bootstrap "My team"
+```
+
+The last command prints an admin API key. Open `http://localhost:8080`, or the URL you set in `.env`.
+
+## What starts
+
+| Service                   | Role                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `postgres`                | Application data and the job queue.                                                         |
+| `storage`, `storage-init` | MinIO, and a one-shot job that creates the bucket.                                          |
+| `migrate`                 | Applies database migrations once, then exits. Everything else waits for it.                 |
+| `api`                     | API, webhook receiver, analytics ingestion and sign-in (`web,hooks,analytics,auth,editor`). |
+| `worker`                  | Builds sites from pushes.                                                                   |
+| `agent`                   | Docs agent and scheduled checks.                                                            |
+| `site`                    | Serves built sites.                                                                         |
+| `editor`                  | The dashboard and editor.                                                                   |
+| `proxy`                   | One front door: dashboard, webhook URL and hosted sites.                                    |
+
+Every service has a health check; `docker compose ps` shows them healthy when the stack is up.
+
+## Configure it
+
+Everything is in `.env`; [the reference](./configuration.mdx) lists every variable. The three that must be set:
+
+```bash
+POSTGRES_PASSWORD=...
+MINIO_ROOT_PASSWORD=...
+DOCKUDOS_SESSION_SECRET=...   # openssl rand -hex 32
+```
+
+Compose refuses to start with a clear message if one is missing.
+
+### Addresses
+
+By default the dashboard is at `http://localhost:8080` and a site named `docs` is served at `http://docs.sites.localhost:8080`
+(browsers send `*.localhost` to your machine). For a real deployment set both to real names:
+
+```bash
+DOCKUDOS_PUBLIC_URL=https://docs-admin.example.com
+DOCKUDOS_SITES_DOMAIN=sites.example.com
+DOCKUDOS_PLATFORM_ADDRESS=https://docs-admin.example.com
+DOCKUDOS_SITES_ADDRESS=https://*.sites.example.com
+```
+
+Hosted sites run their own scripts, so they are always on a **different host** from the dashboard. A wildcard certificate
+needs a DNS challenge; many people terminate TLS in front of the proxy instead.
+
+## Connect your Git host
+
+Set `DOCKUDOS_GITHUB_TOKEN` (or `DOCKUDOS_GITLAB_TOKEN`), restart `api`, then follow [Connect a repository](./connect-a-repository.mdx).
+
+## Try it without a repository
+
+CI uses a stand-in GitHub API so the whole stack can be checked with no token:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.smoke.yml up -d --build --wait
+KEY=$(docker compose exec -T api node dist/server.js bootstrap "Smoke" | tail -1 | jq -r .apiKey)
+node ../../tools/verify-platform.mjs --url http://localhost:8080 --api-key "$KEY"
+```
+
+## Run it for real
+
+Read [Operate it](./operations.mdx) first: back up Postgres and storage, know how to upgrade, and decide what the build worker
+may reach. The worker runs code from your repositories.

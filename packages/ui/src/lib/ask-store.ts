@@ -144,8 +144,13 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
           emitAnalytics({
             kind: 'assistant',
             query: asked,
-            value: event.refused || event.citations.length === 0 ? 'unanswered' : 'answered',
-            cited: (turn?.sources ?? []).filter((s) => event.citations.includes(s.n)).map((s) => s.path),
+            value:
+              event.refused || event.citations.length === 0
+                ? 'unanswered'
+                : 'answered',
+            cited: (turn?.sources ?? [])
+              .filter((s) => event.citations.includes(s.n))
+              .map((s) => s.path),
           });
         return update(id, (t) => ({
           ...t,

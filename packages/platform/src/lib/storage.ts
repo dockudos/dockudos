@@ -1,4 +1,11 @@
-import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { type Clock, systemClock } from './clock.ts';
 import { sha256Hex, signV4 } from './sigv4.ts';
@@ -24,7 +31,9 @@ export function assertKey(key: string): void {
     throw new Error(`Invalid storage key: ${JSON.stringify(key.slice(0, 80))}`);
 }
 
-export function createMemoryStorage(): ObjectStorage & { objects: Map<string, Uint8Array> } {
+export function createMemoryStorage(): ObjectStorage & {
+  objects: Map<string, Uint8Array>;
+} {
   const objects = new Map<string, Uint8Array>();
   return {
     objects,
@@ -59,10 +68,18 @@ export function createFsStorage(root: string): ObjectStorage {
     return full;
   };
   async function walk(dir: string, out: string[]) {
-    for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    for (const e of await readdir(dir, { withFileTypes: true }).catch(
+      () => [],
+    )) {
       const p = join(dir, e.name);
       if (e.isDirectory()) await walk(p, out);
-      else out.push(p.slice(base.length + 1).split(sep).join('/'));
+      else
+        out.push(
+          p
+            .slice(base.length + 1)
+            .split(sep)
+            .join('/'),
+        );
     }
   }
   return {
@@ -75,7 +92,11 @@ export function createFsStorage(root: string): ObjectStorage {
       try {
         return new Uint8Array(await readFile(path(key)));
       } catch (e) {
-        if ((e as NodeJS.ErrnoException).code === 'ENOENT' || (e as NodeJS.ErrnoException).code === 'EISDIR') return undefined;
+        if (
+          (e as NodeJS.ErrnoException).code === 'ENOENT' ||
+          (e as NodeJS.ErrnoException).code === 'EISDIR'
+        )
+          return undefined;
         throw e;
       }
     },
@@ -117,9 +138,16 @@ export function createS3Storage({
   const base = endpoint.replace(/\/+$/, '');
   const keyUrl = (key: string, query = '') => {
     assertKey(key);
-    return new URL(`${base}/${bucket}/${key.split('/').map(encodeURIComponent).join('/')}${query}`);
+    return new URL(
+      `${base}/${bucket}/${key.split('/').map(encodeURIComponent).join('/')}${query}`,
+    );
   };
-  async function send(method: string, url: URL, body?: Uint8Array, contentType?: string) {
+  async function send(
+    method: string,
+    url: URL,
+    body?: Uint8Array,
+    contentType?: string,
+  ) {
     const payload = body ?? new Uint8Array();
     const headers = signV4({
       method,
@@ -133,11 +161,17 @@ export function createS3Storage({
       now: clock(),
     });
     const sendHeaders = { ...headers };
-    delete sendHeaders["host"];
-    return doFetch(url, { method, headers: sendHeaders, ...(body && { body: body as NonNullable<RequestInit["body"]> }) });
+    delete sendHeaders['host'];
+    return doFetch(url, {
+      method,
+      headers: sendHeaders,
+      ...(body && { body: body as NonNullable<RequestInit['body']> }),
+    });
   }
   const fail = async (what: string, r: Response) => {
-    throw new Error(`S3 ${what} failed: ${r.status} ${(await r.text()).slice(0, 200)}`);
+    throw new Error(
+      `S3 ${what} failed: ${r.status} ${(await r.text()).slice(0, 200)}`,
+    );
   };
   return {
     async put(key, body, contentType = 'application/octet-stream') {
@@ -165,9 +199,14 @@ export function createS3Storage({
         const r = await send('GET', url);
         if (!r.ok) await fail('list', r);
         const xml = await r.text();
-        for (const m of xml.matchAll(/<Key>([^<]*)<\/Key>/g)) keys.push(unxml(m[1]!));
+        for (const m of xml.matchAll(/<Key>([^<]*)<\/Key>/g))
+          keys.push(unxml(m[1]!));
         token = /<IsTruncated>true<\/IsTruncated>/.test(xml)
-          ? unxml(/<NextContinuationToken>([^<]*)<\/NextContinuationToken>/.exec(xml)?.[1] ?? '') || undefined
+          ? unxml(
+              /<NextContinuationToken>([^<]*)<\/NextContinuationToken>/.exec(
+                xml,
+              )?.[1] ?? '',
+            ) || undefined
           : undefined;
       } while (token);
       return keys.sort();
@@ -183,4 +222,9 @@ export function createS3Storage({
 }
 
 const unxml = (s: string) =>
-  s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+  s
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');

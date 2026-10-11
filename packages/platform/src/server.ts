@@ -19,7 +19,8 @@ async function main(): Promise<void> {
   }
   const platform = await createPlatform(config);
   const migrated = await platform.migrate();
-  if (migrated.length) platform.log.info('migrations applied', { ids: migrated });
+  if (migrated.length)
+    platform.log.info('migrations applied', { ids: migrated });
 
   // Operator commands: `server.js migrate` (apply migrations, exit) and `server.js bootstrap <team name>` (print an admin API key).
   const [command, ...rest] = process.argv.slice(2);
@@ -35,33 +36,59 @@ async function main(): Promise<void> {
       process.exit(64);
     }
     const sink = createFsSink(dir);
-    const manifest = command === 'backup' ? await backup(platform.db, platform.storage, sink) : await restore(platform.db, platform.storage, sink);
-    process.stdout.write(`${JSON.stringify({ [command]: 'ok', createdAt: manifest.createdAt, tables: Object.fromEntries(Object.entries(manifest.tables).map(([t, v]) => [t, v.rows])), objects: manifest.objects.count })}\n`);
+    const manifest =
+      command === 'backup'
+        ? await backup(platform.db, platform.storage, sink)
+        : await restore(platform.db, platform.storage, sink);
+    process.stdout.write(
+      `${JSON.stringify({ [command]: 'ok', createdAt: manifest.createdAt, tables: Object.fromEntries(Object.entries(manifest.tables).map(([t, v]) => [t, v.rows])), objects: manifest.objects.count })}\n`,
+    );
     await platform.stop();
     process.exit(0);
   }
   if (command === 'bootstrap') {
-    const { team, secret } = await platform.auth.bootstrap(rest.join(' ') || 'Default');
-    process.stdout.write(`${JSON.stringify({ team: team.slug, apiKey: secret })}\n`);
+    const { team, secret } = await platform.auth.bootstrap(
+      rest.join(' ') || 'Default',
+    );
+    process.stdout.write(
+      `${JSON.stringify({ team: team.slug, apiKey: secret })}\n`,
+    );
     await platform.stop();
     process.exit(0);
   }
   if (command) {
-    process.stderr.write(`Unknown command "${command}". Use: migrate | bootstrap <team name> | (none, to run the server)\n`);
+    process.stderr.write(
+      `Unknown command "${command}". Use: migrate | bootstrap <team name> | (none, to run the server)\n`,
+    );
     process.exit(64);
   }
 
   const server = createServer(async (incoming, outgoing) => {
     const host = incoming.headers.host ?? 'localhost';
-    const url = new URL(incoming.url ?? '/', `${config.publicUrl.startsWith('https') ? 'https' : 'http'}://${host}`);
+    const url = new URL(
+      incoming.url ?? '/',
+      `${config.publicUrl.startsWith('https') ? 'https' : 'http'}://${host}`,
+    );
     const method = incoming.method ?? 'GET';
-    const body = method === 'GET' || method === 'HEAD' ? undefined : (Readable.toWeb(incoming) as ReadableStream);
+    const body =
+      method === 'GET' || method === 'HEAD'
+        ? undefined
+        : (Readable.toWeb(incoming) as ReadableStream);
     const headers = new Headers();
-    for (const [k, v] of Object.entries(incoming.headers)) if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(', ') : v);
-    const request = new Request(url, { method, headers, ...(body && { body, duplex: 'half' } as object) });
-    const response = await platform.handler(request, { ip: incoming.socket.remoteAddress ?? '' });
+    for (const [k, v] of Object.entries(incoming.headers))
+      if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(', ') : v);
+    const request = new Request(url, {
+      method,
+      headers,
+      ...(body && ({ body, duplex: 'half' } as object)),
+    });
+    const response = await platform.handler(request, {
+      ip: incoming.socket.remoteAddress ?? '',
+    });
     const out: Record<string, string | string[]> = {};
-    response.headers.forEach((v, k) => { if (k !== 'set-cookie') out[k] = v; });
+    response.headers.forEach((v, k) => {
+      if (k !== 'set-cookie') out[k] = v;
+    });
     const cookies = response.headers.getSetCookie();
     if (cookies.length) out['set-cookie'] = cookies;
     outgoing.writeHead(response.status, out);
@@ -71,7 +98,12 @@ async function main(): Promise<void> {
   server.requestTimeout = 120_000;
   server.headersTimeout = 20_000;
   server.keepAliveTimeout = 65_000;
-  server.listen(config.port, '0.0.0.0', () => platform.log.info('listening', { port: config.port, services: config.services }));
+  server.listen(config.port, '0.0.0.0', () =>
+    platform.log.info('listening', {
+      port: config.port,
+      services: config.services,
+    }),
+  );
   platform.start();
 
   let closing = false;
@@ -88,6 +120,8 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exit(1);
 });

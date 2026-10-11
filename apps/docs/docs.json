@@ -196,6 +196,34 @@
       ]
     },
     {
+      "tab": "Platform",
+      "groups": [
+        {
+          "group": "Run it",
+          "pages": [
+            "platform/overview",
+            "platform/self-host-docker-compose",
+            "platform/self-host-kubernetes",
+            "platform/configuration"
+          ]
+        },
+        {
+          "group": "Use it",
+          "pages": [
+            "platform/connect-a-repository",
+            "platform/editor",
+            "platform/analytics",
+            "platform/agent",
+            "platform/teams-and-sign-in"
+          ]
+        },
+        {
+          "group": "Operate it",
+          "pages": ["platform/operations"]
+        }
+      ]
+    },
+    {
       "tab": "Tutorials",
       "groups": [
         {

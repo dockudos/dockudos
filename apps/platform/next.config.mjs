@@ -7,7 +7,10 @@ const standalone = process.env['DOCKUDOS_STANDALONE'] === '1';
 
 /** @type {import('next').NextConfig} */
 export default {
-  ...(standalone && { output: 'standalone', outputFileTracingRoot: join(import.meta.dirname, '../..') }),
+  ...(standalone && {
+    output: 'standalone',
+    outputFileTracingRoot: join(import.meta.dirname, '../..'),
+  }),
   transpilePackages: ['@dockudos/ui'],
   poweredByHeader: false,
   // Uploads of up to 10 MB pass through the proxy.
@@ -24,10 +27,21 @@ export default {
         source: '/preview-frame',
         headers: [
           ...common,
-          { key: 'Content-Security-Policy', value: "sandbox allow-scripts; connect-src 'none'; frame-ancestors 'self'; form-action 'none'" },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "sandbox allow-scripts; connect-src 'none'; frame-ancestors 'self'; form-action 'none'",
+          },
         ],
       },
-      { source: '/((?!preview-frame).*)', headers: [...common, { key: 'X-Frame-Options', value: 'SAMEORIGIN' }, { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" }] },
+      {
+        source: '/((?!preview-frame).*)',
+        headers: [
+          ...common,
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+        ],
+      },
     ];
   },
 };

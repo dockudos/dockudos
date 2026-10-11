@@ -44,11 +44,11 @@ describe('Kudos', () => {
     mockFetch(() => ({ ok: true }));
     const heard: unknown[] = [];
     const on = (e: Event) => heard.push((e as CustomEvent).detail);
-    window.addEventListener('dockudos:feedback', on);
+    window.addEventListener('dockudos:track', on);
     render(<Kudos path="/guide" />);
     await user.click(screen.getByRole('button', { name: 'No' }));
-    await waitFor(() => expect(heard).toEqual([{ path: '/guide', value: 'down' }]));
-    window.removeEventListener('dockudos:feedback', on);
+    await waitFor(() => expect(heard).toEqual([{ kind: 'feedback', path: '/guide', value: 'down' }]));
+    window.removeEventListener('dockudos:track', on);
   });
 
   it('does not announce a vote that could not be saved', async () => {
@@ -56,12 +56,12 @@ describe('Kudos', () => {
     mockFetch(() => ({ ok: false }));
     const heard: unknown[] = [];
     const on = (e: Event) => heard.push((e as CustomEvent).detail);
-    window.addEventListener('dockudos:feedback', on);
+    window.addEventListener('dockudos:track', on);
     render(<Kudos path="/guide" />);
     await user.click(screen.getByRole('button', { name: 'Yes' }));
     await screen.findByText(/Could not send your vote/);
     expect(heard).toEqual([]);
-    window.removeEventListener('dockudos:feedback', on);
+    window.removeEventListener('dockudos:track', on);
   });
 
   it('sends the vote, then offers an optional comment', async () => {

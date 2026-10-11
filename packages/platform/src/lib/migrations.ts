@@ -195,7 +195,10 @@ const LOCK_KEY = 5_150_001;
 /** Apply pending migrations. Returns the ids applied by this call. Safe to run from several processes at once. */
 export async function migrate(
   db: Db,
-  { clock = systemClock, migrations = MIGRATIONS }: { clock?: Clock; migrations?: Migration[] } = {},
+  {
+    clock = systemClock,
+    migrations = MIGRATIONS,
+  }: { clock?: Clock; migrations?: Migration[] } = {},
 ): Promise<string[]> {
   await db.exec(
     'CREATE TABLE IF NOT EXISTS schema_migrations (id text PRIMARY KEY, applied_at timestamptz NOT NULL)',
@@ -204,12 +207,17 @@ export async function migrate(
   await db.transaction(async (tx) => {
     await tx.query('SELECT pg_advisory_xact_lock($1)', [LOCK_KEY]);
     const done = new Set(
-      (await tx.query<{ id: string }>('SELECT id FROM schema_migrations')).rows.map((r) => r.id),
+      (
+        await tx.query<{ id: string }>('SELECT id FROM schema_migrations')
+      ).rows.map((r) => r.id),
     );
     for (const m of migrations) {
       if (done.has(m.id)) continue;
       await tx.exec(m.sql);
-      await tx.query('INSERT INTO schema_migrations (id, applied_at) VALUES ($1, $2)', [m.id, clock()]);
+      await tx.query(
+        'INSERT INTO schema_migrations (id, applied_at) VALUES ($1, $2)',
+        [m.id, clock()],
+      );
       applied.push(m.id);
     }
   });

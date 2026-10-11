@@ -1,0 +1,77 @@
+---
+icon: git-branch
+title: Connect a repository
+description: Push to your repository and the new docs are live.
+---
+
+## 1. Give the platform a token
+
+Set one of these where the platform runs ([configuration](./configuration.mdx)):
+
+- **GitHub:** a fine-grained token on the docs repository with _Contents_ (read and write), _Pull requests_ (read and write) and _Commit statuses_ (write).
+- **GitLab:** a project or personal access token with the `api` scope.
+
+The same token is used to read the repository, to open pull requests for the editor and the agent, and to show build status
+next to the commit. For GitHub Enterprise or a self-hosted GitLab set `DOCKUDOS_GITHUB_API_URL` or `DOCKUDOS_GITLAB_API_URL`.
+
+## 2. Connect it
+
+In the dashboard open your team and use **Connect a repository**, or call the API:
+
+```bash
+curl -X POST https://docs-admin.example.com/api/v1/teams/$TEAM/sites \
+  -H "authorization: Bearer $KEY" -H "content-type: application/json" \
+  -d '{"name":"Acme Docs","provider":"github","repo":"acme/docs"}'
+```
+
+For a monorepo add `"docsDir": "website"`: the folder that holds `docs.json`. The platform checks that the token can read the
+repository before it saves anything.
+
+## 3. Add the webhook
+
+The response includes a webhook URL and a secret, **shown once**. In the repository's settings add a webhook:
+
+| Setting      | Value                                                   |
+| ------------ | ------------------------------------------------------- |
+| URL          | `https://docs-admin.example.com/hooks/github/<site id>` |
+| Content type | `application/json`                                      |
+| Secret       | the secret from step 2                                  |
+| Events       | Just the push event                                     |
+
+For GitLab use the same URL with `/hooks/gitlab/<site id>` and put the secret in _Secret token_.
+
+Push to the default branch and a build starts. The commit gets a build status, and the site goes live when the build succeeds.
+
+## What a build does
+
+1. Fetches exactly the pushed commit (`git fetch --depth 1`), with the token passed through the environment, never the command line.
+2. Installs dependencies **with install scripts off**, using your lockfile.
+3. Runs `dockudos build --static` and `dockudos index`.
+4. Stores the site and its search index, then switches the live pointer. A failed build never replaces a working site, and an older build that finishes late never replaces a newer one.
+
+The log is on the site's page in the dashboard. Failed builds are retried on transient errors, and fail immediately for
+errors a retry cannot fix (no `docs.json`, no `index.html`).
+
+<Callout type="warning">
+  A build runs code from your repository (your `next.config`, your MDX). Install
+  scripts are disabled and the process gets none of the platform's secrets, but
+  it is still your code on your worker. For repositories you do not trust, run
+  the worker in its own network with the egress limits in [Operate
+  it](./operations.mdx).
+</Callout>
+
+## Webhook safety
+
+The signature is checked before anything is parsed. A forged or unsigned request, an unknown site and a wrong provider all get
+the same `401`. Each delivery is recorded and queued in one transaction, so a redelivery never builds twice. Pushes to other
+branches, other repositories and pushes that touch nothing in the docs folder are ignored.
+
+## Hosted sites
+
+A site named `acme-docs` is served at `https://acme-docs.<sitesDomain>`. Each site is its own origin, never the dashboard's, so
+scripts in your docs cannot reach platform sessions. To use your own domain, point it at the `site` service and keep it on a
+host that is not the dashboard's. Pretty URLs work (`/guide` finds `guide.html`), missing pages return your `404.html`,
+and `_next/static` assets are cached for a year.
+
+The hosted site is a [static export](../guides/static-export.mdx): the assistant and other server features need a server, so
+use a normal Node deployment for those.

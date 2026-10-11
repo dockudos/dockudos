@@ -15,7 +15,8 @@ RATIONALE: one or two sentences saying what changed in the code and why the page
 CONTENT:
 <the complete file, only when DECISION is UPDATE>`;
 
-const cap = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}\n[truncated]` : s);
+const cap = (s: string, n: number) =>
+  s.length > n ? `${s.slice(0, n)}\n[truncated]` : s;
 
 export interface DraftInput {
   llm: LLMProvider;
@@ -33,37 +34,65 @@ export interface DraftInput {
 export async function draftEdit(input: DraftInput): Promise<Draft | undefined> {
   const marker = randomBytes(8).toString('hex');
   const evidence = input.changes
-    ? input.changes.slice(0, 8).map((c) => `--- ${c.status} ${c.path}\n${cap(c.patch ?? '(no diff available)', 3000)}`).join('\n\n')
+    ? input.changes
+        .slice(0, 8)
+        .map(
+          (c) =>
+            `--- ${c.status} ${c.path}\n${cap(c.patch ?? '(no diff available)', 3000)}`,
+        )
+        .join('\n\n')
     : (input.finding ?? '');
   const user = [
     `Page: ${input.page.title} (${input.page.path})`,
-    input.reasons?.length ? `Why this page was picked: ${input.reasons.join('; ')}` : '',
+    input.reasons?.length
+      ? `Why this page was picked: ${input.reasons.join('; ')}`
+      : '',
     `\nEvidence, between <${marker}-evidence> markers:`,
     `<${marker}-evidence>\n${cap(evidence, 12_000)}\n</${marker}-evidence>`,
     `\nThe current file, between <${marker}-page> markers:`,
     `<${marker}-page>\n${cap(input.page.source, 60_000)}\n</${marker}-page>`,
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   let out = '';
-  for await (const piece of input.llm.generate({ system: SYSTEM, messages: [{ role: 'user', content: user }], maxTokens: 8000, ...(input.signal && { signal: input.signal }) })) out += piece;
+  for await (const piece of input.llm.generate({
+    system: SYSTEM,
+    messages: [{ role: 'user', content: user }],
+    maxTokens: 8000,
+    ...(input.signal && { signal: input.signal }),
+  }))
+    out += piece;
   const draft = parseDraft(out);
   // A reply that repeats the markers is echoing the prompt, not answering it.
-  if (draft?.decision === 'update' && draft.content.includes(marker)) return undefined;
+  if (draft?.decision === 'update' && draft.content.includes(marker))
+    return undefined;
   return draft;
 }
 
 export function parseDraft(output: string): Draft | undefined {
-  const decision = /^\s*DECISION:\s*(UPDATE|NO_CHANGE)\b/im.exec(output)?.[1]?.toUpperCase();
+  const decision = /^\s*DECISION:\s*(UPDATE|NO_CHANGE)\b/im
+    .exec(output)?.[1]
+    ?.toUpperCase();
   if (!decision) return undefined;
-  const rationale = /^\s*RATIONALE:\s*([\s\S]*?)(?=^\s*CONTENT:|$(?![\s\S]))/im.exec(output)?.[1]?.trim().replace(/\s+/g, ' ').slice(0, 600) ?? '';
+  const rationale =
+    /^\s*RATIONALE:\s*([\s\S]*?)(?=^\s*CONTENT:|$(?![\s\S]))/im
+      .exec(output)?.[1]
+      ?.trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 600) ?? '';
   if (decision === 'NO_CHANGE') return { decision: 'none', rationale };
   const at = output.search(/^\s*CONTENT:[ \t]*\r?\n/im);
   if (at < 0) return undefined;
   let content = output.slice(at).replace(/^\s*CONTENT:[ \t]*\r?\n/i, '');
-  const wrapped = /^```(?:mdx?|markdown)?\r?\n([\s\S]*?)\r?\n```\s*$/.exec(content.trim());
+  const wrapped = /^```(?:mdx?|markdown)?\r?\n([\s\S]*?)\r?\n```\s*$/.exec(
+    content.trim(),
+  );
   if (wrapped && !/^```/m.test(wrapped[1]!)) content = wrapped[1]!;
   content = content.replace(/\s+$/, '') + '\n';
-  return content.trim() ? { decision: 'update', rationale, content } : undefined;
+  return content.trim()
+    ? { decision: 'update', rationale, content }
+    : undefined;
 }
 
 export type DraftCheck = { ok: true } | { ok: false; reason: string };
@@ -72,13 +101,22 @@ export type DraftCheck = { ok: true } | { ok: false; reason: string };
  * A model's edit is a suggestion that a human will review, but it must still be a plausible edit: valid front matter,
  * not a rewrite, no new code imports or scripts (MDX runs at build time), and not the same as before.
  */
-export function checkDraft(oldSource: string, newSource: string, file: string): DraftCheck {
-  if (newSource.trim() === oldSource.trim()) return { ok: false, reason: 'identical to the current page' };
-  if (newSource.length > 1024 * 1024) return { ok: false, reason: 'larger than 1 MB' };
+export function checkDraft(
+  oldSource: string,
+  newSource: string,
+  file: string,
+): DraftCheck {
+  if (newSource.trim() === oldSource.trim())
+    return { ok: false, reason: 'identical to the current page' };
+  if (newSource.length > 1024 * 1024)
+    return { ok: false, reason: 'larger than 1 MB' };
   try {
     parseFrontmatter(newSource, file);
   } catch (e) {
-    return { ok: false, reason: `front matter is invalid: ${(e as Error).message.split('\n')[0]}` };
+    return {
+      ok: false,
+      reason: `front matter is invalid: ${(e as Error).message.split('\n')[0]}`,
+    };
   }
   const lines = (s: string) => s.split('\n');
   const oldLines = new Map<string, number>();
@@ -90,15 +128,24 @@ export function checkDraft(oldSource: string, newSource: string, file: string): 
     else added.push(l);
   }
   const newCount = lines(newSource).length;
-  if (newCount >= 15 && added.length / newCount > 0.6) return { ok: false, reason: 'rewrites most of the page' };
+  if (newCount >= 15 && added.length / newCount > 0.6)
+    return { ok: false, reason: 'rewrites most of the page' };
   for (const l of added) {
-    if (/^\s*(import|export)\s.+\sfrom\s|^\s*import\s+['"]/.test(l)) return { ok: false, reason: 'adds an import' };
-    if (/<script\b|javascript:|<iframe\b|\bon[a-z]+\s*=\s*["{]/i.test(l)) return { ok: false, reason: 'adds a script or an event handler' };
+    if (/^\s*(import|export)\s.+\sfrom\s|^\s*import\s+['"]/.test(l))
+      return { ok: false, reason: 'adds an import' };
+    if (/<script\b|javascript:|<iframe\b|\bon[a-z]+\s*=\s*["{]/i.test(l))
+      return { ok: false, reason: 'adds a script or an event handler' };
   }
   return { ok: true };
 }
 
 /** Readable summary of a diff for a pull request body. */
 export function describeChanges(changes: readonly ChangedFile[]): string {
-  return changes.slice(0, 15).map((c) => `- ${c.status} \`${c.path}\``).join('\n') + (changes.length > 15 ? `\n- and ${changes.length - 15} more` : '');
+  return (
+    changes
+      .slice(0, 15)
+      .map((c) => `- ${c.status} \`${c.path}\``)
+      .join('\n') +
+    (changes.length > 15 ? `\n- and ${changes.length - 15} more` : '')
+  );
 }

@@ -35,7 +35,12 @@ const envSchema = z.object({
     .enum(['debug', 'info', 'warn', 'error', 'silent'])
     .default('info'),
   DOCKUDOS_SERVICES: z.string().default(SERVICES.join(',')),
-  DOCKUDOS_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(64).default(2),
+  DOCKUDOS_WORKER_CONCURRENCY: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(64)
+    .default(2),
   DOCKUDOS_DATA_DIR: z.string().default('/var/lib/dockudos'),
 
   // Object storage: S3-compatible when an endpoint is set, a directory otherwise.
@@ -79,7 +84,11 @@ const envSchema = z.object({
   // Analytics privacy.
   DOCKUDOS_ANALYTICS_LOG_CONVERSATIONS: bool,
   DOCKUDOS_ANALYTICS_RETENTION_DAYS: z.coerce.number().int().min(1).default(90),
-  DOCKUDOS_CONVERSATION_RETENTION_DAYS: z.coerce.number().int().min(1).default(30),
+  DOCKUDOS_CONVERSATION_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .default(30),
 
   // Agent. The LLM key itself is read by @dockudos/core (DOCKUDOS_LLM_API_KEY).
   DOCKUDOS_AGENT_ENABLED: bool,
@@ -122,7 +131,12 @@ export interface PlatformConfig {
     conversationRetentionDays: number;
   };
   agentEnabled: boolean;
-  llm?: { provider: 'openai' | 'anthropic'; model: string; baseUrl?: string; apiKey: string };
+  llm?: {
+    provider: 'openai' | 'anthropic';
+    model: string;
+    baseUrl?: string;
+    apiKey: string;
+  };
   metricsToken?: string;
   cookieDomain?: string;
   docsAuthSecret?: string;
@@ -136,7 +150,9 @@ export interface PlatformConfig {
 
 export class ConfigError extends Error {
   constructor(readonly problems: string[]) {
-    super(`Invalid configuration:\n${problems.map((p) => `  - ${p}`).join('\n')}`);
+    super(
+      `Invalid configuration:\n${problems.map((p) => `  - ${p}`).join('\n')}`,
+    );
     this.name = 'ConfigError';
   }
 }
@@ -154,21 +170,39 @@ export function loadConfig(
   const get = (k: string) => (env[k] === '' ? undefined : env[k]);
   // Cross-field checks read the raw environment, so they are reported even when another variable is wrong.
   const services: ServiceName[] = [];
-  for (const raw of (get('DOCKUDOS_SERVICES') ?? SERVICES.join(',')).split(',')) {
+  for (const raw of (get('DOCKUDOS_SERVICES') ?? SERVICES.join(',')).split(
+    ',',
+  )) {
     const name = raw.trim();
     if (!name) continue;
-    if ((SERVICES as readonly string[]).includes(name)) services.push(name as ServiceName);
+    if ((SERVICES as readonly string[]).includes(name))
+      services.push(name as ServiceName);
     else problems.push(`DOCKUDOS_SERVICES has an unknown service "${name}"`);
   }
-  const s3 = [get('DOCKUDOS_S3_ENDPOINT'), get('DOCKUDOS_S3_ACCESS_KEY'), get('DOCKUDOS_S3_SECRET_KEY')];
+  const s3 = [
+    get('DOCKUDOS_S3_ENDPOINT'),
+    get('DOCKUDOS_S3_ACCESS_KEY'),
+    get('DOCKUDOS_S3_SECRET_KEY'),
+  ];
   if (s3.some(Boolean) && !s3.every(Boolean))
-    problems.push('DOCKUDOS_S3_ENDPOINT, DOCKUDOS_S3_ACCESS_KEY and DOCKUDOS_S3_SECRET_KEY go together');
-  if (get('DOCKUDOS_OIDC_ISSUER') && !get('DOCKUDOS_OIDC_CLIENT_ID')) problems.push('DOCKUDOS_OIDC_ISSUER needs DOCKUDOS_OIDC_CLIENT_ID');
+    problems.push(
+      'DOCKUDOS_S3_ENDPOINT, DOCKUDOS_S3_ACCESS_KEY and DOCKUDOS_S3_SECRET_KEY go together',
+    );
+  if (get('DOCKUDOS_OIDC_ISSUER') && !get('DOCKUDOS_OIDC_CLIENT_ID'))
+    problems.push('DOCKUDOS_OIDC_ISSUER needs DOCKUDOS_OIDC_CLIENT_ID');
   const sitesDomain = get('DOCKUDOS_SITES_DOMAIN')?.toLowerCase();
   if (sitesDomain) {
-    const host = (() => { try { return new URL(get('DOCKUDOS_PUBLIC_URL') ?? '').hostname; } catch { return ''; } })();
+    const host = (() => {
+      try {
+        return new URL(get('DOCKUDOS_PUBLIC_URL') ?? '').hostname;
+      } catch {
+        return '';
+      }
+    })();
     if (host && (host === sitesDomain || host.endsWith(`.${sitesDomain}`)))
-      problems.push('DOCKUDOS_SITES_DOMAIN must not be the own host of the platform or a parent of it: hosted documentation runs its own scripts and must stay on a different origin');
+      problems.push(
+        'DOCKUDOS_SITES_DOMAIN must not be the own host of the platform or a parent of it: hosted documentation runs its own scripts and must stay on a different origin',
+      );
   }
   if (problems.length || !e) throw new ConfigError(problems);
 
@@ -234,16 +268,24 @@ export function loadConfig(
     },
     trustProxy: e.DOCKUDOS_TRUST_PROXY,
     agentEnabled: e.DOCKUDOS_AGENT_ENABLED,
-    ...(e.DOCKUDOS_LLM_PROVIDER && e.DOCKUDOS_LLM_MODEL && env['DOCKUDOS_LLM_API_KEY'] && {
-      llm: {
-        provider: e.DOCKUDOS_LLM_PROVIDER, model: e.DOCKUDOS_LLM_MODEL, apiKey: env['DOCKUDOS_LLM_API_KEY'],
-        ...(e.DOCKUDOS_LLM_BASE_URL && { baseUrl: e.DOCKUDOS_LLM_BASE_URL }),
-      },
-    }),
+    ...(e.DOCKUDOS_LLM_PROVIDER &&
+      e.DOCKUDOS_LLM_MODEL &&
+      env['DOCKUDOS_LLM_API_KEY'] && {
+        llm: {
+          provider: e.DOCKUDOS_LLM_PROVIDER,
+          model: e.DOCKUDOS_LLM_MODEL,
+          apiKey: env['DOCKUDOS_LLM_API_KEY'],
+          ...(e.DOCKUDOS_LLM_BASE_URL && { baseUrl: e.DOCKUDOS_LLM_BASE_URL }),
+        },
+      }),
     ...(e.DOCKUDOS_METRICS_TOKEN && { metricsToken: e.DOCKUDOS_METRICS_TOKEN }),
     ...(e.DOCKUDOS_COOKIE_DOMAIN && { cookieDomain: e.DOCKUDOS_COOKIE_DOMAIN }),
-    ...(e.DOCKUDOS_DOCS_AUTH_SECRET && { docsAuthSecret: e.DOCKUDOS_DOCS_AUTH_SECRET }),
-    ...(e.DOCKUDOS_SITES_DOMAIN && { sitesDomain: e.DOCKUDOS_SITES_DOMAIN.toLowerCase() }),
+    ...(e.DOCKUDOS_DOCS_AUTH_SECRET && {
+      docsAuthSecret: e.DOCKUDOS_DOCS_AUTH_SECRET,
+    }),
+    ...(e.DOCKUDOS_SITES_DOMAIN && {
+      sitesDomain: e.DOCKUDOS_SITES_DOMAIN.toLowerCase(),
+    }),
     fetchAllowHosts: e.DOCKUDOS_FETCH_ALLOW_HOSTS.split(',')
       .map((h) => h.trim().toLowerCase())
       .filter(Boolean),

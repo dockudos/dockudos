@@ -1,0 +1,53 @@
+---
+icon: bot
+title: The docs agent
+description: Watches your code and opens pull requests that keep the docs true. It never publishes.
+---
+
+When code changes, the pages that describe it go stale. The agent notices, finds the pages, drafts the edit and opens a pull
+request that explains why. A person reviews and merges. **The agent has no way to publish:** it can only create a new branch
+named `dockudos/agent-…` and open a pull request from it. There is no code path that commits to your default branch.
+
+## Turn it on
+
+In the site's **Agent** tab: switch it on, add the code repositories to watch, and make sure the platform has a model
+(`DOCKUDOS_LLM_PROVIDER`, `DOCKUDOS_LLM_MODEL`, `DOCKUDOS_LLM_API_KEY`: bring your own key). Without a model it still flags
+the affected pages; it just cannot draft the edit.
+
+## How it decides which pages to touch
+
+This part needs no model and gives the same answer every time:
+
+1. It compares the code repository's new head with the last one it saw.
+2. It collects what changed that docs describe: added or removed environment variables, CLI flags, exported names, routes and options.
+3. It looks for those in your content index, weighing a symbol written in code on a page most, then the file and folder names against page addresses and titles.
+4. It keeps the best few pages (five at most) above a threshold. Tests, lockfiles, build output and assets are ignored.
+
+A change nothing documents flags nothing.
+
+## How the edit is drafted
+
+The model sees one page and the diff, with the diff and page fenced as untrusted data (text inside a diff cannot give it instructions),
+and must answer in a fixed format: `UPDATE` with the whole file, or `NO_CHANGE` and why. The platform then checks the edit before
+using it. It is rejected when it is identical to the page, has invalid front matter, rewrites most of the page, or adds an import or
+a script. What is left goes into one pull request whose description lists the code that changed and the reason for each page.
+
+## Scheduled checks
+
+| Check              | What it does                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Broken links**   | Finds links to pages that do not exist. When exactly one page is clearly what was meant, it relinks it; the rest are listed for a person.           |
+| **Outdated pages** | Finds pages that name environment variables, flags or functions the code no longer contains, and drafts a fix. A third-party name gets `NO_CHANGE`. |
+
+Run them weekly or on demand. Each run is listed with its result and pull request.
+
+## Measure it
+
+`pnpm eval:agent` runs a set of cases (a code change, the pages that should be flagged, what a good edit contains) against your real
+model and prints recall, precision and how many edits were acceptable. The same set runs on every change with a stand-in model, and checks
+that nothing was ever pushed to a default branch. Add a case whenever the agent misses one in the field.
+
+## What it needs
+
+Read access to the code repositories and permission to open pull requests on the docs repository (the same token as the editor). It
+reads the content index of the live build, so build the site first.

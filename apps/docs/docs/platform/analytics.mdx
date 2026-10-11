@@ -1,0 +1,67 @@
+---
+icon: gauge
+title: Analytics
+description: See what readers read, search for and cannot find, without storing anything about them.
+---
+
+## Add it to your site
+
+```html
+<script
+  defer
+  src="https://docs-admin.example.com/analytics.js"
+  data-site="<site id>"
+></script>
+```
+
+In a Next.js project put it in `layout.tsx` with `next/script`. The script sends page views (including client-side navigation) and
+forwards what the docs UI announces: searches with how many results they found, thumbs up or down, and whether the
+assistant could answer. It uses no cookies and no storage, and does nothing when the browser sends Do Not Track or Global Privacy Control.
+
+## What the dashboard shows
+
+- **Top pages** and views per day.
+- **Searches with no results**: the clearest list of what your docs are missing.
+- **Feedback** per page.
+- **Assistant:** answered and unanswered counts, and, if you turn conversation logging on, the unanswered questions grouped by topic.
+- **Traffic:** people, AI tools (GPTBot, ClaudeBot, PerplexityBot, MCP clients and others) and other bots, separately.
+- **Referrers**, by host.
+
+## Privacy by default
+
+| What                | How it is handled                                                                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IP address          | Never stored. Shortened (IPv4 to /24, IPv6 to /48) and mixed into a one-way hash.                                                                                                                                |
+| User agent          | Never stored. Used once to tell people from bots, then dropped.                                                                                                                                                  |
+| Visitor             | A hash of site, shortened address, user agent and **the day**, keyed by a server secret. It changes every day, so nobody can be followed across days, and it cannot be reversed.                                 |
+| Cookies             | None.                                                                                                                                                                                                            |
+| Search text         | Emails, phone-like numbers, ids and token-like strings are replaced before it is stored.                                                                                                                         |
+| Page address        | Path only. No query string or fragment.                                                                                                                                                                          |
+| Referrer            | Host only.                                                                                                                                                                                                       |
+| Assistant questions | Counted, not stored, until you turn **Keep assistant conversations** on. Then they are scrubbed the same way and deleted after the retention you set (30 days by default). Turning it off deletes what was kept. |
+| Retention           | Events are deleted after 90 days by default (configurable per site).                                                                                                                                             |
+
+Because the data holds nothing personal there is nothing to ask consent for in most places, but check your own legal advice.
+
+<Callout type="info">
+  Anyone who knows a site id can send events for it, as with any client-side
+  analytics. Each address is rate-limited, and a browser cannot label its own
+  traffic as AI. Treat the counts as indicative, not as an audit log.
+</Callout>
+
+## Events from your own code
+
+```js
+window.dockudosAnalytics.track({
+  kind: 'feedback',
+  path: '/guide',
+  value: 'up',
+});
+```
+
+Or listen for the events yourself: the docs UI announces searches, feedback and assistant answers as one plain DOM event,
+`dockudos:track`, whose `detail` is `{ kind: 'search' | 'feedback' | 'assistant', ... }` with no identity in it.
+
+## API
+
+`GET /api/v1/sites/<id>/analytics?from=2026-03-01&to=2026-03-31` returns everything the dashboard shows. Any member of the team can read it.

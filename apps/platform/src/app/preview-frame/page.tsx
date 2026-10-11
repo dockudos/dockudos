@@ -12,10 +12,13 @@ export default function PreviewFrame() {
   const [source, setSource] = useState('');
   useEffect(() => {
     const on = (e: MessageEvent) => {
-      if (e.source !== window.parent || !e.data || e.data.type !== 'render') return;
+      if (e.source !== window.parent || !e.data || e.data.type !== 'render')
+        return;
       setSource(String(e.data.source ?? ''));
       document.documentElement.classList.toggle('dark', e.data.dark === true);
-      document.documentElement.style.colorScheme = e.data.dark ? 'dark' : 'light';
+      document.documentElement.style.colorScheme = e.data.dark
+        ? 'dark'
+        : 'light';
     };
     window.addEventListener('message', on);
     window.parent.postMessage({ type: 'ready' }, '*');

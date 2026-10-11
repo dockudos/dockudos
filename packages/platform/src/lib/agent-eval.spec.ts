@@ -7,19 +7,37 @@ import { AGENT_EVAL_SET } from './agent-eval-set.ts';
 const oracle = mockLLM((input) => {
   const text = input.messages[0]!.content;
   const page = /<(\w+)-page>\n([\s\S]*?)\n<\/\1-page>/.exec(text)![2]!;
-  const evidence = /<(\w+)-evidence>\n([\s\S]*?)\n<\/\1-evidence>/.exec(text)![2]!;
+  const evidence = /<(\w+)-evidence>\n([\s\S]*?)\n<\/\1-evidence>/.exec(
+    text,
+  )![2]!;
   let out = page;
-  for (const m of evidence.matchAll(/^-.*?\b(WEBHOOK_SECRET|verifySignature|primaryColor|AUTH_ISSUER)\b/gm)) {
-    const next = { WEBHOOK_SECRET: 'HOOKS_SIGNING_KEY', verifySignature: 'verifyDelivery', primaryColor: 'brandColor', AUTH_ISSUER: 'OIDC_ISSUER_URL' }[m[1] as string]!;
+  for (const m of evidence.matchAll(
+    /^-.*?\b(WEBHOOK_SECRET|verifySignature|primaryColor|AUTH_ISSUER)\b/gm,
+  )) {
+    const next = {
+      WEBHOOK_SECRET: 'HOOKS_SIGNING_KEY',
+      verifySignature: 'verifyDelivery',
+      primaryColor: 'brandColor',
+      AUTH_ISSUER: 'OIDC_ISSUER_URL',
+    }[m[1] as string]!;
     out = out.split(m[1]!).join(next);
   }
-  for (const m of evidence.matchAll(/^-.*(--base-path)/gm)) out = out.split('\n').filter((l) => !l.includes(m[1]!)).join('\n');
-  for (const m of evidence.matchAll(/^\+.*?(--out-dir)/gm)) if (!out.includes(m[1]!)) out += `\nSee also \`${m[1]}\`.\n`;
-  for (const m of evidence.matchAll(/^\+.*router\.(get|post|put|delete)\('([^']+)'/gm)) {
+  for (const m of evidence.matchAll(/^-.*(--base-path)/gm))
+    out = out
+      .split('\n')
+      .filter((l) => !l.includes(m[1]!))
+      .join('\n');
+  for (const m of evidence.matchAll(/^\+.*?(--out-dir)/gm))
+    if (!out.includes(m[1]!)) out += `\nSee also \`${m[1]}\`.\n`;
+  for (const m of evidence.matchAll(
+    /^\+.*router\.(get|post|put|delete)\('([^']+)'/gm,
+  )) {
     const route = `${m[1]!.toUpperCase()} ${m[2]}`;
     if (!out.includes(route)) out += `\n\`${route}\` is also available.\n`;
   }
-  return out === page ? 'DECISION: NO_CHANGE\nRATIONALE: nothing to do' : `DECISION: UPDATE\nRATIONALE: Matches the code change.\nCONTENT:\n${out}`;
+  return out === page
+    ? 'DECISION: NO_CHANGE\nRATIONALE: nothing to do'
+    : `DECISION: UPDATE\nRATIONALE: Matches the code change.\nCONTENT:\n${out}`;
 });
 
 describe('agent evaluation set (P5.18)', () => {
@@ -36,13 +54,24 @@ describe('agent evaluation set (P5.18)', () => {
     const report = await runAgentEval(AGENT_EVAL_SET, { llm: oracle });
     expect(report.edits).toBeDefined();
     expect(report.failures).toEqual([]);
-    expect(report.edits!.acceptable / report.edits!.attempted).toBeGreaterThanOrEqual(0.85);
+    expect(
+      report.edits!.acceptable / report.edits!.attempted,
+    ).toBeGreaterThanOrEqual(0.85);
     expect(report.directPublishes).toBe(0);
   });
 
   it('reports misses and unacceptable edits instead of hiding them', async () => {
-    const bad = mockLLM(() => 'DECISION: UPDATE\nRATIONALE: x\nCONTENT:\n---\ntitle: "x"\n---\n\nunrelated\n');
-    const report = await runAgentEval([AGENT_EVAL_SET[0]!, { ...AGENT_EVAL_SET[7]!, expectedPages: ['/guides/install'] }], { llm: bad });
+    const bad = mockLLM(
+      () =>
+        'DECISION: UPDATE\nRATIONALE: x\nCONTENT:\n---\ntitle: "x"\n---\n\nunrelated\n',
+    );
+    const report = await runAgentEval(
+      [
+        AGENT_EVAL_SET[0]!,
+        { ...AGENT_EVAL_SET[7]!, expectedPages: ['/guides/install'] },
+      ],
+      { llm: bad },
+    );
     expect(report.failures.join('\n')).toMatch(/missed \/guides\/install/);
     expect(report.failures.join('\n')).toMatch(/not acceptable|rewrites most/);
     expect(report.edits!.acceptable).toBe(0);

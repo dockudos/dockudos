@@ -1,4 +1,9 @@
-import { type AccessRule, bearerToken, decideLogin, type Principal } from '@dockudos/core';
+import {
+  type AccessRule,
+  bearerToken,
+  decideLogin,
+  type Principal,
+} from '@dockudos/core';
 
 export interface PlatformVerifyOptions {
   /** Base URL of the dockudos platform, e.g. `https://platform.example.com`. */
@@ -22,7 +27,10 @@ export function createPlatformVerify({
   cacheSeconds = 30,
 }: PlatformVerifyOptions) {
   const base = platformUrl.replace(/\/+$/, '');
-  const cache = new Map<string, { until: number; principal: Principal | undefined }>();
+  const cache = new Map<
+    string,
+    { until: number; principal: Principal | undefined }
+  >();
 
   async function principalOf(request: Request): Promise<Principal | undefined> {
     const bearer = bearerToken(request.headers.get('authorization'));
@@ -34,12 +42,20 @@ export function createPlatformVerify({
     let principal: Principal | undefined;
     try {
       const res = await doFetch(`${base}/api/v1/principal`, {
-        headers: bearer ? { authorization: `Bearer ${bearer}` } : { cookie: cookie as string },
+        headers: bearer
+          ? { authorization: `Bearer ${bearer}` }
+          : { cookie: cookie as string },
       });
       if (res.ok) {
         const body = (await res.json()) as { principal?: Principal };
         const p = body.principal;
-        if (p && typeof p.sub === 'string' && Array.isArray(p.roles) && Array.isArray(p.groups)) principal = p;
+        if (
+          p &&
+          typeof p.sub === 'string' &&
+          Array.isArray(p.roles) &&
+          Array.isArray(p.groups)
+        )
+          principal = p;
       }
     } catch {
       principal = undefined;
@@ -52,7 +68,10 @@ export function createPlatformVerify({
     return principal;
   }
 
-  return async function verify(request: Request, rule: AccessRule): Promise<boolean> {
+  return async function verify(
+    request: Request,
+    rule: AccessRule,
+  ): Promise<boolean> {
     return decideLogin(rule, await principalOf(request)) === 'allow';
   };
 }

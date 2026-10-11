@@ -5,9 +5,25 @@ name: Platform
 on:
   push:
     branches: [main, master]
-    paths: ['packages/platform/**', 'packages/core/**', 'apps/platform/**', 'deploy/**', 'tools/**', '.github/workflows/platform.yml']
+    paths:
+      [
+        'packages/platform/**',
+        'packages/core/**',
+        'apps/platform/**',
+        'deploy/**',
+        'tools/**',
+        '.github/workflows/platform.yml',
+      ]
   pull_request:
-    paths: ['packages/platform/**', 'packages/core/**', 'apps/platform/**', 'deploy/**', 'tools/**', '.github/workflows/platform.yml']
+    paths:
+      [
+        'packages/platform/**',
+        'packages/core/**',
+        'apps/platform/**',
+        'deploy/**',
+        'tools/**',
+        '.github/workflows/platform.yml',
+      ]
 
 concurrency:
   group: platform-${{ github.ref }}

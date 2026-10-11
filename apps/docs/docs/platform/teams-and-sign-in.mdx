@@ -1,0 +1,70 @@
+---
+icon: log-in
+title: Teams and sign-in
+description: OpenID Connect, roles, API keys, and one sign-in for the dashboard and your private docs.
+---
+
+## Sign-in
+
+Set `DOCKUDOS_OIDC_ISSUER` and `DOCKUDOS_OIDC_CLIENT_ID` (and `DOCKUDOS_OIDC_CLIENT_SECRET` if your provider wants one). Register
+`<DOCKUDOS_PUBLIC_URL>/auth/callback` as the redirect address. Any OpenID Connect provider works. It uses the authorization code flow with PKCE, checks
+state and nonce, and verifies the ID token's signature, issuer, audience and expiry.
+
+The first person to sign in becomes the owner of the instance, or set `DOCKUDOS_ADMIN_EMAIL` so that only that address (and only
+if the provider has verified it) can. Without a provider, API keys are the only way in.
+
+## Teams and roles
+
+| Role   | Can                                                                                                             |
+| ------ | --------------------------------------------------------------------------------------------------------------- |
+| viewer | Read sites, builds, analytics.                                                                                  |
+| editor | Also save pull requests with the editor and rebuild.                                                            |
+| admin  | Also connect and remove repositories, change settings, manage members, keys and the agent, and commit directly. |
+| owner  | Also delete the team.                                                                                           |
+
+Nobody can grant a role above their own, change someone above them, or leave a team without an owner. The owner of the instance
+is an owner of every team. People appear in the member list after they sign in once.
+
+## API keys
+
+Create keys in the team settings. Each has a role up to admin, an optional expiry, and can be revoked. The secret is shown once; only
+a hash is stored. A key belongs to one team and cannot create other keys.
+
+```bash
+curl https://docs-admin.example.com/api/v1/me -H "authorization: Bearer dkd_..."
+```
+
+Repeated bad keys from one address are throttled so they cannot be guessed.
+
+## Private docs
+
+[Protecting pages](../guides/protecting-pages.mdx) lets a docs site require a login for some routes. The platform plugs into it two ways.
+
+**One sign-in.** Set `DOCKUDOS_DOCS_AUTH_SECRET` to your docs site's `DOCKUDOS_AUTH_SECRET`, and `DOCKUDOS_COOKIE_DOMAIN` to a domain
+both share (`.example.com`). Signing in to the platform then also signs the person in to the docs. Team membership becomes groups and roles:
+a member of the Acme team has group `team:acme` and role `team:acme:editor`.
+
+```json title="docs.json"
+{
+  "access": {
+    "rules": [
+      { "paths": ["/internal/**"], "require": "login", "groups": ["team:acme"] }
+    ]
+  }
+}
+```
+
+**Bearer tokens, for the assistant and MCP.** A rule with `"require": "custom"` can ask the platform. In your docs site:
+
+```ts title="src/proxy.ts"
+import { createAccessProxy, createPlatformVerify } from '@dockudos/next/access';
+
+export const proxy = createAccessProxy({
+  verify: createPlatformVerify({
+    platformUrl: 'https://docs-admin.example.com',
+  }),
+});
+```
+
+An API key or a platform session cookie is then accepted, and the same check scopes search, the assistant and the MCP server to what that
+caller may read. If the platform is unreachable, the answer is no.

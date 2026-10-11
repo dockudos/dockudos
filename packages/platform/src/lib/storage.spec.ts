@@ -3,9 +3,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { sha256Hex, signV4 } from './sigv4.ts';
-import { assertKey, createFsStorage, createMemoryStorage, createS3Storage, type ObjectStorage } from './storage.ts';
+import {
+  assertKey,
+  createFsStorage,
+  createMemoryStorage,
+  createS3Storage,
+  type ObjectStorage,
+} from './storage.ts';
 
-const text = (b: Uint8Array | undefined) => (b ? new TextDecoder().decode(b) : undefined);
+const text = (b: Uint8Array | undefined) =>
+  b ? new TextDecoder().decode(b) : undefined;
 const bytes = (s: string) => new TextEncoder().encode(s);
 
 describe('sigv4', () => {
@@ -28,13 +35,20 @@ describe('sigv4', () => {
 });
 
 describe('keys', () => {
-  it.each(['', '/abs', '../x', 'a/../b', 'a//b', 'a\\b', 'a/./b', 'nul\0'])('rejects %j', (k) => {
-    expect(() => assertKey(k)).toThrow();
-  });
-  it('accepts ordinary keys', () => expect(() => assertKey('builds/1/site.tar')).not.toThrow());
+  it.each(['', '/abs', '../x', 'a/../b', 'a//b', 'a\\b', 'a/./b', 'nul\0'])(
+    'rejects %j',
+    (k) => {
+      expect(() => assertKey(k)).toThrow();
+    },
+  );
+  it('accepts ordinary keys', () =>
+    expect(() => assertKey('builds/1/site.tar')).not.toThrow());
 });
 
-function contract(name: string, make: () => Promise<ObjectStorage> | ObjectStorage) {
+function contract(
+  name: string,
+  make: () => Promise<ObjectStorage> | ObjectStorage,
+) {
   describe(`${name} storage`, () => {
     it('puts, gets, lists, deletes', async () => {
       const s = await make();
@@ -60,7 +74,9 @@ function contract(name: string, make: () => Promise<ObjectStorage> | ObjectStora
 contract('memory', createMemoryStorage);
 const dir = mkdtemp(join(tmpdir(), 'dkd-fs-'));
 afterAll(async () => rm(await dir, { recursive: true, force: true }));
-contract('fs', async () => createFsStorage(join(await dir, String(Math.random()))));
+contract('fs', async () =>
+  createFsStorage(join(await dir, String(Math.random()))),
+);
 
 /** A tiny in-memory S3: checks that every request is signed, then behaves like the real thing. */
 function fakeS3() {
@@ -93,20 +109,33 @@ function fakeS3() {
       );
     }
     const v = store.get(key);
-    return v ? new Response(v as never) : new Response('<Error/>', { status: 404 });
+    return v
+      ? new Response(v as never)
+      : new Response('<Error/>', { status: 404 });
   };
   return { fetchImpl, calls };
 }
 
 const s3 = fakeS3();
 contract('s3', () =>
-  createS3Storage({ endpoint: 'http://minio:9000', region: 'us-east-1', bucket: 'bkt', accessKey: 'AK', secretKey: 'SK', fetch: s3.fetchImpl }),
+  createS3Storage({
+    endpoint: 'http://minio:9000',
+    region: 'us-east-1',
+    bucket: 'bkt',
+    accessKey: 'AK',
+    secretKey: 'SK',
+    fetch: s3.fetchImpl,
+  }),
 );
 
 describe('s3 errors', () => {
   it('reports status without leaking the secret key', async () => {
     const s = createS3Storage({
-      endpoint: 'http://minio:9000', region: 'r', bucket: 'bkt', accessKey: 'AK', secretKey: 'SUPERSECRETKEY',
+      endpoint: 'http://minio:9000',
+      region: 'r',
+      bucket: 'bkt',
+      accessKey: 'AK',
+      secretKey: 'SUPERSECRETKEY',
       fetch: async () => new Response('denied', { status: 403 }),
     });
     const err = await s.put('k', bytes('x')).catch((e: Error) => e);
@@ -119,6 +148,10 @@ describe('s3 errors', () => {
   });
   it('signs every request', () => {
     expect(s3.calls.length).toBeGreaterThan(0);
-    expect(s3.calls.every((c) => c.auth.startsWith('AWS4-HMAC-SHA256 Credential=AK/'))).toBe(true);
+    expect(
+      s3.calls.every((c) =>
+        c.auth.startsWith('AWS4-HMAC-SHA256 Credential=AK/'),
+      ),
+    ).toBe(true);
   });
 });

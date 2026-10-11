@@ -54,7 +54,11 @@ export interface GitProvider {
   cloneAuthHeader(): string | undefined;
   getDefaultBranch(repo: string): Promise<string>;
   getBranchSha(repo: string, branch: string): Promise<string>;
-  readFile(repo: string, path: string, ref: string): Promise<RepoFile | undefined>;
+  readFile(
+    repo: string,
+    path: string,
+    ref: string,
+  ): Promise<RepoFile | undefined>;
   /** Every file path under `dir` at `ref`, recursively. */
   listFiles(repo: string, ref: string, dir?: string): Promise<string[]>;
   createBranch(repo: string, name: string, fromSha: string): Promise<void>;
@@ -69,25 +73,49 @@ export interface GitProvider {
     changes: FileChange[];
     expectedHeadSha?: string;
   }): Promise<string>;
-  openPullRequest(input: { repo: string; head: string; base: string; title: string; body: string }): Promise<PullRequest>;
+  openPullRequest(input: {
+    repo: string;
+    head: string;
+    base: string;
+    title: string;
+    body: string;
+  }): Promise<PullRequest>;
   compare(repo: string, base: string, head: string): Promise<ChangedFile[]>;
   /** Show a build's result next to the commit. Optional: hosts or tokens without the permission skip it. */
-  reportStatus?(input: { repo: string; sha: string; state: 'pending' | 'success' | 'failure'; url?: string; description: string }): Promise<void>;
+  reportStatus?(input: {
+    repo: string;
+    sha: string;
+    state: 'pending' | 'success' | 'failure';
+    url?: string;
+    description: string;
+  }): Promise<void>;
 }
 
 const REPO = /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)+$/;
 
 export function assertRepo(repo: string): void {
   if (!REPO.test(repo) || repo.split('/').some((p) => p === '.' || p === '..'))
-    throw new GitError(`Not a repository name: ${JSON.stringify(repo.slice(0, 80))}`, 400);
+    throw new GitError(
+      `Not a repository name: ${JSON.stringify(repo.slice(0, 80))}`,
+      400,
+    );
 }
 
 /** Repository-relative paths: no leading slash, no `..`, no backslash, no NUL. */
 export function assertRepoPath(path: string): void {
-  if (!path || path.startsWith('/') || /[\0\\]/.test(path) || path.split('/').some((p) => p === '..' || p === '.' || p === ''))
-    throw new GitError(`Not a repository path: ${JSON.stringify(path.slice(0, 80))}`, 400);
+  if (
+    !path ||
+    path.startsWith('/') ||
+    /[\0\\]/.test(path) ||
+    path.split('/').some((p) => p === '..' || p === '.' || p === '')
+  )
+    throw new GitError(
+      `Not a repository path: ${JSON.stringify(path.slice(0, 80))}`,
+      400,
+    );
 }
 
 export const toBytes = (c: Uint8Array | string): Uint8Array =>
   typeof c === 'string' ? new TextEncoder().encode(c) : c;
-export const b64 = (c: Uint8Array | string): string => Buffer.from(toBytes(c)).toString('base64');
+export const b64 = (c: Uint8Array | string): string =>
+  Buffer.from(toBytes(c)).toString('base64');

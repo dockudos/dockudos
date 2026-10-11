@@ -1,0 +1,78 @@
+---
+icon: shield
+title: Operate it
+description: Backups, upgrades, monitoring, and what you own when you self-host.
+---
+
+## What you own
+
+Updates and security patches, backups of Postgres and storage, scaling and uptime, your model spend, TLS and domains, and what the
+build worker is allowed to reach.
+
+## Backups
+
+Two things hold state: Postgres (teams, sites, builds, analytics) and object storage (built sites and uploads). Your docs themselves
+are in Git, and a build recreates a site from them.
+
+**The platform's own backup**, which carries both and can be checked and restored by the platform:
+
+```bash
+docker compose exec api node dist/server.js backup /var/lib/dockudos/backups/2026-03-01
+kubectl exec deploy/docs-dockudos-api -- node dist/server.js backup /tmp/backup && kubectl cp ...
+```
+
+It writes one JSON-lines file per table, every stored object, and a manifest with a checksum for each file, readable by its owner only.
+It holds webhook secrets and people's emails, so **encrypt it** (`age`, `gpg`) before it leaves the machine.
+
+**Restore** into a new, migrated, empty instance:
+
+```bash
+node dist/server.js restore /path/to/backup
+```
+
+Every file is checked against the manifest before anything is written, the database is restored in one transaction, and an instance that already
+has data is refused. Restore with the version that made the backup, then upgrade.
+
+**Physical backups.** For a large database `pg_dump` (or your cloud's snapshots) is faster, and S3 versioning or replication covers the
+objects. Use whichever you will actually test.
+
+<Callout type="info">
+  The backup and restore round trip is exercised on every change: `pnpm
+  verify:platform` backs up the production build, restores it into a second
+  empty database, and checks that the same API key works and the analytics came
+  across.
+</Callout>
+
+## Upgrading
+
+1. Read the release notes.
+2. Back up.
+3. Update the image tag (`docker compose pull && docker compose up -d`, or `helm upgrade`).
+
+Migrations run when a process starts, one at a time under a database lock, and only ever add. Roll back by restoring the backup and the previous
+image. Upgrade one minor version at a time.
+
+## Monitoring
+
+- `GET /healthz` says the process is up; `GET /readyz` says its database and storage answer (503 with the failing check otherwise).
+- `GET /metrics` is Prometheus text: HTTP requests by route group, job outcomes and durations, builds, webhook deliveries, agent runs, job counts by status. Set `DOCKUDOS_METRICS_TOKEN` and scrape with a bearer token; the bundled proxy and ingress do not expose it.
+- Logs are one JSON object per line. Secrets (tokens, keys, the database password) are scrubbed from every line, and fields named like a secret are never written.
+
+Alert on a growing `dead` job count, `/readyz` failures, and build failures.
+
+## Scaling
+
+The API and site roles are stateless: add replicas. Builds scale with workers (`DOCKUDOS_WORKER_CONCURRENCY` per process). Keep
+(processes × `DOCKUDOS_DB_POOL_MAX`) under Postgres's `max_connections`; PgBouncer in transaction mode works. Jobs are delivered at least once and
+handlers are idempotent, so a crashed worker's job is picked up again when its lease expires.
+
+## Security
+
+The review is in the repository (`notes/security/platform.md`). The points to act on:
+
+- **The build worker runs code from your repositories.** Install scripts are off and it gets none of the platform's secrets, but give it its own
+  network egress limits (the Helm `networkPolicy`), no access to the cloud metadata address or your internal ranges, and a memory limit.
+- **Hosted sites are on their own origin.** Never serve them from the dashboard's host.
+- **Outbound requests from user-supplied URLs go through an SSRF guard** that refuses private, loopback and link-local addresses, checks every redirect, and caps size and time.
+- **Put the platform behind TLS.** Session cookies are `Secure` when the public URL is HTTPS, and state-changing browser requests must come from the dashboard's own origin.
+- **Rotate** the Git token, session secret and webhook secrets if a machine is compromised. Rotating the session secret signs everyone out.

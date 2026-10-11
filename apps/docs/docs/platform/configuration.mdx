@@ -1,0 +1,91 @@
+---
+icon: sliders-horizontal
+title: Configuration
+description: Every environment variable the platform reads.
+---
+
+Configuration is environment variables only. The platform checks them all at start and prints every problem at once, then exits with status 78.
+Secrets are never read from files in your repository.
+
+## Required
+
+| Variable                  | Meaning                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `DOCKUDOS_DATABASE_URL`   | Postgres connection string.                                                                 |
+| `DOCKUDOS_PUBLIC_URL`     | The URL people use for the dashboard. Webhook URLs and sign-in redirects are built from it. |
+| `DOCKUDOS_SESSION_SECRET` | 32+ characters. Signs sessions and keys the daily visitor hash.                             |
+
+## Process
+
+| Variable                      | Default             | Meaning                                                                                                                     |
+| ----------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `DOCKUDOS_SERVICES`           | all                 | Roles this process plays: `web`, `hooks`, `analytics`, `auth`, `editor`, `worker`, `agent`, `site`. `web` is the whole API. |
+| `DOCKUDOS_PORT`               | `4000`              | Listen port.                                                                                                                |
+| `DOCKUDOS_LOG_LEVEL`          | `info`              | `debug`, `info`, `warn`, `error`, `silent`.                                                                                 |
+| `DOCKUDOS_WORKER_CONCURRENCY` | `2`                 | Jobs run at once per process.                                                                                               |
+| `DOCKUDOS_DB_POOL_MAX`        | `10`                | Database connections per process.                                                                                           |
+| `DOCKUDOS_DATA_DIR`           | `/var/lib/dockudos` | Scratch space for builds, and object storage when no S3 is set.                                                             |
+| `DOCKUDOS_TRUST_PROXY`        | `false`             | Believe `X-Forwarded-For`. Only behind a proxy you control.                                                                 |
+| `DOCKUDOS_METRICS_TOKEN`      | none                | Bearer token for `/metrics`.                                                                                                |
+
+## Storage
+
+| Variable                                           | Default     | Meaning                                                                          |
+| -------------------------------------------------- | ----------- | -------------------------------------------------------------------------------- |
+| `DOCKUDOS_S3_ENDPOINT`                             | none        | S3-compatible endpoint. Without it, objects are files under `DOCKUDOS_DATA_DIR`. |
+| `DOCKUDOS_S3_BUCKET`                               | `dockudos`  | Bucket (must exist).                                                             |
+| `DOCKUDOS_S3_REGION`                               | `us-east-1` |                                                                                  |
+| `DOCKUDOS_S3_ACCESS_KEY`, `DOCKUDOS_S3_SECRET_KEY` | none        | Required with an endpoint.                                                       |
+
+## Git hosts
+
+| Variable                       | Default                     | Meaning                                                                        |
+| ------------------------------ | --------------------------- | ------------------------------------------------------------------------------ |
+| `DOCKUDOS_GITHUB_TOKEN`        | none                        | Token for GitHub.                                                              |
+| `DOCKUDOS_GITHUB_API_URL`      | `https://api.github.com`    | For GitHub Enterprise.                                                         |
+| `DOCKUDOS_GITLAB_TOKEN`        | none                        | Token for GitLab.                                                              |
+| `DOCKUDOS_GITLAB_API_URL`      | `https://gitlab.com/api/v4` | For a self-hosted GitLab.                                                      |
+| `DOCKUDOS_FETCH_ALLOW_HOSTS`   | none                        | Extra hosts the platform may call. Private and unlisted addresses are refused. |
+| `DOCKUDOS_FETCH_ALLOW_PRIVATE` | `false`                     | Allow private addresses. Development only.                                     |
+
+## Sign-in
+
+| Variable                                                                         | Meaning                                                      |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `DOCKUDOS_OIDC_ISSUER`, `DOCKUDOS_OIDC_CLIENT_ID`, `DOCKUDOS_OIDC_CLIENT_SECRET` | The OpenID Connect provider.                                 |
+| `DOCKUDOS_OIDC_ROLES_CLAIM`, `DOCKUDOS_OIDC_GROUPS_CLAIM`                        | Claims read as roles and groups (default `roles`, `groups`). |
+| `DOCKUDOS_ADMIN_EMAIL`                                                           | The verified address that owns the instance.                 |
+| `DOCKUDOS_DOCS_AUTH_SECRET`, `DOCKUDOS_COOKIE_DOMAIN`                            | Also sign people in to private docs.                         |
+
+## Hosting
+
+| Variable                | Meaning                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `DOCKUDOS_SITES_DOMAIN` | Sites are served at `<slug>.<this>`. Must not be the dashboard's host or a parent of it. |
+
+## Analytics
+
+| Variable                               | Default | Meaning                                 |
+| -------------------------------------- | ------- | --------------------------------------- |
+| `DOCKUDOS_ANALYTICS_LOG_CONVERSATIONS` | `false` | Default for sites that have not chosen. |
+| `DOCKUDOS_ANALYTICS_RETENTION_DAYS`    | `90`    | Default event retention.                |
+| `DOCKUDOS_CONVERSATION_RETENTION_DAYS` | `30`    | Default conversation retention.         |
+
+## Agent
+
+| Variable                | Meaning                             |
+| ----------------------- | ----------------------------------- |
+| `DOCKUDOS_LLM_PROVIDER` | `openai` or `anthropic`.            |
+| `DOCKUDOS_LLM_MODEL`    | Model name.                         |
+| `DOCKUDOS_LLM_API_KEY`  | Your key.                           |
+| `DOCKUDOS_LLM_BASE_URL` | Optional, for a compatible gateway. |
+
+## Commands
+
+```bash
+node dist/server.js                       # run the roles in DOCKUDOS_SERVICES
+node dist/server.js migrate               # apply migrations and exit
+node dist/server.js bootstrap "My team"   # print an admin API key
+node dist/server.js backup <dir>          # save database and objects
+node dist/server.js restore <dir>         # load them into an empty instance
+```

@@ -3,7 +3,10 @@ import pg from 'pg';
 export type Row = Record<string, unknown>;
 
 export interface Queryable {
-  query<T = Row>(sql: string, params?: unknown[]): Promise<{ rows: T[]; rowCount: number }>;
+  query<T = Row>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<{ rows: T[]; rowCount: number }>;
   /** Run several statements with no parameters (migrations). */
   exec(sql: string): Promise<void>;
 }

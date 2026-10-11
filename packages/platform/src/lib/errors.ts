@@ -4,7 +4,12 @@ export class PlatformError extends Error {
   readonly code: string;
   /** Structured detail for the client, such as the files in conflict. */
   readonly details?: unknown;
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    details?: unknown,
+  ) {
     super(message);
     this.name = 'PlatformError';
     this.status = status;
@@ -21,7 +26,10 @@ export const forbidden = (message = 'You do not have access to this.') =>
   new PlatformError(403, 'forbidden', message);
 export const notFound = (message = 'Not found.') =>
   new PlatformError(404, 'not_found', message);
-export const conflict = (message: string, code = 'conflict', details?: unknown) =>
-  new PlatformError(409, code, message, details);
+export const conflict = (
+  message: string,
+  code = 'conflict',
+  details?: unknown,
+) => new PlatformError(409, code, message, details);
 export const tooMany = (message = 'Too many requests.') =>
   new PlatformError(429, 'rate_limited', message);

@@ -191,9 +191,19 @@ export function CommandPalette({
   // Tell listeners (analytics) what a search found once it has settled, once per query.
   const announced = useRef('');
   useEffect(() => {
-    if (!open || found.status !== 'ready' || !found.query.trim() || announced.current === found.query) return;
+    if (
+      !open ||
+      found.status !== 'ready' ||
+      !found.query.trim() ||
+      announced.current === found.query
+    )
+      return;
     announced.current = found.query;
-    emitAnalytics({ kind: 'search', query: found.query.trim(), results: found.hits.length });
+    emitAnalytics({
+      kind: 'search',
+      query: found.query.trim(),
+      results: found.hits.length,
+    });
   }, [open, found.status, found.query, found.hits.length]);
 
   useHotkey('mod+k', () => setOpen((o) => !o), {

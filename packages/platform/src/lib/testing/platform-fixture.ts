@@ -21,14 +21,24 @@ export const SITE_FILES: Record<string, string> = {
   'out/api.html': '<h1>API</h1>',
   'out/404.html': '<h1>Missing</h1>',
   'out/_next/static/app.js': 'console.log(1)',
-  '.dockudos/index.json': JSON.stringify({ version: 1, builtAt: 'x', pages: [], chunks: [] }),
+  '.dockudos/index.json': JSON.stringify({
+    version: 1,
+    builtAt: 'x',
+    pages: [],
+    chunks: [],
+  }),
 };
 
 let counter = 0;
 
 export interface FixtureOptions {
   /** Override what a command does; return a code to stop the default. */
-  onCommand?: (cmd: string, args: string[], cwd: string, onOutput?: (chunk: string) => void) => Promise<number | undefined>;
+  onCommand?: (
+    cmd: string,
+    args: string[],
+    cwd: string,
+    onOutput?: (chunk: string) => void,
+  ) => Promise<number | undefined>;
   secrets?: string[];
   files?: Record<string, string>;
   /** The content index the fake build publishes. */
@@ -46,7 +56,12 @@ export async function createFixture(db: Db, options: FixtureOptions = {}) {
   const queue = createQueue({ db, clock });
   const providers = { github: git, gitlab };
   const sites = createSites({ db, auth, providers, clock });
-  const commands: { cmd: string; args: string[]; cwd: string; env?: Record<string, string> | undefined }[] = [];
+  const commands: {
+    cmd: string;
+    args: string[];
+    cwd: string;
+    env?: Record<string, string> | undefined;
+  }[] = [];
   const run: CommandRunner = async ({ cmd, args, cwd, env, onOutput }) => {
     commands.push({ cmd, args, cwd, env });
     const custom = await options.onCommand?.(cmd, args, cwd, onOutput);
@@ -57,27 +72,87 @@ export async function createFixture(db: Db, options: FixtureOptions = {}) {
         await mkdir(join(cwd, p, '..'), { recursive: true });
         await writeFile(join(cwd, p), c);
       }
-      await symlink('/etc/passwd', join(cwd, 'out', 'leak.txt')).catch(() => undefined);
+      await symlink('/etc/passwd', join(cwd, 'out', 'leak.txt')).catch(
+        () => undefined,
+      );
     }
     if (args.includes('index')) {
       await mkdir(join(cwd, '.dockudos'), { recursive: true });
-      await writeFile(join(cwd, '.dockudos/index.json'), options.index ? JSON.stringify(options.index) : SITE_FILES['.dockudos/index.json']!);
+      await writeFile(
+        join(cwd, '.dockudos/index.json'),
+        options.index
+          ? JSON.stringify(options.index)
+          : SITE_FILES['.dockudos/index.json']!,
+      );
     }
     return { code: 0 };
   };
   const metrics = createMetricsFixture();
-  const builds = createBuilds({ db, queue, storage, sites, auth, providers, run, source: apiSource, clock, metrics, secrets: options.secrets ?? [], siteUrl: (s) => `https://${s.slug}.sites.test` });
+  const builds = createBuilds({
+    db,
+    queue,
+    storage,
+    sites,
+    auth,
+    providers,
+    run,
+    source: apiSource,
+    clock,
+    metrics,
+    secrets: options.secrets ?? [],
+    siteUrl: (s) => `https://${s.slug}.sites.test`,
+  });
   const webhooks = createWebhookReceiver({ db, sites, builds, clock, metrics });
-  const worker = createWorker({ queue, handlers: { build: builds.handle }, metrics });
+  const worker = createWorker({
+    queue,
+    handlers: { build: builds.handle },
+    metrics,
+  });
 
-  const owner = await auth.upsertUser({ sub: `owner-${Math.random()}`, email: `o${Math.random()}@x.test`, roles: [], groups: [] });
+  const owner = await auth.upsertUser({
+    sub: `owner-${Math.random()}`,
+    email: `o${Math.random()}@x.test`,
+    roles: [],
+    groups: [],
+  });
   const actor: Actor = { type: 'user', user: owner };
   const team = await auth.createTeam(actor, 'Fixture Team');
   const repo = `acme/docs-${++counter}`;
-  git.seed(repo, { 'docs.json': '{"name":"Acme"}', 'index.mdx': '# Home', 'package.json': '{}' });
-  const { site, webhookSecret } = await sites.create(actor, team.id, { name: `Acme Docs ${counter}`, provider: 'github', repo });
+  git.seed(repo, {
+    'docs.json': '{"name":"Acme"}',
+    'index.mdx': '# Home',
+    'package.json': '{}',
+  });
+  const { site, webhookSecret } = await sites.create(actor, team.id, {
+    name: `Acme Docs ${counter}`,
+    provider: 'github',
+    repo,
+  });
 
-  return { repo, auth, queue, sites, builds, webhooks, worker, git, gitlab, storage, actor, owner, team, site, webhookSecret, metrics, commands, clock, clockState, providers,
-    drain: async () => { while (await worker.runOnce()); } };
+  return {
+    repo,
+    auth,
+    queue,
+    sites,
+    builds,
+    webhooks,
+    worker,
+    git,
+    gitlab,
+    storage,
+    actor,
+    owner,
+    team,
+    site,
+    webhookSecret,
+    metrics,
+    commands,
+    clock,
+    clockState,
+    providers,
+    drain: async () => {
+      while (await worker.runOnce());
+    },
+  };
 }
 export type Fixture = Awaited<ReturnType<typeof createFixture>>;

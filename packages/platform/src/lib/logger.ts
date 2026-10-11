@@ -8,12 +8,17 @@ const ORDER: Record<LogLevel, number> = {
 };
 
 /** Field names whose values are never written, whatever they hold. */
-const SENSITIVE_KEY = /secret|token|password|passwd|authorization|api[-_]?key|cookie|signature|credential|private/i;
+const SENSITIVE_KEY =
+  /secret|token|password|passwd|authorization|api[-_]?key|cookie|signature|credential|private/i;
 const REDACTED = '[redacted]';
 
 /** A function that replaces every given secret in a string. Used for build logs and error messages. */
-export function createScrubber(secrets: readonly (string | undefined)[]): (text: string) => string {
-  const list = secrets.filter((s): s is string => typeof s === 'string' && s.length >= 6);
+export function createScrubber(
+  secrets: readonly (string | undefined)[],
+): (text: string) => string {
+  const list = secrets.filter(
+    (s): s is string => typeof s === 'string' && s.length >= 6,
+  );
   return (text) => list.reduce((out, s) => out.split(s).join(REDACTED), text);
 }
 
@@ -55,7 +60,11 @@ export function createLogger({
   const clean = (value: unknown, depth: number): unknown => {
     if (typeof value === 'string') return scrub(value);
     if (value instanceof Error)
-      return { name: value.name, message: scrub(value.message), stack: value.stack ? scrub(value.stack) : undefined };
+      return {
+        name: value.name,
+        message: scrub(value.message),
+        stack: value.stack ? scrub(value.stack) : undefined,
+      };
     if (value === null || typeof value !== 'object') return value;
     if (depth > 5) return '[deep]';
     if (Array.isArray(value)) return value.map((v) => clean(v, depth + 1));
@@ -64,7 +73,11 @@ export function createLogger({
       out[k] = SENSITIVE_KEY.test(k) ? REDACTED : clean(v, depth + 1);
     return out;
   };
-  const emit = (lvl: Exclude<LogLevel, 'silent'>, msg: string, fields?: Record<string, unknown>) => {
+  const emit = (
+    lvl: Exclude<LogLevel, 'silent'>,
+    msg: string,
+    fields?: Record<string, unknown>,
+  ) => {
     if (ORDER[lvl] < ORDER[level]) return;
     write(
       JSON.stringify({
@@ -81,7 +94,13 @@ export function createLogger({
     warn: (m, f) => emit('warn', m, f),
     error: (m, f) => emit('error', m, f),
     child: (b) =>
-      createLogger({ level, write, secrets, bindings: { ...bindings, ...b }, now }),
+      createLogger({
+        level,
+        write,
+        secrets,
+        bindings: { ...bindings, ...b },
+        now,
+      }),
   };
 }
 

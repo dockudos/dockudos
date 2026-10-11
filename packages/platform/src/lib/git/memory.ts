@@ -1,7 +1,15 @@
 import { createHash } from 'node:crypto';
 import {
-  assertRepo, assertRepoPath, type ChangedFile, GitConflictError, GitError, type GitProvider,
-  type ProviderId, type PullRequest, type RepoFile, toBytes,
+  assertRepo,
+  assertRepoPath,
+  type ChangedFile,
+  GitConflictError,
+  GitError,
+  type GitProvider,
+  type ProviderId,
+  type PullRequest,
+  type RepoFile,
+  toBytes,
 } from './types.ts';
 
 /**
@@ -13,14 +21,29 @@ export function createMemoryGit(
   id: ProviderId = 'github',
   { defaultBranch = 'main' } = {},
 ) {
-  interface Commit { sha: string; files: Map<string, Uint8Array>; parent?: string }
+  interface Commit {
+    sha: string;
+    files: Map<string, Uint8Array>;
+    parent?: string;
+  }
   const commits = new Map<string, Commit>();
-  const repos = new Map<string, { branches: Map<string, string>; defaultBranch: string }>();
+  const repos = new Map<
+    string,
+    { branches: Map<string, string>; defaultBranch: string }
+  >();
   const statuses: { repo: string; sha: string; state: string }[] = [];
-  const pulls: { repo: string; head: string; base: string; title: string; body: string; number: number }[] = [];
+  const pulls: {
+    repo: string;
+    head: string;
+    base: string;
+    title: string;
+    body: string;
+    number: number;
+  }[] = [];
   const pushes: { repo: string; branch: string; sha: string }[] = [];
   let n = 0;
-  const sha = (seed: string) => createHash('sha1').update(`${seed}:${n++}`).digest('hex');
+  const sha = (seed: string) =>
+    createHash('sha1').update(`${seed}:${n++}`).digest('hex');
   const repo = (name: string) => {
     assertRepo(name);
     const r = repos.get(name);
@@ -39,7 +62,9 @@ export function createMemoryGit(
     id,
     cloneUrl: (name) => `https://git.test/${name}.git`,
     cloneAuthHeader: () => undefined,
-    async getDefaultBranch(name) { return repo(name).defaultBranch; },
+    async getDefaultBranch(name) {
+      return repo(name).defaultBranch;
+    },
     async getBranchSha(name, branch) {
       const s = repo(name).branches.get(branch);
       if (!s) throw new GitError(`Branch ${branch} not found.`, 404);
@@ -52,11 +77,14 @@ export function createMemoryGit(
     },
     async listFiles(name, ref, dir = '') {
       const prefix = dir ? `${dir.replace(/\/+$/, '')}/` : '';
-      return [...at(name, ref).files.keys()].filter((p) => p.startsWith(prefix)).sort();
+      return [...at(name, ref).files.keys()]
+        .filter((p) => p.startsWith(prefix))
+        .sort();
     },
     async createBranch(name, branch, from) {
       const r = repo(name);
-      if (r.branches.has(branch)) throw new GitError(`Branch ${branch} exists.`, 422);
+      if (r.branches.has(branch))
+        throw new GitError(`Branch ${branch} exists.`, 422);
       if (!commits.has(from)) throw new GitError('Unknown commit.', 404);
       r.branches.set(branch, from);
     },
@@ -64,7 +92,8 @@ export function createMemoryGit(
       const r = repo(name);
       const head = r.branches.get(branch);
       if (!head) throw new GitError(`Branch ${branch} not found.`, 404);
-      if (expectedHeadSha && head !== expectedHeadSha) throw new GitConflictError();
+      if (expectedHeadSha && head !== expectedHeadSha)
+        throw new GitConflictError();
       const files = new Map(commits.get(head)!.files);
       for (const c of changes) {
         assertRepoPath(c.path);
@@ -77,9 +106,16 @@ export function createMemoryGit(
       pushes.push({ repo: name, branch, sha: s });
       return s;
     },
-    async openPullRequest({ repo: name, head, base, title, body }): Promise<PullRequest> {
+    async openPullRequest({
+      repo: name,
+      head,
+      base,
+      title,
+      body,
+    }): Promise<PullRequest> {
       const r = repo(name);
-      if (!r.branches.has(head) || !r.branches.has(base)) throw new GitError('Unknown branch.', 422);
+      if (!r.branches.has(head) || !r.branches.has(base))
+        throw new GitError('Unknown branch.', 422);
       const number = pulls.length + 1;
       pulls.push({ repo: name, head, base, title, body, number });
       return { url: `https://git.test/${name}/pull/${number}`, number };
@@ -93,10 +129,23 @@ export function createMemoryGit(
       const out: ChangedFile[] = [];
       for (const [p, content] of b) {
         const old = a.get(p);
-        if (!old) out.push({ path: p, status: 'added', patch: [...new TextDecoder().decode(content).split('\n')].map((l) => `+${l}`).join('\n') });
-        else if (blob(old) !== blob(content)) out.push({ path: p, status: 'modified', patch: `-${new TextDecoder().decode(old)}\n+${new TextDecoder().decode(content)}` });
+        if (!old)
+          out.push({
+            path: p,
+            status: 'added',
+            patch: [...new TextDecoder().decode(content).split('\n')]
+              .map((l) => `+${l}`)
+              .join('\n'),
+          });
+        else if (blob(old) !== blob(content))
+          out.push({
+            path: p,
+            status: 'modified',
+            patch: `-${new TextDecoder().decode(old)}\n+${new TextDecoder().decode(content)}`,
+          });
       }
-      for (const p of a.keys()) if (!b.has(p)) out.push({ path: p, status: 'removed' });
+      for (const p of a.keys())
+        if (!b.has(p)) out.push({ path: p, status: 'removed' });
       return out.sort((x, y) => x.path.localeCompare(y.path));
     },
   };
@@ -108,12 +157,22 @@ export function createMemoryGit(
     /** Create a repository with a first commit on the default branch. Returns that commit's sha. */
     seed(name: string, files: Record<string, string>): string {
       const s = sha('seed');
-      commits.set(s, { sha: s, files: new Map(Object.entries(files).map(([p, c]) => [p, toBytes(c)])) });
-      repos.set(name, { branches: new Map([[defaultBranch, s]]), defaultBranch });
+      commits.set(s, {
+        sha: s,
+        files: new Map(Object.entries(files).map(([p, c]) => [p, toBytes(c)])),
+      });
+      repos.set(name, {
+        branches: new Map([[defaultBranch, s]]),
+        defaultBranch,
+      });
       return s;
     },
     /** Commit to a branch as if a person had pushed. Not recorded in `pushes`. */
-    push(name: string, branch: string, files: Record<string, string | null>): string {
+    push(
+      name: string,
+      branch: string,
+      files: Record<string, string | null>,
+    ): string {
       const r = repo(name);
       const head = r.branches.get(branch)!;
       const next = new Map(commits.get(head)!.files);
@@ -127,7 +186,13 @@ export function createMemoryGit(
       return s;
     },
     branches: (name: string) => Object.fromEntries(repo(name).branches),
-    snapshot: (name: string, ref: string) => Object.fromEntries([...at(name, ref).files].map(([p, c]) => [p, new TextDecoder().decode(c)])),
+    snapshot: (name: string, ref: string) =>
+      Object.fromEntries(
+        [...at(name, ref).files].map(([p, c]) => [
+          p,
+          new TextDecoder().decode(c),
+        ]),
+      ),
   });
 }
 

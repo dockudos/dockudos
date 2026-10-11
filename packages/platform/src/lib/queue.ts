@@ -73,7 +73,14 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
          VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT (queue, idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING
          RETURNING id`,
-        [queue, JSON.stringify(payload), maxAttempts, runAt ?? now, idempotencyKey ?? null, now],
+        [
+          queue,
+          JSON.stringify(payload),
+          maxAttempts,
+          runAt ?? now,
+          idempotencyKey ?? null,
+          now,
+        ],
       );
       if (rows[0]) return Number(rows[0].id);
       const existing = await via.query<{ id: string | number }>(
@@ -84,7 +91,11 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
     },
 
     /** Claim the next runnable job on any of `queues`, leasing it for `leaseMs`. */
-    async claim(queues: string[], worker: string, leaseMs = 300_000): Promise<Job | undefined> {
+    async claim(
+      queues: string[],
+      worker: string,
+      leaseMs = 300_000,
+    ): Promise<Job | undefined> {
       const now = clock();
       await db.query(
         `UPDATE jobs SET status = 'dead', finished_at = $1, last_error = COALESCE(last_error, 'lease expired after the last attempt')
@@ -114,9 +125,15 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
     },
 
     /** Record a failure: retry with backoff, or give up (`dead`) when attempts are used up or `retry` is false. */
-    async fail(job: Job, error: unknown, retry = true): Promise<'retry' | 'dead'> {
+    async fail(
+      job: Job,
+      error: unknown,
+      retry = true,
+    ): Promise<'retry' | 'dead'> {
       const now = clock();
-      const message = (error instanceof Error ? error.message : String(error)).slice(0, 2000);
+      const message = (
+        error instanceof Error ? error.message : String(error)
+      ).slice(0, 2000);
       if (!retry || job.attempts >= job.maxAttempts) {
         await db.query(
           `UPDATE jobs SET status = 'dead', last_error = $2, finished_at = $3, locked_by = NULL, locked_until = NULL WHERE id = $1`,
@@ -141,7 +158,10 @@ export function createQueue({ db, clock = systemClock }: QueueOptions) {
 }
 
 export type Queue = ReturnType<typeof createQueue>;
-export type JobHandler = (job: Job, ctx: { log: Logger; signal: AbortSignal }) => Promise<void>;
+export type JobHandler = (
+  job: Job,
+  ctx: { log: Logger; signal: AbortSignal },
+) => Promise<void>;
 
 export interface WorkerOptions {
   queue: Queue;
@@ -166,15 +186,25 @@ export function createWorker({
   id = `worker-${randomUUID().slice(0, 8)}`,
 }: WorkerOptions) {
   const names = Object.keys(handlers);
-  const done = metrics?.counter('dockudos_jobs_total', 'Jobs finished, by queue and outcome');
-  const took = metrics?.histogram('dockudos_job_seconds', 'Job run time in seconds');
+  const done = metrics?.counter(
+    'dockudos_jobs_total',
+    'Jobs finished, by queue and outcome',
+  );
+  const took = metrics?.histogram(
+    'dockudos_job_seconds',
+    'Job run time in seconds',
+  );
   let stopping = false;
   const abort = new AbortController();
 
   async function runOnce(): Promise<boolean> {
     const job = await queue.claim(names, id, leaseMs);
     if (!job) return false;
-    const jlog = log.child({ job: job.id, queue: job.queue, attempt: job.attempts });
+    const jlog = log.child({
+      job: job.id,
+      queue: job.queue,
+      attempt: job.attempts,
+    });
     const start = Date.now();
     try {
       await handlers[job.queue]!(job, { log: jlog, signal: abort.signal });
@@ -185,7 +215,10 @@ export function createWorker({
       const retry = !(error instanceof NonRetryableError);
       const outcome = await queue.fail(job, error, retry);
       done?.inc({ queue: job.queue, outcome });
-      jlog[outcome === 'dead' ? 'error' : 'warn']('job failed', { error, outcome });
+      jlog[outcome === 'dead' ? 'error' : 'warn']('job failed', {
+        error,
+        outcome,
+      });
     } finally {
       took?.observe((Date.now() - start) / 1000, { queue: job.queue });
     }
@@ -206,7 +239,8 @@ export function createWorker({
           } catch (error) {
             log.error('worker loop error', { error });
           }
-          if (!ran && !stopping) await new Promise((r) => setTimeout(r, pollMs));
+          if (!ran && !stopping)
+            await new Promise((r) => setTimeout(r, pollMs));
         }
       });
     },

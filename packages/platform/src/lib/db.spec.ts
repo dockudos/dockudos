@@ -10,7 +10,9 @@ describe('migrations', () => {
     const db = await createTestDb();
     dbs.push(db);
     expect(await migrate(db)).toEqual([]);
-    const { rows } = await db.query<{ id: string }>('SELECT id FROM schema_migrations');
+    const { rows } = await db.query<{ id: string }>(
+      'SELECT id FROM schema_migrations',
+    );
     expect(rows.map((r) => r.id)).toEqual(MIGRATIONS.map((m) => m.id));
   });
 
@@ -18,7 +20,14 @@ describe('migrations', () => {
     const db = await createTestDb();
     dbs.push(db);
     await expect(
-      migrate(db, { migrations: [{ id: '9999_bad', sql: 'CREATE TABLE ok_t (a int); SELECT nope FROM nothing;' }] }),
+      migrate(db, {
+        migrations: [
+          {
+            id: '9999_bad',
+            sql: 'CREATE TABLE ok_t (a int); SELECT nope FROM nothing;',
+          },
+        ],
+      }),
     ).rejects.toThrow();
     const t = await db.query("SELECT to_regclass('ok_t') AS t");
     expect((t.rows[0] as { t: unknown }).t).toBeNull();

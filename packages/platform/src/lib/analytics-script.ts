@@ -3,8 +3,8 @@
  *
  *     <script defer src="https://platform.example.com/analytics.js" data-site="<site id>"></script>
  *
- * It sends page views (including client-side navigation) and forwards the `dockudos:search`, `dockudos:feedback` and
- * `dockudos:assistant` events the UI announces. No cookies, no storage, no identifiers: the server derives a one-day
+ * It sends page views (including client-side navigation) and forwards the `dockudos:track` events the UI announces
+ * (searches, feedback, assistant answers). No cookies, no storage, no identifiers: the server derives a one-day
  * visitor hash itself. It does nothing when the browser says Do Not Track or Global Privacy Control.
  */
 export const ANALYTICS_SCRIPT = `(function () {
@@ -49,17 +49,11 @@ export const ANALYTICS_SCRIPT = `(function () {
   wrap('replaceState');
   addEventListener('popstate', function () { setTimeout(pageview, 0); });
 
-  addEventListener('dockudos:search', function (e) {
+  addEventListener('dockudos:track', function (e) {
     var d = e.detail || {};
-    send({ kind: 'search', query: String(d.query || ''), results: Number(d.results) || 0 });
-  });
-  addEventListener('dockudos:feedback', function (e) {
-    var d = e.detail || {};
-    send({ kind: 'feedback', path: String(d.path || location.pathname), value: d.value });
-  });
-  addEventListener('dockudos:assistant', function (e) {
-    var d = e.detail || {};
-    send({ kind: 'assistant', query: String(d.query || ''), value: d.value, cited: d.cited || [] });
+    if (d.kind === 'search') send({ kind: 'search', query: String(d.query || ''), results: Number(d.results) || 0 });
+    else if (d.kind === 'feedback') send({ kind: 'feedback', path: String(d.path || location.pathname), value: d.value });
+    else if (d.kind === 'assistant') send({ kind: 'assistant', query: String(d.query || ''), value: d.value, cited: d.cited || [] });
   });
 
   window.dockudosAnalytics = { track: send };

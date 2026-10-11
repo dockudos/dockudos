@@ -4,10 +4,16 @@
 services:
   mock-github:
     image: node:24-slim
-    command: ["node", "/tools/mock-github.mjs", "4600"]
-    volumes: ["../../tools/mock-github.mjs:/tools/mock-github.mjs:ro"]
+    command: ['node', '/tools/mock-github.mjs', '4600']
+    volumes: ['../../tools/mock-github.mjs:/tools/mock-github.mjs:ro']
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4600/repos/acme/docs').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4600/repos/acme/docs').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
       interval: 3s
       timeout: 3s
       retries: 20

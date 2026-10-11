@@ -18,11 +18,25 @@ export type CommandRunner = (input: RunInput) => Promise<{ code: number }>;
  * are not passed, because the command runs code from a repository. Time and output are capped and the whole process
  * group is killed on timeout or abort.
  */
-export const spawnRunner: CommandRunner = ({ cmd, args, cwd, env = {}, timeoutMs = 900_000, onOutput, signal }) =>
+export const spawnRunner: CommandRunner = ({
+  cmd,
+  args,
+  cwd,
+  env = {},
+  timeoutMs = 900_000,
+  onOutput,
+  signal,
+}) =>
   new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd,
-      env: { PATH: process.env['PATH'] ?? '/usr/local/bin:/usr/bin:/bin', HOME: cwd, CI: '1', NO_COLOR: '1', ...env },
+      env: {
+        PATH: process.env['PATH'] ?? '/usr/local/bin:/usr/bin:/bin',
+        HOME: cwd,
+        CI: '1',
+        NO_COLOR: '1',
+        ...env,
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: true,
     });
@@ -30,7 +44,8 @@ export const spawnRunner: CommandRunner = ({ cmd, args, cwd, env = {}, timeoutMs
     const take = (b: Buffer) => {
       bytes += b.length;
       if (bytes <= 2_000_000) onOutput?.(b.toString('utf8'));
-      else if (bytes - b.length <= 2_000_000) onOutput?.('\n[output truncated]\n');
+      else if (bytes - b.length <= 2_000_000)
+        onOutput?.('\n[output truncated]\n');
     };
     child.stdout.on('data', take);
     child.stderr.on('data', take);

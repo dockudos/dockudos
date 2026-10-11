@@ -1,0 +1,57 @@
+---
+icon: pencil
+title: The editor
+description: Edit pages in the browser. Every save is a pull request.
+---
+
+Open a site in the dashboard and choose **Editor**. Pick a page, edit the Markdown, and the preview beside it updates as you type.
+
+## Preview with the real components
+
+The preview compiles your MDX with the same pipeline and the same components as the site, so a `<Callout>`, `<Tabs>` or
+`<Steps>` looks exactly as readers will see it. Syntax errors appear in the preview instead of breaking it.
+
+MDX is code, and a page can come from a branch someone else wrote. So the preview runs inside a sandboxed frame with an opaque
+origin and no network (`sandbox` and `connect-src 'none'`): a page cannot read your session or call the API, whatever it contains.
+
+## Save is a pull request
+
+Press **Save as pull request**. The editor creates a branch, commits every change in one commit, and opens a pull request into the
+default branch. You review and merge it as usual, and the merge triggers the build. Nothing is published by saving.
+
+Admins can also commit straight to the default branch if the team prefers; that is an explicit choice in the API
+(`"mode": "direct"`), never the default.
+
+## When someone else changed the file
+
+The editor remembers which commit it loaded. If a file you edited has changed upstream since, saving writes nothing and shows
+you the conflict: keep your version (it is saved on top of the latest commit) or take theirs. Files nobody else touched never
+conflict, and two people making the same edit do not conflict either.
+
+## Pages and navigation
+
+- **New page** creates the file and adds it to the first sidebar group.
+- **Rename** moves the file, updates the sidebar and adds a permanent redirect from the old address.
+- **Delete** removes the file and its sidebar entry.
+
+These are plans, shown in the file list before you save. **Discard all** throws away unsaved work. If `docs.json` lists a page that
+has no file, the save still works and warns you.
+
+## Images and files
+
+**Image** uploads a PNG, JPEG, GIF, WebP, SVG or PDF (up to 10 MB) and inserts the Markdown. The type is decided from the file's
+bytes, not its name; SVGs are cleaned of scripts; the file is committed to `public/media/` in the same pull request.
+
+## docs.json
+
+Choose `docs.json` to edit the common fields in a form (name, description, color, feedback widget) or the raw JSON. It is checked
+against the real schema as you type, and the error names the key. A change that does not validate cannot be saved.
+
+## What the editor can touch
+
+Only `docs.json`, `docs/**/*.md(x)` and `public/media/*`. Your code, scripts, workflows and package files are out of reach,
+so a compromised account cannot use the editor to change how your site is built.
+
+## Roles
+
+Viewers can read, editors can save pull requests, admins can commit directly and change settings. See [Teams and sign-in](./teams-and-sign-in.mdx).

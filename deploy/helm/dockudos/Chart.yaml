@@ -3,8 +3,8 @@ name: dockudos
 description: The dockudos platform (editor, builds, analytics, auth, docs agent, hosting) on Kubernetes.
 type: application
 version: 0.1.0
-appVersion: "0.0.1"
-kubeVersion: ">=1.27.0-0"
+appVersion: '0.0.1'
+kubeVersion: '>=1.27.0-0'
 home: https://github.com/dockudos/dockudos
 sources:
   - https://github.com/dockudos/dockudos

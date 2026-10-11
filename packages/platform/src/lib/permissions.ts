@@ -28,7 +28,8 @@ const MINIMUM: Record<Action, TeamRole> = {
 export const rank = (role: TeamRole): number => TEAM_ROLES.indexOf(role);
 
 export const isTeamRole = (value: unknown): value is TeamRole =>
-  typeof value === 'string' && (TEAM_ROLES as readonly string[]).includes(value);
+  typeof value === 'string' &&
+  (TEAM_ROLES as readonly string[]).includes(value);
 
 /** Roles are cumulative: an admin can do everything an editor can. */
 export function can(role: TeamRole | undefined, action: Action): boolean {

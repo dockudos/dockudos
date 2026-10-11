@@ -1,0 +1,87 @@
+---
+icon: network
+title: Self-host on Kubernetes
+description: Install the platform with Helm, with scaling, ingress and secrets as values.
+---
+
+```bash
+helm install docs deploy/helm/dockudos \
+  --set secrets.sessionSecret=$(openssl rand -hex 32) \
+  --set postgresql.enabled=true --set postgresql.auth.password=$(openssl rand -hex 16) \
+  --set minio.enabled=true --set minio.auth.password=$(openssl rand -hex 16) \
+  --set config.publicUrl=https://docs-admin.example.com \
+  --set config.sitesDomain=sites.example.com
+helm test docs
+```
+
+That is a trial install: single-instance Postgres and MinIO run in the cluster. For production use your own.
+
+## Production values
+
+```yaml title="values.yaml"
+postgresql: { enabled: false }
+minio: { enabled: false }
+
+config:
+  publicUrl: https://docs-admin.example.com
+  sitesDomain: sites.example.com
+  s3:
+    {
+      endpoint: https://s3.eu-west-1.amazonaws.com,
+      region: eu-west-1,
+      bucket: acme-docs,
+    }
+  oidc: { issuer: https://login.example.com, clientId: dockudos }
+
+secrets:
+  existingSecret: dockudos-secrets # you create it; no secret passes through Helm values
+
+api:
+  {
+    replicas: 3,
+    autoscaling: { enabled: true, minReplicas: 3, maxReplicas: 10 },
+  }
+site: { replicas: 3, autoscaling: { enabled: true } }
+worker: { replicas: 2, resources: { limits: { memory: 4Gi } } }
+
+ingress:
+  className: nginx
+  tls: { enabled: true }
+
+networkPolicy:
+  enabled: true
+  workerEgress:
+    - ipBlock:
+        {
+          cidr: 0.0.0.0/0,
+          except:
+            [169.254.169.254/32, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16],
+        }
+```
+
+The `existingSecret` holds these keys (leave out what you do not use): `DOCKUDOS_SESSION_SECRET`, `DOCKUDOS_DATABASE_URL`,
+`DOCKUDOS_S3_ACCESS_KEY`, `DOCKUDOS_S3_SECRET_KEY`, `DOCKUDOS_GITHUB_TOKEN`, `DOCKUDOS_GITLAB_TOKEN`,
+`DOCKUDOS_OIDC_CLIENT_SECRET`, `DOCKUDOS_LLM_API_KEY`, `DOCKUDOS_DOCS_AUTH_SECRET`, `DOCKUDOS_METRICS_TOKEN`.
+
+## What the chart creates
+
+| Workload | Notes                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------- |
+| `api`    | API, webhooks, analytics ingestion, sign-in. Scales horizontally; every replica is stateless. |
+| `worker` | Builds. Scale it for more concurrent builds. Has a scratch volume for checkouts.              |
+| `agent`  | Scheduler and agent runs. One is enough; more is safe because jobs are claimed once.          |
+| `site`   | Serves built sites. Scales with readers.                                                      |
+| `editor` | The dashboard.                                                                                |
+| Ingress  | The dashboard host (`/hooks` goes to `api`) and `*.<sitesDomain>` to `site`.                  |
+
+Each pod runs `migrate` before it starts; migrations are safe to run together because an advisory lock serializes them.
+Pods run as non-root with a read-only root filesystem and no privilege escalation. Rolling updates never drop below the
+desired capacity, and a disruption budget keeps one replica up during node drains.
+
+## Check it
+
+`helm test` runs a pod that confirms the API reports ready (database and storage reachable), that unauthenticated calls are
+refused, and that the dashboard and site service answer.
+
+The wildcard host needs a wildcard certificate, which cert-manager issues with a DNS-01 challenge. The first request
+to `https://<slug>.sites.example.com` also needs a build to have finished.
