@@ -16,7 +16,9 @@
       "default": "./dist/index.js"
     }
   },
-  "engines": { "node": ">=20.19" },
+  "engines": {
+    "node": ">=20.19"
+  },
   "dependencies": {
     "@dockudos/core": "workspace:*",
     "pg": "^8.13.0",
@@ -24,8 +26,13 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.3.0",
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
     "@types/pg": "^8.11.0"
   },
-  "nx": { "tags": ["scope:platform"] }
+  "nx": {
+    "tags": [
+      "scope:platform"
+    ]
+  }
 }
