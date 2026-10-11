@@ -189,7 +189,7 @@ npx dockudos broken-links  # check internal and external links
 | --- | --- |
 | Vercel or similar | Connect the repository and set the env vars. AI endpoints run as serverless functions. |
 | Node server | `pnpm build && pnpm start` behind your reverse proxy |
-| Docker | Use the provided Dockerfile (see [self-hosting-and-cloud.md](./self-hosting-and-cloud.md)) |
+| Docker | Use the provided Dockerfile (see [self-hosting.md](./self-hosting.md)) |
 | Static hosting | Use static export. Pages and keyword search work; AI features need a server or a separate endpoint |
 | Managed cloud | Connect the repository and get a live site on your domain. Paid, built in a separate repo. See [enterprise/cloud.md](./enterprise/cloud.md) |
 

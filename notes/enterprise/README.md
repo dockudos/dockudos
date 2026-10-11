@@ -35,7 +35,7 @@ Rules:
 | [cloud.md](./cloud.md) | How the managed cloud works, pricing leanings, security and compliance |
 | [plan.md](./plan.md) | Task list, acceptance criteria and tests |
 
-Related open-source notes: [self-hosting-and-cloud.md](../self-hosting-and-cloud.md), [architecture.md](../architecture.md), [plan/phase-5-platform-and-cloud.md](../plan/phase-5-platform-and-cloud.md).
+Related open-source notes: [self-hosting.md](../self-hosting.md), [architecture.md](../architecture.md), [plan/phase-5-platform-and-cloud.md](../plan/phase-5-platform-and-cloud.md).
 
 ## Open questions
 

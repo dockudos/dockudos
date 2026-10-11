@@ -1,20 +1,12 @@
 # The managed cloud
 
-A hosted version of the same platform, run by the dockudos team. Built in the private enterprise repo (see [README.md](./README.md)). The open-source side, including how to self-host, is in [../self-hosting-and-cloud.md](../self-hosting-and-cloud.md).
+A hosted version of the same platform, run by the dockudos team. Built in the private enterprise repo (see [README.md](./README.md)). The open-source side, including how to self-host, is in [../self-hosting.md](../self-hosting.md).
 
 > **Status:** planned. Pricing is not decided.
 
 ## 1. What you get
 
-| Capability | Description |
-| --- | --- |
-| One-click hosting | Connect a GitHub or GitLab repository and get a live site |
-| Custom domains and SSL | Managed certificates, CDN and caching |
-| Preview deployments | A preview URL for every branch or pull request |
-| Managed AI | A hosted assistant, embeddings and vector store. No LLM keys to manage. |
-| Automatic updates | New versions without you doing anything |
-| Backups, scaling, uptime | Monitored and managed |
-| Support | Help from the team |
+Hosting, previews, managed AI, billing and operations: see [features.md](./features.md) for the full list.
 
 ## 2. Typical flow
 

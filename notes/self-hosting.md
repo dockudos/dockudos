@@ -116,9 +116,7 @@ Open source, run on your infrastructure.
 
 ## 4. The paid side
 
-The managed cloud (hosting, domains, previews, managed AI, billing) and the enterprise tier (SAML SSO, audit logs, SLAs, dedicated support) live in a separate private repository. Their features, pricing leanings, security and compliance, and plan are in [enterprise/](./enterprise/README.md).
-
-Your content stays in your Git repository, in plain MDX and `docs.json`, so moving between self-hosting and the cloud means changing where it deploys, not converting content.
+The managed cloud and enterprise tier live in a separate private repository: see [enterprise/](./enterprise/README.md). Content stays in plain MDX and `docs.json`, so moving between self-hosting and cloud changes where it deploys, not the content.
 
 ## 5. Decision guide
 

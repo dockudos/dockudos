@@ -51,25 +51,4 @@ Package: start inside `core`/`ui`; split into `@dockudos/openapi` when it needs 
 
 ## Tests
 
-### Unit
-- [x] Loader: local, remote (mocked), YAML, invalid, unreachable.
-- [x] `$ref` resolution including circular references and external refs.
-- [x] Model normaliser against 3.0 and 3.1 differences (nullable, `type` arrays, `exclusiveMinimum`).
-- [x] Schema-to-view: `oneOf/anyOf/allOf`, discriminator, additionalProperties, enums.
-- [x] Code sample generators: snapshot per language for body, query, headers and auth variants.
-- [x] Grouping and path mounting produce expected navigation.
-- [x] GraphQL and AsyncAPI model parsers on fixtures.
-
-### Component
-- [x] Parameter table, response tabs, schema tree expand/collapse.
-- [x] Playground form validation from schema; error states.
-
-### E2E
-- [x] Render a bundled real-world spec; count of rendered operations equals spec operations.
-- [x] Playground sends a request to a local mock server (Playwright route or Prism) and displays the response; secret not sent elsewhere.
-- [x] Code sample language switch persists.
-- [x] Search finds an endpoint by path and by summary.
-
-### Non-functional
-- [x] Build-time benchmark on a large spec in CI.
-- [x] axe scan on an endpoint page in both color modes.
+All unit, component, e2e and non-functional tests (loader, `$ref`, normaliser, schema view, code samples, navigation, GraphQL/AsyncAPI parsers, playground, search, axe, large-spec benchmark) are done; evidence is in the acceptance criteria above.

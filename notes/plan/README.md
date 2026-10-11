@@ -1,6 +1,6 @@
 # dockudos build plan
 
-Phase-by-phase plan derived from [development.md](../development.md), [features.md](../features.md), [architecture.md](../architecture.md), [ai.md](../ai.md) and [self-hosting-and-cloud.md](../self-hosting-and-cloud.md). The paid side has its own notes in [../enterprise/](../enterprise/README.md).
+Phase-by-phase plan derived from [development.md](../development.md), [features.md](../features.md), [architecture.md](../architecture.md), [ai.md](../ai.md) and [self-hosting.md](../self-hosting.md). The paid side has its own notes in [../enterprise/](../enterprise/README.md).
 
 ## Phases
 
@@ -25,12 +25,6 @@ Sequencing (from development.md): ship Phase 1 and publish to npm, then Phase 2 
 - **Scaffolding uses Nx generators** (`nx-generate` skill) rather than hand-made project files.
 - **Fewer packages first:** `search`, `mcp` and `openapi` start inside `core`/`ai` and are split out only when they need to stand alone.
 - **Definition of done for every task:** code, tests, docs page in `apps/docs` for any user-facing change, conventional commit.
-
-## Current repo state (at plan time)
-
-- Nx workspace exists, pnpm, TypeScript 6, Vitest, Next 16, React 19, Tailwind 4.
-- Projects scaffolded: `packages/core`, `packages/next`, `packages/cli`, `packages/ui` (shadcn-style, Tailwind 4), `apps/example`, `apps/web`.
-- Nothing from the product itself is implemented yet. Phase 0 audits what is there and closes the gaps.
 
 ## Cross-cutting tracks
 

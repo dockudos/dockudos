@@ -6,7 +6,7 @@ dockudos turns a folder of MDX files into a complete documentation site, built o
 
 Everything in this repository is open source and self-hostable. A paid managed cloud and enterprise tier, built in a separate private repository ([enterprise/](./enterprise/README.md)), run it for teams that would rather not operate it themselves.
 
-> **Status: design stage.** Nothing is built yet. This document set describes the intended product and architecture. Package names, config keys and APIs shown here are proposals and may change. See [development.md](./development.md) for the build plan.
+> **Status: in development.** The open-source core, search, AI and API docs are built; see [plan/](./plan/README.md) for what remains. Package names, config keys and APIs may still change. See [development.md](./development.md) for the build plan.
 
 ---
 
@@ -114,7 +114,7 @@ Full detail is in [features.md](./features.md).
 | [architecture.md](./architecture.md) | Packages, build pipeline, runtime flows, extension points |
 | [ai.md](./ai.md) | How AI querying, AI navigation, `llms.txt` and MCP work |
 | [getting-started.md](./getting-started.md) | The intended developer workflow, step by step |
-| [self-hosting-and-cloud.md](./self-hosting-and-cloud.md) | Self-hosting options and platform services |
+| [self-hosting.md](./self-hosting.md) | Self-hosting options and platform services |
 | [enterprise/](./enterprise/README.md) | The paid side, built in a separate private repo: features, cloud, plan |
 | [development.md](./development.md) | Monorepo, tooling, testing, release, roadmap and open questions |
 

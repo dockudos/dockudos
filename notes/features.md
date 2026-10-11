@@ -106,7 +106,7 @@ Details of how these work are in [ai.md](./ai.md).
 
 ## 9. Platform services (open source, self-hostable)
 
-These ship in the open-source repository as Docker services. See [self-hosting-and-cloud.md](./self-hosting-and-cloud.md).
+These ship in the open-source repository as Docker services. See [self-hosting.md](./self-hosting.md).
 
 | Service | Description | Phase |
 | --- | --- | --- |
