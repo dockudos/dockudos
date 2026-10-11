@@ -55,7 +55,8 @@ Planned monorepo layout (details in [development.md](./development.md)):
 | `@dockudos/mcp` | MCP server exposing search and page content as tools | `core`, `search` |
 | `@dockudos/openapi` | OpenAPI, AsyncAPI and GraphQL page generation, playground, code samples | `core`, `ui` |
 | `@dockudos/cli` | `init`, `dev`, `build`, `broken-links` | `core`, `next` |
-| `apps/platform` | Phase 5 services: editor, analytics, auth, agent, webhooks | the packages above |
+| `@dockudos/platform` | Phase 5 services as a library (private): database and job queue, storage, Git providers, webhooks, builds, auth, editor, analytics, agent, HTTP API. One program with roles chosen by `DOCKUDOS_SERVICES` | `core` |
+| `apps/platform` | The dashboard and editor (Next.js); proxies `/api/v1` and `/auth` to the platform | `ui`, `core` |
 | `apps/docs` | dockudos's own documentation, built with dockudos | the packages above |
 | `apps/example` | Minimal site used for end-to-end tests | the packages above |
 
