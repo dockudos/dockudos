@@ -1,4 +1,5 @@
 import type { DocsConfig } from './config.ts';
+import { allVariants, variantPrefix } from './variants.ts';
 
 export type AccessRule = DocsConfig['access']['rules'][number];
 
@@ -138,3 +139,38 @@ export const parseTokens = (value: string | undefined): string[] =>
     .split(/[\n,]/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 8);
+
+/**
+ * Make rules written against the default version and language cover every version and language. A rule for
+ * `/team/**` also covers `/fr/team/**` and `/v1/team/**`, so a translation or an old copy of a private page is never
+ * left open. Patterns outside `urlPrefix` (such as `/print`) are not pages of a variant and stay as they are.
+ */
+export function expandAccessRules(
+  rules: readonly AccessRule[],
+  config: Pick<DocsConfig, 'versions' | 'i18n' | 'urlPrefix'>,
+): AccessRule[] {
+  const prefixes = allVariants(config)
+    .map((v) => variantPrefix(config, v))
+    .filter(Boolean);
+  if (prefixes.length === 0) return [...rules];
+  const base = config.urlPrefix ?? '';
+  return rules.map((rule) => ({
+    ...rule,
+    paths: [
+      ...new Set(
+        rule.paths.flatMap((pattern) => {
+          const inside =
+            base === '' || pattern === base || pattern.startsWith(`${base}/`);
+          if (!inside) return [pattern];
+          const rest = pattern.slice(base.length);
+          return [
+            pattern,
+            ...prefixes.map(
+              (p) => `${base}${p}${rest === '/' ? '' : rest}` || '/',
+            ),
+          ];
+        }),
+      ),
+    ],
+  }));
+}

@@ -3,7 +3,7 @@ import { join, relative, sep } from 'node:path';
 import { expandIncludes } from './include.ts';
 import { extractToc } from './helpers.ts';
 import { extractLinks, resolveDocLink } from './links.ts';
-import type { PageTree } from './page-tree.ts';
+import { type PageTree, pageMount } from './page-tree.ts';
 
 export interface LinkProblem {
   /** File relative to the docs folder. */
@@ -52,6 +52,10 @@ export async function checkLinks(
   const read = (file: string) => readFile(join(docsDir, file), 'utf8');
 
   const pageByPath = new Map(tree.pages.map((p) => [p.path, p]));
+  // The page a file is the source of (not a stand-in for another language): its links resolve inside its version and language.
+  const ownerOf = new Map(
+    tree.pages.filter((p) => !p.fallbackLocale).map((p) => [p.file, p]),
+  );
   const redirects = new Set(
     redirectSources.map((s) => (s.length > 1 ? s.replace(/\/+$/, '') : s)),
   );
@@ -111,7 +115,10 @@ export async function checkLinks(
               : 'image has no alt text; describe it, or use <img alt="" /> if it is only decoration',
         });
       }
-      const link = resolveDocLink(file, href, { prefix: options.prefix });
+      const owner = ownerOf.get(file);
+      const link = owner
+        ? resolveDocLink(owner.contentFile, href, { prefix: pageMount(owner) })
+        : resolveDocLink(file, href, { prefix: options.prefix });
 
       if (link.kind === 'external') {
         if (/^https?:\/\//i.test(href)) externals.push({ file, line, href });

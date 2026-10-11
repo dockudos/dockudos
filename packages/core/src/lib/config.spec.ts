@@ -20,8 +20,11 @@ describe('parseConfig', () => {
       name: 'Acme Docs',
       navigation: [],
       redirects: [],
+      sources: [],
+      changelog: { path: '/changelog' },
+      feeds: { changelog: false, posts: false, limit: 50 },
       theme: { mode: 'system', layout: 'docs' },
-      seo: { noindex: false },
+      seo: { noindex: false, ogImages: true },
       kudos: { enabled: false, endpoint: '/api/kudos' },
       search: { backend: 'builtin', limit: 10 },
       ai: {
@@ -494,5 +497,138 @@ describe('parseConfig: ai', () => {
     expect(
       messageOf({ name: 'A', ai: { limits: { ratePerMinute: 0 } } }),
     ).toContain('ai.limits.ratePerMinute');
+  });
+});
+
+describe('versions, languages, sign-in and sources', () => {
+  const base = { name: 'X' };
+
+  it('accepts a full Phase 4 config and fills defaults', () => {
+    const c = parseConfig({
+      ...base,
+      versions: {
+        default: 'v2',
+        list: [
+          { name: 'v2' },
+          {
+            name: 'v1',
+            label: '1.x',
+            dir: 'legacy',
+            status: 'deprecated',
+            navigation: [
+              { tab: 'Docs', groups: [{ group: 'G', pages: ['index'] }] },
+            ],
+          },
+        ],
+      },
+      i18n: {
+        default: 'en',
+        locales: ['en', { code: 'ar', rtl: true }],
+        detect: true,
+      },
+      auth: { issuer: 'https://idp.acme.com', clientId: 'docs' },
+      access: {
+        rules: [
+          {
+            paths: ['/team/**'],
+            require: 'login',
+            roles: ['staff'],
+            groups: ['eng'],
+          },
+        ],
+      },
+      feeds: { changelog: true },
+      kudos: {
+        enabled: true,
+        webhook: {
+          url: 'https://hooks.acme.com/docs',
+          secretEnv: 'HOOK_SECRET',
+        },
+      },
+    });
+    expect(c.versions?.list[0]?.status).toBe('stable');
+    expect(c.auth).toMatchObject({
+      provider: 'oidc',
+      scopes: ['openid', 'profile', 'email'],
+      rolesClaim: 'roles',
+      sessionHours: 12,
+    });
+    expect(c.feeds).toEqual({ changelog: true, posts: false, limit: 50 });
+    expect(c.kudos.webhook?.includeUser).toBe(false);
+    expect(c.i18n?.messages).toEqual({});
+  });
+
+  it('checks the language list', () => {
+    expect(() =>
+      parseConfig({
+        ...base,
+        i18n: { default: 'en', locales: ['en', { code: 'en' }] },
+      }),
+    ).toThrow(/listed twice/);
+    expect(() =>
+      parseConfig({ ...base, i18n: { default: 'en', locales: ['EN'] } }),
+    ).toThrow(/language tag/);
+  });
+
+  it('wants an auth block for login rules, and roles only on login rules', () => {
+    expect(() =>
+      parseConfig({
+        ...base,
+        access: { rules: [{ paths: ['/a'], require: 'login' }] },
+      }),
+    ).toThrow(/needs the "auth" block/);
+    expect(() =>
+      parseConfig({
+        ...base,
+        access: { rules: [{ paths: ['/a'], require: 'basic', roles: ['x'] }] },
+      }),
+    ).toThrow(/only work with require: "login"/);
+    expect(() =>
+      parseConfig({
+        ...base,
+        access: { rules: [{ paths: ['/a'], require: 'token', groups: ['x'] }] },
+      }),
+    ).toThrow(/only work with require: "login"/);
+    expect(() =>
+      parseConfig({
+        ...base,
+        auth: { issuer: 'https://i.io', clientId: 'c' },
+        access: { rules: [{ paths: ['/a'], require: 'login', roles: [] }] },
+      }),
+    ).toThrow();
+  });
+
+  it('allows plain http for the issuer only on this machine', () => {
+    expect(
+      parseConfig({
+        ...base,
+        auth: { issuer: 'http://localhost:8080/realms/x', clientId: 'c' },
+      }).auth?.issuer,
+    ).toContain('localhost');
+    expect(() =>
+      parseConfig({
+        ...base,
+        auth: { issuer: 'http://idp.acme.com', clientId: 'c' },
+      }),
+    ).toThrow(/https/);
+    expect(() =>
+      parseConfig({
+        ...base,
+        auth: {
+          issuer: 'https://i.io',
+          clientId: 'c',
+          clientSecretEnv: 'lower',
+        },
+      }),
+    ).toThrow();
+  });
+
+  it('keeps secrets out: a secret key in auth is unknown', () => {
+    expect(() =>
+      parseConfig({
+        ...base,
+        auth: { issuer: 'https://i.io', clientId: 'c', clientSecret: 'x' },
+      }),
+    ).toThrow(/unknown key auth\.clientSecret/);
   });
 });

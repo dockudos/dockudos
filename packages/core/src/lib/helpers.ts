@@ -89,3 +89,9 @@ export function headingText(heading: string): string {
     .replace(/(?<!\w)(__?)(\S(?:.*?\S)?)\1(?!\w)/g, '$2')
     .trim();
 }
+
+/** A function that turns heading text into the id `rehype-slug` gives it, numbering repeats (`intro`, `intro-1`). */
+export function headingSlugger(): (text: string) => string {
+  const slugger = new GithubSlugger();
+  return (text) => slugger.slug(text);
+}

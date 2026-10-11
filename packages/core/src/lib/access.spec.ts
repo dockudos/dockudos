@@ -10,7 +10,9 @@ import {
   parseCredentials,
   parseTokens,
   safeEqual,
+  expandAccessRules,
 } from './access.ts';
+import { parseConfig } from './config.ts';
 
 const basic = (user: string, password: string) =>
   `Basic ${btoa(`${user}:${password}`)}`;
@@ -160,5 +162,58 @@ describe('safeEqual', () => {
     expect(safeEqual('same', 'sama')).toBe(false);
     expect(safeEqual('same', 'same!')).toBe(false);
     expect(safeEqual('', '')).toBe(true);
+  });
+});
+
+describe('expandAccessRules', () => {
+  const cfg = (extra: object = {}) => ({
+    ...parseConfig({
+      name: 'X',
+      versions: { default: 'v2', list: [{ name: 'v2' }, { name: 'v1' }] },
+      i18n: { default: 'en', locales: ['en', 'fr'] },
+      ...extra,
+    }),
+  });
+  const rule = (paths: string[]) => ({ paths, require: 'deny' as const });
+
+  it('covers every version and language, keeping the order and the other settings', () => {
+    const [expanded] = expandAccessRules(
+      [{ ...rule(['/team/**', '/']), realm: 'R' }],
+      cfg(),
+    );
+    expect(expanded?.paths).toEqual([
+      '/team/**',
+      '/fr/team/**',
+      '/v1/team/**',
+      '/v1/fr/team/**',
+      '/',
+      '/fr',
+      '/v1',
+      '/v1/fr',
+    ]);
+    expect(expanded).toMatchObject({ require: 'deny', realm: 'R' });
+    // and the expanded rule really protects the translation
+    expect(findAccessRule([expanded!], '/v1/fr/team/x')).toBeDefined();
+    expect(findAccessRule([expanded!], '/fr')).toBeDefined();
+    expect(findAccessRule([expanded!], '/fr/public')).toBeUndefined();
+  });
+
+  it('puts the prefix after urlPrefix and leaves paths outside it alone', () => {
+    const c = cfg({ urlPrefix: '/docs' });
+    const [expanded] = expandAccessRules(
+      [rule(['/docs/team/**', '/print'])],
+      c,
+    );
+    expect(expanded?.paths).toContain('/docs/fr/team/**');
+    expect(expanded?.paths).toContain('/docs/v1/team/**');
+    expect(expanded?.paths).toContain('/print');
+    expect(expanded?.paths).not.toContain('/fr/print');
+    expect(findAccessRule([expanded!], '/docs/fr/team/x')).toBeDefined();
+  });
+
+  it('changes nothing on a site without versions or languages', () => {
+    const plain = parseConfig({ name: 'X' });
+    const rules = [rule(['/a'])];
+    expect(expandAccessRules(rules, plain)).toEqual(rules);
   });
 });

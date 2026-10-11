@@ -37,6 +37,19 @@ export interface Page {
   kudos?: boolean;
   /** Set on pages written by `dockudos generate`. */
   api?: ApiPageMeta;
+  /** The page's address inside its version and language, without their prefix: `/guides/auth`. */
+  rel: string;
+  /** The file relative to the version and language folder; what `navigation` in docs.json refers to. */
+  contentFile: string;
+  /** Language of the page, on sites with `i18n`. */
+  locale?: string;
+  /** Version of the page, on sites with `versions`. */
+  version?: string;
+  /** Set when the page has no translation: its text is in this language. */
+  fallbackLocale?: string;
+  /** `YYYY-MM-DD` from the frontmatter, for feeds. */
+  date?: string;
+  tags?: string[];
 }
 
 /** A discovered file plus whatever metadata was read from it. */
@@ -50,6 +63,23 @@ export interface PageSource {
   layout?: LayoutName;
   kudos?: boolean;
   api?: ApiPageMeta;
+  /** A stand-in: the file is in this language, shown where the page has no translation. */
+  fallbackLocale?: string;
+  /** For a stand-in, the page's file relative to its own language folder (the translation would be there). */
+  contentFile?: string;
+  date?: string;
+  tags?: string[];
+}
+
+export interface BuildTreeOptions {
+  /** URL prefix for every page: `urlPrefix` plus the variant's prefix. */
+  prefix?: string;
+  /** The variant's folder (`v1/fr`): files below it are routed without it. Others keep their whole path. */
+  dir?: string;
+  /** Segments of the variant's prefix, so `slug` matches the address. */
+  segments?: readonly string[];
+  locale?: string;
+  version?: string;
 }
 
 export interface Folder {
@@ -79,7 +109,13 @@ const DOC_EXT = /\.mdx?$/;
  */
 export function buildPageTree(
   sources: readonly (string | PageSource)[],
-  { prefix = '' }: { prefix?: string } = {},
+  {
+    prefix = '',
+    dir = '',
+    segments: variantSegments = [],
+    locale,
+    version,
+  }: BuildTreeOptions = {},
 ): PageTree {
   const root: Folder = {
     type: 'folder',
@@ -96,10 +132,18 @@ export function buildPageTree(
     }))
     .sort((a, b) => compare(a.file, b.file));
 
+  const strip = dir ? `${dir.replace(/\/+$/, '')}/` : '';
   for (const { file, ...meta } of entries) {
     if (!DOC_EXT.test(file)) continue;
 
-    const segments = file.replace(DOC_EXT, '').split('/').map(toUrlSegment);
+    // A stand-in lives in another language's folder but is routed as if it were in this one.
+    const contentFile =
+      meta.contentFile ??
+      (strip && file.startsWith(strip) ? file.slice(strip.length) : file);
+    const segments = contentFile
+      .replace(DOC_EXT, '')
+      .split('/')
+      .map(toUrlSegment);
     const leaf = segments.pop() as string;
     let folder = root;
     for (const name of segments) {
@@ -107,11 +151,14 @@ export function buildPageTree(
     }
 
     const isIndex = leaf === 'index';
-    const slug = isIndex ? segments : [...segments, leaf];
+    const within = isIndex ? segments : [...segments, leaf];
+    const slug = [...variantSegments, ...within];
     const page: Page = {
       type: 'page',
-      path: slug.length ? prefix + '/' + slug.join('/') : prefix || '/',
+      path: prefix + (within.length ? '/' + within.join('/') : '') || '/',
       slug,
+      rel: within.length ? '/' + within.join('/') : '/',
+      contentFile,
       file,
       title:
         meta.title ??
@@ -124,6 +171,11 @@ export function buildPageTree(
     if (meta.layout) page.layout = meta.layout;
     if (meta.kudos !== undefined) page.kudos = meta.kudos;
     if (meta.api) page.api = meta.api;
+    if (locale) page.locale = locale;
+    if (version) page.version = version;
+    if (meta.fallbackLocale) page.fallbackLocale = meta.fallbackLocale;
+    if (meta.date) page.date = meta.date;
+    if (meta.tags?.length) page.tags = meta.tags;
 
     if (isIndex) folder.index = page;
     else folder.children.push(page);
@@ -188,4 +240,13 @@ export function toUrlSegment(segment: string): string {
     .trim()
     .replace(/\s+/g, '-')
     .replace(/[#?%\\]/g, '');
+}
+
+/**
+ * What a page's address starts with before its own part: `urlPrefix` plus the version and language (`/docs/v1/fr`),
+ * or '' at the root. Relative links in the page's file resolve below it.
+ */
+export function pageMount(page: Pick<Page, 'path' | 'rel'>): string {
+  if (page.rel === '/') return page.path === '/' ? '' : page.path;
+  return page.path.slice(0, page.path.length - page.rel.length);
 }

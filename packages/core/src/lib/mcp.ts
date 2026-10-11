@@ -20,6 +20,8 @@ export interface McpPageSummary {
   path: string;
   title: string;
   description?: string;
+  version?: string;
+  locale?: string;
 }
 
 /** What the MCP server reads the docs through. Every method is read-only. */
@@ -36,7 +38,10 @@ export interface McpBackend {
     | McpPage
     | 'forbidden'
     | undefined;
-  listPages(): McpPageSummary[] | Promise<McpPageSummary[]>;
+  listPages(options?: {
+    version?: string;
+    locale?: string;
+  }): McpPageSummary[] | Promise<McpPageSummary[]>;
 }
 
 export interface McpServerInfo {
@@ -136,6 +141,16 @@ const TOOLS = [
           maximum: 200,
           description: 'Most pages to return. Default 100.',
         },
+        version: {
+          type: 'string',
+          description:
+            'Documentation version. Ignored when the site has a single version.',
+        },
+        locale: {
+          type: 'string',
+          description:
+            'Language, like "fr". Ignored when the site has a single language.',
+        },
       },
       additionalProperties: false,
     },
@@ -151,6 +166,14 @@ const toolError = (message: string) => ({ ...text(message), isError: true });
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** Thrown by a backend when the caller names a version or language the docs do not have: the tool answers with it. */
+export class McpScopeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'McpScopeError';
+  }
+}
 
 class ProtocolError extends Error {
   readonly code: number;
@@ -206,6 +229,15 @@ function string(
  */
 export function createMcpServer(info: McpServerInfo, backend: McpBackend) {
   async function callTool(name: string, args: Record<string, unknown>) {
+    try {
+      return await runTool(name, args);
+    } catch (error) {
+      if (error instanceof McpScopeError) return toolError(error.message);
+      throw error;
+    }
+  }
+
+  async function runTool(name: string, args: Record<string, unknown>) {
     switch (name) {
       case 'search_docs': {
         const query = string(args, 'query', true) as string;
@@ -256,7 +288,10 @@ export function createMcpServer(info: McpServerInfo, backend: McpBackend) {
       case 'list_pages': {
         const filter = string(args, 'query')?.toLowerCase();
         const limit = integer(args, 'limit', 100, 200);
-        const all = await backend.listPages();
+        const all = await backend.listPages({
+          version: string(args, 'version'),
+          locale: string(args, 'locale'),
+        });
         const pages = all
           .filter((p) =>
             filter
@@ -437,6 +472,8 @@ export interface DocsBackendOptions {
   pages: readonly McpPageSummary[];
   /** The paths listed to tools: public pages only. */
   listed: readonly McpPageSummary[];
+  /** The version and language listed when the caller names none, so a listing never mixes them. */
+  defaults?: { version?: string; locale?: string };
   markdown(path: string): string | Promise<string>;
   /** Is this path covered by an access rule? */
   isProtected(path: string): boolean;
@@ -451,7 +488,15 @@ export interface DocsBackendOptions {
 export function createDocsBackend(options: DocsBackendOptions): McpBackend {
   return {
     search: options.search,
-    listPages: () => [...options.listed],
+    listPages: ({ version, locale } = {}) => {
+      const v = version ?? options.defaults?.version;
+      const l = locale ?? options.defaults?.locale;
+      return options.listed.filter(
+        (p) =>
+          (!v || !p.version || p.version === v) &&
+          (!l || !p.locale || p.locale === l),
+      );
+    },
     async getPage(path) {
       const page = options.pages.find((p) => p.path === path);
       if (!page) return undefined;

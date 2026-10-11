@@ -47,6 +47,15 @@ const DOC_EXT = /\.mdx?$/;
 export function buildNavigation(
   config: Pick<DocsConfig, 'navigation'>,
   tree: PageTree,
+  {
+    lenient = false,
+  }: {
+    /**
+     * Skip entries whose page does not exist instead of failing, and drop groups left empty. For a version or
+     * language that has fewer pages than the one `docs.json` was written for.
+     */
+    lenient?: boolean;
+  } = {},
 ): Navigation {
   if (config.navigation.length === 0) {
     const tabs: NavTab[] = [{ title: 'Docs', sidebar: folderSidebar(tree) }];
@@ -55,11 +64,10 @@ export function buildNavigation(
 
   const byId = new Map<string, Page>();
   for (const page of tree.pages) {
-    byId.set(page.file.replace(DOC_EXT, ''), page);
+    const id = page.contentFile.replace(DOC_EXT, '');
+    byId.set(id, page);
     // `guides` also resolves to `guides/index`.
-    if (page.file.replace(DOC_EXT, '').endsWith('/index')) {
-      byId.set(page.file.replace(DOC_EXT, '').replace(/\/index$/, ''), page);
-    }
+    if (id.endsWith('/index')) byId.set(id.replace(/\/index$/, ''), page);
   }
 
   const issues: string[] = [];
@@ -72,7 +80,8 @@ export function buildNavigation(
     if (typeof item === 'string') {
       const page = byId.get(item.replace(DOC_EXT, ''));
       if (!page) {
-        issues.push(`${where}: page "${item}" not found in the docs folder`);
+        if (!lenient)
+          issues.push(`${where}: page "${item}" not found in the docs folder`);
         return undefined;
       }
       used.add(page);
@@ -82,7 +91,7 @@ export function buildNavigation(
     if ('openapi' in item || 'reference' in item) {
       const name = 'openapi' in item ? item.openapi : item.reference;
       const items = sourceSidebar(tree, name);
-      if (!items.length) {
+      if (!items.length && !lenient) {
         issues.push(
           `${where}: no pages were generated for "${name}". Run \`dockudos generate\` and check that the source is in docs.json`,
         );
@@ -104,12 +113,14 @@ export function buildNavigation(
     if ('href' in tab) return { title: tab.tab, href: tab.href, sidebar: [] };
     return {
       title: tab.tab,
-      sidebar: tab.groups.map((g) => ({
-        type: 'group' as const,
-        title: g.group,
-        ...(g.tutorial && { tutorial: true }),
-        items: resolveAll(g.pages, `${tab.tab} > ${g.group}`),
-      })),
+      sidebar: tab.groups
+        .map((g) => ({
+          type: 'group' as const,
+          title: g.group,
+          ...(g.tutorial && { tutorial: true }),
+          items: resolveAll(g.pages, `${tab.tab} > ${g.group}`),
+        }))
+        .filter((g) => !lenient || g.items.length > 0),
     };
   });
 
@@ -223,4 +234,25 @@ export function tutorialOf(
     if (found) return found;
   }
   return undefined;
+}
+
+/**
+ * The sidebar without the pages `hide` names, and without the groups that leave empty. For readers who may not open
+ * those pages: a link to a private page would tell them it exists and what it is called.
+ */
+export function pruneNavigation(
+  nav: Navigation,
+  hide: (page: Page) => boolean,
+): Navigation {
+  const prune = (items: readonly SidebarItem[]): SidebarItem[] =>
+    items.flatMap((item): SidebarItem[] => {
+      if (item.type === 'link') return [item];
+      if (item.type === 'page') return hide(item.page) ? [] : [item];
+      const inner = prune(item.items);
+      return inner.length ? [{ ...item, items: inner }] : [];
+    });
+  return {
+    tabs: nav.tabs.map((tab) => ({ ...tab, sidebar: prune(tab.sidebar) })),
+    unlisted: nav.unlisted.filter((p) => !hide(p)),
+  };
 }

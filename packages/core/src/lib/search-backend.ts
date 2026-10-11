@@ -36,6 +36,31 @@ export type Fetcher = (
   init?: { signal?: AbortSignal },
 ) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
+/** Which version and language a search is about. A site with neither leaves it empty. */
+export interface SearchScope {
+  locale?: string;
+  version?: string;
+}
+
+/**
+ * Where the browser loads the index from. A server answers `…/index?version=v1&locale=fr`; a static site has no
+ * server to read the query, so each version and language is its own file, `…/index-v1~fr`. A site with neither has
+ * `…/index` either way.
+ */
+export function searchIndexUrl(
+  endpoint: string,
+  scope: SearchScope = {},
+  asFile = false,
+): string {
+  const parts = [scope.version, scope.locale].filter(Boolean) as string[];
+  if (parts.length === 0) return `${endpoint}/index`;
+  if (asFile) return `${endpoint}/index-${parts.join('~')}`;
+  const params = new URLSearchParams();
+  if (scope.version) params.set('version', scope.version);
+  if (scope.locale) params.set('locale', scope.locale);
+  return `${endpoint}/index?${params}`;
+}
+
 /** Load the content index from the endpoint that serves it (`/api/search/index`). */
 export function fetchIndex(
   url: string,
@@ -72,9 +97,12 @@ export function createEndpointBackend(
   {
     fetcher = (u, init) => fetch(u, init),
     id = 'endpoint',
+    scope = {},
   }: {
     fetcher?: Fetcher;
     id?: string;
+    /** Sent along so the answer only covers this version and language. */
+    scope?: SearchScope;
   } = {},
 ): SearchBackend {
   return {
@@ -84,6 +112,8 @@ export function createEndpointBackend(
       if (options.limit) params.set('limit', String(options.limit));
       if (options.maxPerPage)
         params.set('maxPerPage', String(options.maxPerPage));
+      if (scope.version) params.set('version', scope.version);
+      if (scope.locale) params.set('locale', scope.locale);
       const separator = endpoint.includes('?') ? '&' : '?';
       const response = await fetcher(`${endpoint}${separator}${params}`);
       if (!response.ok) throw new Error(`Search failed (${response.status}).`);

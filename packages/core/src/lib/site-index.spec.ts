@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseConfig } from './config.ts';
+import { publicIndex } from './index-filter.ts';
 import { discoverPages } from '../node.ts';
 import {
   INDEX_FILE,
@@ -46,24 +47,39 @@ beforeEach(async () => {
 afterEach(() => rm(root, { recursive: true, force: true }));
 
 describe('buildSiteIndex', () => {
-  it('indexes public pages only and expands includes', async () => {
+  it('indexes pages that are not hidden, behind a rule or not, and expands includes', async () => {
     const { index } = await buildSiteIndex(await site());
-    expect(index.pages.map((p) => p.path)).toEqual(['/', '/guide']);
+    expect(index.pages.map((p) => p.path)).toEqual([
+      '/',
+      '/guide',
+      '/private/p',
+    ]);
     const texts = index.chunks.map((c) => c.text).join('\n');
     expect(texts).toContain('Shared text.');
-    expect(texts).not.toMatch(/Hidden|Private/);
+    expect(texts).not.toMatch(/Hidden/);
+  });
+
+  it('has a public form without the protected pages or their text', async () => {
+    const s = await site();
+    const { index } = await buildSiteIndex(s);
+    const open = publicIndex(index, {
+      access: { rules: [{ paths: ['/private/**'], require: 'deny' }] },
+    });
+    expect(open.pages.map((p) => p.path)).toEqual(['/', '/guide']);
+    expect(open.chunks.map((c) => c.text).join('\n')).not.toMatch(/Private/);
+    expect(index.pages).toHaveLength(3);
   });
 
   it('writes the index file and reuses it on the next build', async () => {
     const first = await buildSiteIndex(await site());
     const file = await writeIndexFile(root, first.index);
     expect(file).toBe(join(root, INDEX_FILE));
-    expect(JSON.parse(await readFile(file, 'utf8')).pages).toHaveLength(2);
+    expect(JSON.parse(await readFile(file, 'utf8')).pages).toHaveLength(3);
     expect(await readIndexFile(root)).toEqual(first.index);
 
     await write('docs/guide.mdx', '---\ntitle: Guide\n---\n\nChanged.\n');
     const second = await buildSiteIndex(await site());
-    expect(second.reusedPages).toBe(1);
+    expect(second.reusedPages).toBe(2);
     expect(second.rebuiltPages).toBe(1);
   });
 

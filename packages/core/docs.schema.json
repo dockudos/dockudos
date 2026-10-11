@@ -76,7 +76,8 @@
             "spacious",
             "flux",
             "glass",
-            "home"
+            "home",
+            "landing"
           ]
         },
         "fonts": {
@@ -181,7 +182,8 @@
     },
     "seo": {
       "default": {
-        "noindex": false
+        "noindex": false,
+        "ogImages": true
       },
       "type": "object",
       "properties": {
@@ -195,9 +197,443 @@
         "noindex": {
           "default": false,
           "type": "boolean"
+        },
+        "ogImages": {
+          "default": true,
+          "type": "boolean"
         }
       },
       "additionalProperties": false
+    },
+    "versions": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "list": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "dir": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w.-]*$"
+              },
+              "navigation": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tab": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "groups": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        }
+                      },
+                      "required": [
+                        "tab",
+                        "groups"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tab": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "href": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "tab",
+                        "href"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "status": {
+                "default": "stable",
+                "type": "string",
+                "enum": [
+                  "stable",
+                  "deprecated",
+                  "unreleased"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "default",
+        "list"
+      ],
+      "additionalProperties": false
+    },
+    "i18n": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+        },
+        "locales": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rtl": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "detect": {
+          "default": false,
+          "type": "boolean"
+        },
+        "messages": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "default",
+        "locales"
+      ],
+      "additionalProperties": false
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "default": "oidc",
+          "type": "string",
+          "const": "oidc"
+        },
+        "issuer": {
+          "type": "string",
+          "format": "uri"
+        },
+        "clientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientSecretEnv": {
+          "type": "string",
+          "pattern": "^[A-Z_][A-Z0-9_]*$"
+        },
+        "scopes": {
+          "default": [
+            "openid",
+            "profile",
+            "email"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rolesClaim": {
+          "default": "roles",
+          "type": "string",
+          "minLength": 1
+        },
+        "groupsClaim": {
+          "default": "groups",
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionHours": {
+          "default": 12,
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 2160
+        }
+      },
+      "required": [
+        "issuer",
+        "clientId"
+      ],
+      "additionalProperties": false
+    },
+    "changelog": {
+      "default": {
+        "path": "/changelog"
+      },
+      "type": "object",
+      "properties": {
+        "path": {
+          "default": "/changelog",
+          "type": "string",
+          "format": "starts_with",
+          "pattern": "^\\/.*"
+        }
+      },
+      "additionalProperties": false
+    },
+    "feeds": {
+      "default": {
+        "changelog": false,
+        "posts": false,
+        "limit": 50
+      },
+      "type": "object",
+      "properties": {
+        "changelog": {
+          "default": false,
+          "type": "boolean"
+        },
+        "posts": {
+          "default": false,
+          "type": "boolean"
+        },
+        "limit": {
+          "default": 50,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "remote"
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "into": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              },
+              "tokenEnv": {
+                "type": "string",
+                "pattern": "^[A-Z_][A-Z0-9_]*$"
+              },
+              "mdx": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "url",
+              "into"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "obsidian"
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "dir": {
+                "type": "string",
+                "minLength": 1
+              },
+              "into": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "dir",
+              "into"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "html"
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "dir": {
+                "type": "string",
+                "minLength": 1
+              },
+              "into": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "dir",
+              "into"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "notion"
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "rootId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "into": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              },
+              "tokenEnv": {
+                "default": "NOTION_TOKEN",
+                "type": "string",
+                "pattern": "^[A-Z_][A-Z0-9_]*$"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "rootId",
+              "into"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "sanity"
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "projectId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "dataset": {
+                "default": "production",
+                "type": "string",
+                "minLength": 1
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1
+              },
+              "into": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
+              },
+              "tokenEnv": {
+                "type": "string",
+                "pattern": "^[A-Z_][A-Z0-9_]*$"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "projectId",
+              "query",
+              "into"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
     },
     "kudos": {
       "default": {
@@ -215,6 +651,27 @@
           "type": "string",
           "format": "starts_with",
           "pattern": "^\\/.*"
+        },
+        "webhook": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "secretEnv": {
+              "type": "string",
+              "pattern": "^[A-Z_][A-Z0-9_]*$"
+            },
+            "includeUser": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -482,11 +939,28 @@
               "require": {
                 "type": "string",
                 "enum": [
+                  "login",
                   "basic",
                   "token",
                   "custom",
                   "deny"
                 ]
+              },
+              "roles": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "groups": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
               },
               "secretEnv": {
                 "type": "string",

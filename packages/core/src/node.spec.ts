@@ -2,7 +2,14 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DocsConfigError } from './lib/config.ts';
-import { discoverPages, loadConfig, loadConfigSync } from './node.ts';
+import { buildNavigation } from './lib/navigation.ts';
+import { parseConfig } from './lib/config.ts';
+import {
+  discoverPages,
+  discoverSite,
+  loadConfig,
+  loadConfigSync,
+} from './node.ts';
 
 let dir: string;
 beforeEach(async () => {
@@ -121,5 +128,126 @@ describe('discoverPages: prefix', () => {
     await writeFile(join(dir, 'g', 'a.mdx'), '# A');
     const tree = await discoverPages(dir, { prefix: '/docs' });
     expect(tree.pages.map((p) => p.path)).toEqual(['/docs', '/docs/g/a']);
+  });
+});
+
+describe('discoverSite', () => {
+  const put = async (file: string, text = '# t') => {
+    await mkdir(join(dir, file, '..'), { recursive: true });
+    await writeFile(join(dir, file), text);
+  };
+  const both = () =>
+    parseConfig({
+      name: 'X',
+      versions: {
+        default: 'v2',
+        list: [{ name: 'v2' }, { name: 'v1', dir: 'legacy' }],
+      },
+      i18n: { default: 'en', locales: ['en', 'fr'] },
+    });
+
+  it('is one view for a site with neither', async () => {
+    await put('index.mdx');
+    const site = await discoverSite(dir, parseConfig({ name: 'X' }));
+    expect(site.views).toHaveLength(1);
+    expect(site.tree.pages.map((p) => p.path)).toEqual(['/']);
+  });
+
+  it('builds a tree for each version and language, with addresses and metadata', async () => {
+    await put('v2/en/index.mdx');
+    await put('v2/en/guides/auth.mdx', '---\ntitle: Auth\n---\nbody');
+    await put(
+      'v2/fr/guides/auth.mdx',
+      '---\ntitle: Authentification\n---\nbody',
+    );
+    await put('legacy/en/guides/auth.mdx');
+    const site = await discoverSite(dir, both());
+    expect(site.views.map((v) => v.key)).toEqual([
+      'v2/en',
+      'v2/fr',
+      'v1/en',
+      'v1/fr',
+    ]);
+    const paths = (key: string) =>
+      site.views.find((v) => v.key === key)?.tree.pages.map((p) => p.path);
+    expect(paths('v2/en')).toEqual(['/', '/guides/auth']);
+    expect(paths('v2/fr')).toEqual(['/fr', '/fr/guides/auth']);
+    expect(paths('v1/en')).toEqual(['/v1/guides/auth']);
+    expect(paths('v1/fr')).toEqual(['/v1/fr/guides/auth']);
+    const fr = site.tree.pages.find((p) => p.path === '/fr/guides/auth');
+    expect(fr).toMatchObject({
+      title: 'Authentification',
+      locale: 'fr',
+      version: 'v2',
+      rel: '/guides/auth',
+      slug: ['fr', 'guides', 'auth'],
+      file: 'v2/fr/guides/auth.mdx',
+      contentFile: 'guides/auth.mdx',
+    });
+    expect(fr?.fallbackLocale).toBeUndefined();
+    // every view's pages are in the site's list
+    expect(site.tree.pages).toHaveLength(2 + 2 + 1 + 1);
+  });
+
+  it('stands the default language in for a page with no translation', async () => {
+    await put('v2/en/index.mdx');
+    await put(
+      'v2/en/guides/only-english.mdx',
+      '---\ntitle: English only\n---\n',
+    );
+    await put('v2/fr/index.mdx');
+    const site = await discoverSite(dir, both());
+    const fr = site.views.find((v) => v.key === 'v2/fr')?.tree.pages ?? [];
+    const standIn = fr.find((p) => p.path === '/fr/guides/only-english');
+    expect(standIn).toMatchObject({
+      fallbackLocale: 'en',
+      file: 'v2/en/guides/only-english.mdx',
+      locale: 'fr',
+      title: 'English only',
+    });
+    expect(fr.find((p) => p.path === '/fr')?.fallbackLocale).toBeUndefined();
+    // navigation written once in docs.json finds the stand-in by its id
+    const nav = buildNavigation(
+      parseConfig({
+        ...both(),
+        navigation: [
+          {
+            tab: 'Docs',
+            groups: [{ group: 'G', pages: ['index', 'guides/only-english'] }],
+          },
+        ],
+      }),
+      site.views.find((v) => v.key === 'v2/fr')!.tree,
+    );
+    expect(nav.tabs[0]?.sidebar[0]).toMatchObject({
+      type: 'group',
+      items: [{ type: 'page' }, { type: 'page' }],
+    });
+  });
+
+  it('explains where pages go when the default variant is empty', async () => {
+    await put('index.mdx');
+    await expect(discoverSite(dir, both())).rejects.toThrow(
+      /docs\/v2\/en\/index\.mdx/,
+    );
+  });
+
+  it('refuses a page named like a version or language', async () => {
+    await put('v2/en/index.mdx');
+    await put('v2/en/fr/hello.mdx');
+    await expect(discoverSite(dir, both())).rejects.toThrow(
+      /"fr" is the name of a version or language/,
+    );
+  });
+
+  it('applies urlPrefix before the variant prefix', async () => {
+    await put('v2/fr/index.mdx');
+    await put('v2/en/index.mdx');
+    const config = parseConfig({ ...both(), urlPrefix: '/docs' });
+    const site = await discoverSite(dir, config);
+    expect(site.views.find((v) => v.key === 'v2/fr')?.tree.pages[0]?.path).toBe(
+      '/docs/fr',
+    );
+    expect(site.tree.pages[0]?.path).toBe('/docs');
   });
 });

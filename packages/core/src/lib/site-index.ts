@@ -7,7 +7,6 @@ import {
   type IndexInput,
   buildContentIndex,
   isContentIndex,
-  isIndexable,
 } from './content-index.ts';
 import { expandIncludes } from './include.ts';
 import { parseFrontmatter } from './frontmatter.ts';
@@ -59,23 +58,29 @@ export interface SiteIndexOptions {
   root: string;
   /** Absolute folder with the MDX files. Default `<root>/docs`. */
   docsDir?: string;
-  config: Pick<DocsConfig, 'access'>;
+  /** Not needed to build the index; kept so callers can pass the same options as before. */
+  config?: Pick<DocsConfig, 'access'>;
   tree: PageTree;
 }
 
-/** Read every public page (not hidden, not behind an access rule) into index inputs. */
+/**
+ * Read every page that is not hidden into index inputs, those behind an `access` rule included: the server
+ * filters them out for readers who may not see them (see `scopeFilter`, `publicIndex`). The index file must
+ * therefore never be served as it is.
+ */
 export async function collectIndexInputs({
   root,
   docsDir = join(root, 'docs'),
-  config,
   tree,
 }: SiteIndexOptions): Promise<IndexInput[]> {
-  const pages = tree.pages.filter((p) => isIndexable(p, config));
+  const pages = tree.pages.filter((p) => !p.hidden);
   return Promise.all(
     pages.map(async (page) => ({
       path: page.path,
       title: page.title,
       ...(page.description && { description: page.description }),
+      ...(page.locale && { locale: page.locale }),
+      ...(page.version && { version: page.version }),
       body: await readPageBody(docsDir, page),
     })),
   );

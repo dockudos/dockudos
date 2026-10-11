@@ -7,6 +7,7 @@ export const LAYOUTS = [
   'flux',
   'glass',
   'home',
+  'landing',
 ] as const;
 
 export type LayoutName = (typeof LAYOUTS)[number];
@@ -125,6 +126,8 @@ const seoSchema = z.strictObject({
   siteUrl: z.url().optional(),
   description: z.string().optional(),
   noindex: z.boolean().default(false),
+  /** Give every page a social-card image (`og:image`). Needs `siteUrl`. */
+  ogImages: z.boolean().default(true),
 });
 
 const kudosSchema = z.strictObject({
@@ -135,6 +138,22 @@ const kudosSchema = z.strictObject({
     .string()
     .startsWith('/', 'must start with "/"')
     .default('/api/kudos'),
+  /**
+   * Also send each vote and comment to your own backend: a POST of `{ id, at, path, vote?, comment? }` as JSON.
+   * No address, cookie or user id is included unless you add `includeUser`.
+   */
+  webhook: z
+    .strictObject({
+      url: z.url(),
+      /** Environment variable with a secret, sent as `Authorization: Bearer ...`. */
+      secretEnv: z
+        .string()
+        .regex(/^[A-Z_][A-Z0-9_]*$/)
+        .optional(),
+      /** Add the signed-in user's id (never their email or name) to what is sent. Off by default. */
+      includeUser: z.boolean().default(false),
+    })
+    .optional(),
 });
 
 const actionsSchema = z.strictObject({
@@ -363,10 +382,15 @@ const accessRuleSchema = z.strictObject({
     .min(1),
   /**
    * How a visitor proves they may see it:
-   * `basic` (HTTP Basic, credentials from an environment variable), `token` (a bearer token from an
-   * environment variable), `custom` (your own `verify` function in the proxy), or `deny` (answer 404).
+   * `login` (a signed-in user, see `auth`), `basic` (HTTP Basic, credentials from an environment variable),
+   * `token` (a bearer token from an environment variable), `custom` (your own `verify` function in the proxy),
+   * or `deny` (answer 404).
    */
-  require: z.enum(['basic', 'token', 'custom', 'deny']),
+  require: z.enum(['login', 'basic', 'token', 'custom', 'deny']),
+  /** `login` only: the user needs one of these roles. Leave out to let any signed-in user in. */
+  roles: z.array(z.string().min(1)).min(1).optional(),
+  /** `login` only: the user needs to be in one of these groups. With `roles`, either is enough. */
+  groups: z.array(z.string().min(1)).min(1).optional(),
   /** The environment variable holding the secret. Defaults: DOCKUDOS_BASIC_AUTH, DOCKUDOS_TOKEN. */
   secretEnv: z
     .string()
@@ -378,6 +402,215 @@ const accessRuleSchema = z.strictObject({
   /** Name shown in the browser's sign-in box (`basic`). */
   realm: z.string().min(1).max(100).optional(),
 });
+
+const versionName = z
+  .string()
+  .regex(
+    /^[A-Za-z0-9][A-Za-z0-9._-]*$/,
+    'must be letters, digits, dots, dashes or underscores, like "v2" or "2.1"',
+  );
+
+const versionsSchema = z
+  .strictObject({
+    /** The version served at the site root, without a prefix: the latest one. */
+    default: versionName,
+    /**
+     * Every version. Each one's pages live in `docs/<dir>/` (`dir` defaults to the name); the default version is
+     * served at `/`, the others at `/<name>/`.
+     */
+    list: z
+      .array(
+        z.strictObject({
+          name: versionName,
+          /** What the version switcher shows. Default: the name. */
+          label: z.string().min(1).optional(),
+          /** Folder below `docs/`. Default: the name. */
+          dir: z
+            .string()
+            .regex(/^[A-Za-z0-9][\w.-]*$/, 'must be a single folder name')
+            .optional(),
+          /** The sidebar of this version, when it differs from `navigation`. Pages it lists but the version lacks are skipped. */
+          navigation: z.array(tabSchema).optional(),
+          /** `deprecated` shows a warning; `unreleased` shows a "preview" notice. */
+          status: z
+            .enum(['stable', 'deprecated', 'unreleased'])
+            .default('stable'),
+        }),
+      )
+      .min(1),
+  })
+  .superRefine((v, ctx) => {
+    const names = new Set<string>();
+    v.list.forEach((item, i) => {
+      if (names.has(item.name))
+        ctx.addIssue({
+          code: 'custom',
+          message: `the version "${item.name}" is listed twice`,
+          path: ['list', i, 'name'],
+        });
+      names.add(item.name);
+    });
+    if (!names.has(v.default))
+      ctx.addIssue({
+        code: 'custom',
+        message: `"${v.default}" is not in the list of versions`,
+        path: ['default'],
+      });
+  });
+
+const localeCode = z
+  .string()
+  .regex(
+    /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/,
+    'must be a language tag like "en", "fr" or "pt-BR"',
+  );
+
+const i18nSchema = z
+  .strictObject({
+    /** The language of the pages without a translation, served at the site root. */
+    default: localeCode,
+    /** Every language, the default included. A string, or `{ code, label, rtl }`. */
+    locales: z
+      .array(
+        z.union([
+          localeCode,
+          z.strictObject({
+            code: localeCode,
+            /** What the language switcher shows. Default: the language's own name. */
+            label: z.string().min(1).optional(),
+            /** Right-to-left. Detected for Arabic, Hebrew, Persian and Urdu when left out. */
+            rtl: z.boolean().optional(),
+          }),
+        ]),
+      )
+      .min(1),
+    /** Send first-time visitors to their browser's language (remembered in a cookie). */
+    detect: z.boolean().default(false),
+    /** Your own wording for interface text, by language: `{ "fr": { "search": "Rechercher" } }`. */
+    messages: z
+      .record(localeCode, z.record(z.string(), z.string()))
+      .default({}),
+  })
+  .superRefine((v, ctx) => {
+    const codes = v.locales.map((l) => (typeof l === 'string' ? l : l.code));
+    if (new Set(codes).size !== codes.length)
+      ctx.addIssue({
+        code: 'custom',
+        message: 'a language is listed twice',
+        path: ['locales'],
+      });
+    if (!codes.includes(v.default))
+      ctx.addIssue({
+        code: 'custom',
+        message: `"${v.default}" is not in the list of locales`,
+        path: ['default'],
+      });
+  });
+
+const authSchema = z.strictObject({
+  /** Only OpenID Connect today: Auth0, Okta, Entra ID, Keycloak, Google and the like. */
+  provider: z.literal('oidc').default('oidc'),
+  /** The provider's issuer URL, where `/.well-known/openid-configuration` lives. */
+  issuer: z
+    .url()
+    .refine(
+      (v) =>
+        v.startsWith('https://') ||
+        /^http:\/\/(localhost|127\.0\.0\.1)/.test(v),
+      {
+        message: 'must be https (http only for localhost)',
+      },
+    ),
+  clientId: z.string().min(1),
+  /** The environment variable holding the client secret. Leave out for a public client (PKCE only). */
+  clientSecretEnv: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/, 'must be an environment variable name')
+    .optional(),
+  scopes: z.array(z.string().min(1)).default(['openid', 'profile', 'email']),
+  /** The claim in the ID token with the user's roles. Dots reach into objects: `realm_access.roles`. */
+  rolesClaim: z.string().min(1).default('roles'),
+  groupsClaim: z.string().min(1).default('groups'),
+  /** How long a sign-in lasts. */
+  sessionHours: z
+    .number()
+    .min(0.1)
+    .max(24 * 90)
+    .default(12),
+});
+
+const changelogSchema = z.strictObject({
+  /** The page whose `<Update>` entries make the changelog and its feed, like `/changelog`. */
+  path: z.string().startsWith('/', 'must start with "/"').default('/changelog'),
+});
+
+const feedsSchema = z.strictObject({
+  /** `/changelog.xml`, from the entries on the changelog page. */
+  changelog: z.boolean().default(false),
+  /** `/rss.xml`, from pages with a `date` in their frontmatter (posts, announcements). */
+  posts: z.boolean().default(false),
+  /** Most items in a feed. */
+  limit: z.number().int().min(1).max(500).default(50),
+});
+
+const sourceSchema = z.discriminatedUnion('type', [
+  z.strictObject({
+    type: z.literal('remote'),
+    name: sourceName,
+    /** A JSON list of pages: `[{ "path": "guide.mdx", "url": "https://..." }]`, or a GitHub repository. */
+    url: z.url(),
+    /** Folder below `docs/` the pages are written to. */
+    into: mountPath,
+    /** Environment variable with a bearer token for the request. */
+    tokenEnv: z
+      .string()
+      .regex(/^[A-Z_][A-Z0-9_]*$/)
+      .optional(),
+    /**
+     * Use the pages as MDX exactly as served. Off by default: they are read as Markdown and anything MDX would run
+     * (`{…}`, imports, raw HTML) is escaped. Turn it on only for a source you control.
+     */
+    mdx: z.boolean().default(false),
+  }),
+  z.strictObject({
+    type: z.literal('obsidian'),
+    name: sourceName,
+    /** The vault folder, relative to the project. */
+    dir: z.string().min(1),
+    into: mountPath,
+  }),
+  z.strictObject({
+    type: z.literal('html'),
+    name: sourceName,
+    /** A folder of `.html` files, relative to the project. */
+    dir: z.string().min(1),
+    into: mountPath,
+  }),
+  z.strictObject({
+    type: z.literal('notion'),
+    name: sourceName,
+    /** The Notion page or database whose child pages are imported. */
+    rootId: z.string().min(1),
+    into: mountPath,
+    tokenEnv: z
+      .string()
+      .regex(/^[A-Z_][A-Z0-9_]*$/)
+      .default('NOTION_TOKEN'),
+  }),
+  z.strictObject({
+    type: z.literal('sanity'),
+    name: sourceName,
+    projectId: z.string().min(1),
+    dataset: z.string().min(1).default('production'),
+    /** GROQ query returning `{ _id, title, slug, body }` documents (Markdown in `body`). */
+    query: z.string().min(1),
+    into: mountPath,
+    tokenEnv: z
+      .string()
+      .regex(/^[A-Z_][A-Z0-9_]*$/)
+      .optional(),
+  }),
+]);
 
 const iconPackSchema = z.union([
   z.string().min(1),
@@ -393,75 +626,126 @@ const iconPackSchema = z.union([
  * Shape of `docs.json`. Strict: unknown keys are rejected so typos fail the
  * build instead of being silently ignored. Later phases add keys.
  */
-export const docsConfigSchema = z.strictObject({
-  $schema: z.string().optional(),
-  /**
-   * Where the docs are mounted in the site, for apps that have other routes
-   * (`/docs`). Match it with the folder of the catch-all route. Default: the site root.
-   */
-  urlPrefix: z
-    .string()
-    .regex(
-      /^\/[^/]+(?:\/[^/]+)*$/,
-      'must start with "/" and not end with "/", like "/docs"',
-    )
-    .optional(),
-  name: z.string().min(1),
-  logo: logoSchema.optional(),
-  favicon: z.string().min(1).optional(),
-  theme: themeSchema.default(() => themeSchema.parse({})),
-  navigation: z.array(tabSchema).default([]),
-  redirects: z.array(redirectSchema).default([]),
-  seo: seoSchema.default(() => seoSchema.parse({})),
-  kudos: kudosSchema.default(() => kudosSchema.parse({})),
-  actions: actionsSchema.default(() => actionsSchema.parse({})),
-  /** Search: where it runs and how many results it shows. */
-  search: searchSchema.default(() => searchSchema.parse({})),
-  /** The assistant, AI navigation and meaning-based search. Off by default; keys come from the environment. */
-  ai: aiSchema.default(() => aiSchema.parse({})),
-  /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
-  shortcuts: z.boolean().default(true),
-  /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */
-  /** Your own icons. */
-  icons: z
-    .strictObject({
-      /**
-       * Folders of SVG files, by the name you use in front of the icon: `{ "acme": "icons/acme" }` makes
-       * `icons/acme/logo.svg` available as `acme:logo`.
-       */
-      packs: z
-        .record(
-          z
-            .string()
-            .regex(
-              /^[a-z][a-z0-9-]*$/,
-              'must be lowercase letters, digits and dashes, like "acme"',
-            ),
-          iconPackSchema,
-        )
-        .default({}),
-    })
-    .default(() => ({ packs: {} })),
-  access: z
-    .strictObject({ rules: z.array(accessRuleSchema).default([]) })
-    .default(() => ({ rules: [] })),
-  /** API reference pages generated from OpenAPI, AsyncAPI and GraphQL specs, and the playground. */
-  openapi: z
-    .strictObject({
-      sources: z.array(apiSourceSchema).default([]),
-      playground: playgroundSchema.default(() => playgroundSchema.parse({})),
-    })
-    .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
-    .default(() => ({
-      sources: [],
-      playground: playgroundSchema.parse({}),
-    })),
-  /** Reference pages generated from TypeScript definitions and Python packages. */
-  reference: z
-    .strictObject({ sources: z.array(referenceSourceSchema).default([]) })
-    .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
-    .default(() => ({ sources: [] })),
-});
+export const docsConfigSchema = z
+  .strictObject({
+    $schema: z.string().optional(),
+    /**
+     * Where the docs are mounted in the site, for apps that have other routes
+     * (`/docs`). Match it with the folder of the catch-all route. Default: the site root.
+     */
+    urlPrefix: z
+      .string()
+      .regex(
+        /^\/[^/]+(?:\/[^/]+)*$/,
+        'must start with "/" and not end with "/", like "/docs"',
+      )
+      .optional(),
+    name: z.string().min(1),
+    logo: logoSchema.optional(),
+    favicon: z.string().min(1).optional(),
+    theme: themeSchema.default(() => themeSchema.parse({})),
+    navigation: z.array(tabSchema).default([]),
+    redirects: z.array(redirectSchema).default([]),
+    seo: seoSchema.default(() => seoSchema.parse({})),
+    /** Several versions of the docs, each in its own folder. */
+    versions: versionsSchema.optional(),
+    /** Several languages, each in its own folder. */
+    i18n: i18nSchema.optional(),
+    /** Sign-in for `access` rules with `require: "login"`. The secret is `DOCKUDOS_AUTH_SECRET`. */
+    auth: authSchema.optional(),
+    changelog: changelogSchema.default(() => changelogSchema.parse({})),
+    feeds: feedsSchema.default(() => feedsSchema.parse({})),
+    /** Content fetched or converted from elsewhere by `dockudos sync`: remote files, Obsidian, HTML, Notion, Sanity. */
+    sources: z.array(sourceSchema).default([]),
+    kudos: kudosSchema.default(() => kudosSchema.parse({})),
+    actions: actionsSchema.default(() => actionsSchema.parse({})),
+    /** Search: where it runs and how many results it shows. */
+    search: searchSchema.default(() => searchSchema.parse({})),
+    /** The assistant, AI navigation and meaning-based search. Off by default; keys come from the environment. */
+    ai: aiSchema.default(() => aiSchema.parse({})),
+    /** Keyboard shortcuts: search, previous and next page, theme, and the help dialog. */
+    shortcuts: z.boolean().default(true),
+    /** Protect routes. The first rule that matches a path decides. Secrets live in environment variables, never here. */
+    /** Your own icons. */
+    icons: z
+      .strictObject({
+        /**
+         * Folders of SVG files, by the name you use in front of the icon: `{ "acme": "icons/acme" }` makes
+         * `icons/acme/logo.svg` available as `acme:logo`.
+         */
+        packs: z
+          .record(
+            z
+              .string()
+              .regex(
+                /^[a-z][a-z0-9-]*$/,
+                'must be lowercase letters, digits and dashes, like "acme"',
+              ),
+            iconPackSchema,
+          )
+          .default({}),
+      })
+      .default(() => ({ packs: {} })),
+    access: z
+      .strictObject({ rules: z.array(accessRuleSchema).default([]) })
+      .default(() => ({ rules: [] })),
+    /** API reference pages generated from OpenAPI, AsyncAPI and GraphQL specs, and the playground. */
+    openapi: z
+      .strictObject({
+        sources: z.array(apiSourceSchema).default([]),
+        playground: playgroundSchema.default(() => playgroundSchema.parse({})),
+      })
+      .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
+      .default(() => ({
+        sources: [],
+        playground: playgroundSchema.parse({}),
+      })),
+    /** Reference pages generated from TypeScript definitions and Python packages. */
+    reference: z
+      .strictObject({ sources: z.array(referenceSourceSchema).default([]) })
+      .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
+      .default(() => ({ sources: [] })),
+  })
+  .superRefine((config, ctx) => {
+    const codes = new Set(
+      (config.i18n?.locales ?? []).map((l) =>
+        typeof l === 'string' ? l : l.code,
+      ),
+    );
+    config.versions?.list.forEach((v, i) => {
+      if (codes.has(v.name))
+        ctx.addIssue({
+          code: 'custom',
+          message: `"${v.name}" is also a language code; URLs could not tell them apart`,
+          path: ['versions', 'list', i, 'name'],
+        });
+    });
+    config.access.rules.forEach((rule, i) => {
+      if (rule.require === 'login' && !config.auth)
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'needs the "auth" block of docs.json to say how people sign in',
+          path: ['access', 'rules', i, 'require'],
+        });
+      if ((rule.roles || rule.groups) && rule.require !== 'login')
+        ctx.addIssue({
+          code: 'custom',
+          message: '"roles" and "groups" only work with require: "login"',
+          path: ['access', 'rules', i, rule.roles ? 'roles' : 'groups'],
+        });
+    });
+    const names = new Set<string>();
+    config.sources.forEach((s, i) => {
+      if (names.has(s.name))
+        ctx.addIssue({
+          code: 'custom',
+          message: `the name "${s.name}" is used twice`,
+          path: ['sources', i, 'name'],
+        });
+      names.add(s.name);
+    });
+  });
 
 export type ApiSourceConfig = z.output<typeof apiSourceSchema>;
 export type ReferenceSourceConfig = z.output<typeof referenceSourceSchema>;

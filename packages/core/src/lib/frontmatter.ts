@@ -14,6 +14,12 @@ export const frontmatterSchema = z.looseObject({
   kudos: z.boolean().optional(),
   /** Overrides `theme.layout` for this page. */
   layout: z.enum(LAYOUTS).optional(),
+  /** `YYYY-MM-DD`. Pages with a date are the items of the posts feed. */
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a date like 2026-03-31')
+    .optional(),
+  tags: z.array(z.string().min(1)).optional(),
   /** Shorter label for the sidebar. */
   sidebarTitle: z.string().min(1).optional(),
   /** Set by `dockudos generate` on pages it writes from an API spec or from code. */
