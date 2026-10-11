@@ -20,3 +20,5 @@ export * from './lib/webhooks.ts';
 export * from './lib/builds.ts';
 export * from './lib/exec.ts';
 export * from './lib/sources.ts';
+export * from './lib/privacy.ts';
+export * from './lib/analytics.ts';
