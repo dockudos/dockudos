@@ -31,6 +31,8 @@ export interface FixtureOptions {
   onCommand?: (cmd: string, args: string[], cwd: string, onOutput?: (chunk: string) => void) => Promise<number | undefined>;
   secrets?: string[];
   files?: Record<string, string>;
+  /** The content index the fake build publishes. */
+  index?: unknown;
 }
 
 /** The whole backend wired together on an in-memory Git host, in-process Postgres and in-memory storage. */
@@ -59,7 +61,7 @@ export async function createFixture(db: Db, options: FixtureOptions = {}) {
     }
     if (args.includes('index')) {
       await mkdir(join(cwd, '.dockudos'), { recursive: true });
-      await writeFile(join(cwd, '.dockudos/index.json'), SITE_FILES['.dockudos/index.json']!);
+      await writeFile(join(cwd, '.dockudos/index.json'), options.index ? JSON.stringify(options.index) : SITE_FILES['.dockudos/index.json']!);
     }
     return { code: 0 };
   };

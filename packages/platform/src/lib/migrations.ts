@@ -164,12 +164,13 @@ CREATE TABLE site_settings (
 );
 CREATE TABLE agent_runs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  seq bigserial NOT NULL,
   site_id uuid NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   trigger text NOT NULL,
   code_repo text,
   base_sha text,
   head_sha text,
-  status text NOT NULL CHECK (status IN ('running','opened','no-changes','failed')),
+  status text NOT NULL CHECK (status IN ('running','opened','flagged','no-changes','failed')),
   branch text,
   pr_url text,
   flagged jsonb NOT NULL DEFAULT '[]',
