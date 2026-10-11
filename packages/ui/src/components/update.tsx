@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Badge } from './badge.tsx';
-import { md, type ToMarkdown } from '@dockudos/core';
+import { md, slugify, type ToMarkdown } from '@dockudos/core';
 
 export interface UpdateProps {
   /** The version or title: `1.4.0`, `March release`. */
@@ -11,6 +11,8 @@ export interface UpdateProps {
   tags?: string[];
   /** A line under the label, such as the release's name. */
   description?: string;
+  /** The id of the entry on the page, for links and the changelog feed. Default: the label as a slug. */
+  id?: string;
   children?: ReactNode;
 }
 
@@ -25,6 +27,7 @@ export function Update({
   date,
   tags,
   description,
+  id,
   children,
 }: UpdateProps) {
   const parsed =
@@ -32,7 +35,11 @@ export function Update({
       ? new Date(`${date}T00:00:00Z`)
       : undefined;
   return (
-    <article className="dk-update">
+    <article
+      className="dk-update"
+      id={id ?? slugify(label)}
+      data-update-tags={tags?.join('\n')}
+    >
       <header className="dk-update-meta">
         <h3 className="dk-update-label">{label}</h3>
         {date &&

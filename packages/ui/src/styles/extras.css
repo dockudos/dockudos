@@ -1,0 +1,186 @@
+/* Version and language controls, notices, changelog, stories, landing layout. */
+.dk-switcher select {
+  appearance: auto;
+  max-width: 11rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 0.375rem);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.dk-version-banner,
+.dk-fallback-notice {
+  margin-block-end: 1rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-inline-start-width: 3px;
+  border-radius: var(--radius-md, 0.375rem);
+  background: var(--muted);
+  font-size: 0.875rem;
+}
+.dk-version-banner[data-kind='deprecated'] {
+  border-inline-start-color: var(--dk-callout-danger);
+}
+.dk-version-banner[data-kind='outdated'],
+.dk-fallback-notice {
+  border-inline-start-color: var(--dk-callout-warning);
+}
+.dk-version-banner[data-kind='unreleased'] {
+  border-inline-start-color: var(--dk-callout-info);
+}
+.dk-version-banner a {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Code and numbers keep their direction inside right-to-left pages. */
+[dir='rtl'] pre,
+[dir='rtl'] .dk-pre,
+[dir='rtl'] .dk-code-block {
+  direction: ltr;
+  text-align: start;
+}
+[dir='rtl'] code {
+  unicode-bidi: isolate;
+}
+[dir='rtl'] .dk-prev::before,
+[dir='rtl'] .dk-next::after {
+  transform: scaleX(-1);
+}
+
+/* Changelog */
+.dk-changelog-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-block-end: 1.5rem;
+}
+.dk-changelog-filter button {
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.dk-changelog-filter button[aria-pressed='true'] {
+  border-color: var(--primary);
+  color: var(--foreground);
+  background: var(--muted);
+}
+.dk-update[hidden] {
+  display: none;
+}
+
+/* Story */
+.dk-story {
+  margin-block: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 0.375rem);
+  overflow: hidden;
+}
+.dk-story-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  padding: 1.5rem;
+}
+.dk-story-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+  font-size: 0.8125rem;
+}
+.dk-story-controls label {
+  display: grid;
+  gap: 0.25rem;
+}
+.dk-story-controls input[type='text'],
+.dk-story-controls input[type='number'],
+.dk-story-controls select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 0.375rem);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.dk-story-code {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  overflow-x: auto;
+  direction: ltr;
+}
+
+/* Landing layout: a page of sections built from components, without the docs frame. */
+[data-layout='landing'] .dk-sidebar,
+[data-layout='landing'] .dk-toc,
+[data-layout='landing'] .dk-breadcrumb,
+[data-layout='landing'] .dk-page-title,
+[data-layout='landing'] .dk-page-description,
+[data-layout='landing'] .dk-article-footer,
+[data-layout='landing'] .dk-pager {
+  display: none;
+}
+[data-layout='landing'] .dk-body {
+  display: block;
+  max-width: none;
+}
+[data-layout='landing'] .dk-main {
+  max-width: none;
+  padding: 0;
+}
+[data-layout='landing'] .dk-article {
+  max-width: none;
+  padding: 0;
+}
+[data-layout='landing'] .dk-prose {
+  max-width: none;
+}
+.dk-section {
+  padding: 4rem 1.5rem;
+}
+.dk-section > .dk-section-inner {
+  max-width: 68rem;
+  margin-inline: auto;
+}
+.dk-section[data-tone='muted'] {
+  background: var(--muted);
+}
+.dk-section[data-tone='primary'] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.dk-section[data-align='center'] .dk-section-inner {
+  text-align: center;
+}
+.dk-section-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.dk-section-lead {
+  margin: 0 0 2rem;
+  max-width: 42rem;
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+}
+.dk-section[data-align='center'] .dk-section-lead {
+  margin-inline: auto;
+}
+.dk-section[data-tone='primary'] .dk-section-lead {
+  color: inherit;
+  opacity: 0.85;
+}

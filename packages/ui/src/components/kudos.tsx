@@ -3,6 +3,7 @@
 import { Check, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { type FormEvent, useEffect, useId, useState } from 'react';
 import { cn } from '../lib/utils.ts';
+import { useMessages } from '../messages-context.tsx';
 
 export interface KudosProps {
   /** Site path of the page being rated, such as `/guides/auth`. */
@@ -70,8 +71,9 @@ async function send(endpoint: string, body: object): Promise<{ id: string }> {
 export function Kudos({
   path,
   endpoint = '/api/kudos',
-  prompt = 'Was this page helpful?',
+  prompt,
 }: KudosProps) {
+  const t = useMessages();
   const [stage, setStage] = useState<Stage>({ name: 'ask' });
   const [error, setError] = useState<string>();
   const [comment, setComment] = useState('');
@@ -120,7 +122,7 @@ export function Kudos({
   return (
     <section aria-labelledby={headingId} className="dk-kudos" data-print="hide">
       <h2 id={headingId} className="dk-kudos-title">
-        {stage.name === 'done' ? 'Thanks for your feedback' : prompt}
+        {stage.name === 'done' ? t('thanks') : (prompt ?? t('helpful'))}
       </h2>
 
       {stage.name !== 'done' && (
@@ -142,7 +144,7 @@ export function Kudos({
                 className={cn('dk-kudos-button', active && 'is-active')}
               >
                 <Icon className="size-4" aria-hidden="true" />
-                {value === 'up' ? 'Yes' : 'No'}
+                {value === 'up' ? t('yes') : t('no')}
               </button>
             );
           })}

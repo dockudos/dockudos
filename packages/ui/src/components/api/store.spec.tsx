@@ -17,14 +17,14 @@ describe('credentials', () => {
     const { useAuthValues } = await fresh();
     const { result } = renderHook(() => useAuthValues());
     expect(result.current[0]).toEqual({ key: 'saved' });
-    act(() => result.current[1]('other', 'v'));
+    act(() => result.current[1]('other', 'v' as never));
     expect(result.current[0]).toEqual({ key: 'saved', other: 'v' });
     expect(JSON.parse(sessionStorage.getItem('dockudos-api-auth') as string)).toEqual({ key: 'saved', other: 'v' });
 
     const blocked = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('blocked');
     });
-    act(() => result.current[1]('third', 'x'));
+    act(() => result.current[1]('third', 'x' as never));
     expect(result.current[0]).toMatchObject({ third: 'x' });
     blocked.mockRestore();
   });

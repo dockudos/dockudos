@@ -4,6 +4,7 @@ import {
   type AskSource,
   readSse,
 } from '@dockudos/core';
+import { askScopeFields } from './scope.ts';
 
 export interface AskTurn {
   id: string;
@@ -193,6 +194,7 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
             question: text,
             history,
             ...(context && { context }),
+            ...askScopeFields(),
           }),
           signal,
         });

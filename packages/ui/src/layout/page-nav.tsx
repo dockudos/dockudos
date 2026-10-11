@@ -2,12 +2,14 @@
 
 import type { Crumb } from '@dockudos/core';
 import { useLink } from '../provider.tsx';
+import { useMessages } from '../messages-context.tsx';
 
 export function Breadcrumb({ crumbs }: { crumbs: readonly Crumb[] }) {
   const Link = useLink();
+  const t = useMessages();
   if (crumbs.length < 2) return null;
   return (
-    <nav className="dk-breadcrumb" aria-label="Breadcrumb">
+    <nav className="dk-breadcrumb" aria-label={t('breadcrumb')}>
       <ol>
         {crumbs.map((c, i) => (
           <li key={`${c.title}-${i}`}>
@@ -38,18 +40,19 @@ export function PrevNext({
   next?: Neighbour;
 }) {
   const Link = useLink();
+  const t = useMessages();
   if (!prev && !next) return null;
   return (
-    <nav className="dk-pager" aria-label="Previous and next pages">
+    <nav className="dk-pager" aria-label={t('pager')}>
       {prev && (
         <Link href={prev.path} rel="prev" className="dk-prev">
-          <small>Previous</small>
+          <small>{t('previous')}</small>
           {prev.title}
         </Link>
       )}
       {next && (
         <Link href={next.path} rel="next" className="dk-next">
-          <small>Next</small>
+          <small>{t('next')}</small>
           {next.title}
         </Link>
       )}

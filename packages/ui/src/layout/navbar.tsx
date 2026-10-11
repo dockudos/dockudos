@@ -9,6 +9,7 @@ import { AssistantButton } from './assistant-panel.tsx';
 import { PaletteButton } from './command-palette.tsx';
 import { ThemeToggle } from '../theme/theme-toggle.tsx';
 import type { TabLink } from './tab-links.ts';
+import { useMessages } from '../messages-context.tsx';
 
 function Brand({
   name,
@@ -48,9 +49,10 @@ function TabList({
   className?: string;
 }) {
   const Link = useLink();
+  const t = useMessages();
   if (tabs.length < 2) return null;
   return (
-    <nav aria-label="Sections" className={className}>
+    <nav aria-label={t('sections')} className={className}>
       {tabs.map((t) =>
         t.external ? (
           <a
@@ -85,6 +87,7 @@ export function Navbar({
   brand,
   search = false,
   assistant = false,
+  extras,
 }: {
   name: string;
   logo: DocsConfig['logo'];
@@ -98,7 +101,10 @@ export function Navbar({
   search?: boolean;
   /** Show the "Ask AI" button (the assistant panel). */
   assistant?: boolean;
+  /** Extra controls before the theme toggle, such as the version and language switchers. */
+  extras?: ReactNode;
 }) {
+  const t = useMessages();
   const [open, setOpen] = useState(false);
   return (
     <header className="dk-navbar">
@@ -107,13 +113,14 @@ export function Navbar({
       <div className="dk-navbar-spacer" />
       {search && <PaletteButton />}
       {assistant && <AssistantButton />}
+      {extras}
       <ThemeToggle defaultMode={defaultMode} />
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>
           <button
             type="button"
             className="dk-menu-button inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Open navigation"
+            aria-label={t('openNavigation')}
           >
             <Menu className="size-5" aria-hidden="true" />
           </button>
@@ -131,7 +138,7 @@ export function Navbar({
               <Dialog.Title className="font-semibold">{name}</Dialog.Title>
               <Dialog.Close
                 className="inline-flex size-8 items-center justify-center rounded-md hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Close navigation"
+                aria-label={t('closeNavigation')}
               >
                 <X className="size-5" aria-hidden="true" />
               </Dialog.Close>

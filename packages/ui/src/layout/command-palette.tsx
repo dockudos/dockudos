@@ -30,6 +30,7 @@ import {
 import { renderIcon } from '../components/render-icon.tsx';
 import { requestNavigation } from '../lib/navigate-client.ts';
 import { useNavigate } from '../provider.tsx';
+import { useMessages } from '../messages-context.tsx';
 
 export interface PaletteEntry {
   title: string;
@@ -74,6 +75,7 @@ export function scoreEntry(entry: PaletteEntry, query: string): number {
 
 /** The "Search" button for the navbar. */
 export function PaletteButton() {
+  const t = useMessages();
   return (
     <button
       type="button"
@@ -83,7 +85,7 @@ export function PaletteButton() {
       aria-label="Search pages"
     >
       <Search className="size-4" aria-hidden="true" />
-      <span className="dk-search-label">Search</span>
+      <span className="dk-search-label">{t('search')}</span>
       <Shortcut keys="mod+k" />
     </button>
   );

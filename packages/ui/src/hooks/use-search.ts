@@ -6,8 +6,10 @@ import {
   type SearchHit,
   createEndpointBackend,
   createKeywordBackend,
+  type SearchScope,
   createSearchClient,
   fetchIndex,
+  searchIndexUrl,
 } from '@dockudos/core';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchBackend } from '../provider.tsx';
@@ -15,7 +17,13 @@ import { useSearchBackend } from '../provider.tsx';
 /** The part of `docs.json`'s `search` key the browser needs. */
 export type SearchSettings = Partial<
   Pick<DocsConfig['search'], 'backend' | 'endpoint' | 'limit'>
->;
+> & {
+  /** Search only this version and language. */
+  scope?: SearchScope;
+};
+
+/** Set by `dockudos build --static`: the index is a file per version and language. */
+const STATIC_EXPORT = process.env.NEXT_PUBLIC_DOCKUDOS_STATIC === '1';
 
 export const DEFAULT_SEARCH_ENDPOINT = `${process.env.NEXT_PUBLIC_DOCKUDOS_BASE_PATH ?? ''}/api/search`;
 
@@ -30,15 +38,22 @@ export function useSearchClient(
   const backend = settings?.backend ?? 'builtin';
   const endpoint = settings?.endpoint ?? DEFAULT_SEARCH_ENDPOINT;
   const enabled = !!settings || !!provided;
+  const locale = settings?.scope?.locale;
+  const version = settings?.scope?.version;
   return useMemo(() => {
     if (!enabled) return undefined;
     if (provided) return createSearchClient(provided);
+    const scope = { locale, version };
     if (backend === 'builtin')
       return createSearchClient(
-        createKeywordBackend(fetchIndex(`${endpoint}/index`)),
+        createKeywordBackend(
+          fetchIndex(searchIndexUrl(endpoint, scope, STATIC_EXPORT)),
+        ),
       );
-    return createSearchClient(createEndpointBackend(endpoint, { id: backend }));
-  }, [enabled, provided, backend, endpoint]);
+    return createSearchClient(
+      createEndpointBackend(endpoint, { id: backend, scope }),
+    );
+  }, [enabled, provided, backend, endpoint, locale, version]);
 }
 
 export type SearchStatus = 'idle' | 'loading' | 'ready' | 'error';

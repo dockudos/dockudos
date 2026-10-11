@@ -1,4 +1,5 @@
 import type { NavigateResult } from '@dockudos/core';
+import { askScopeFields } from './scope.ts';
 
 export type NavigationOutcome =
   | { kind: 'found'; result: NavigateResult }
@@ -21,7 +22,7 @@ export async function requestNavigation(
     const response = await doFetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, ...askScopeFields() }),
       signal,
     });
     if (response.status === 404) return { kind: 'none' };

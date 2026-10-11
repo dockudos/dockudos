@@ -2,6 +2,7 @@
 
 import type { TocEntry } from '@dockudos/core';
 import { useEffect, useState } from 'react';
+import { useMessages } from '../messages-context.tsx';
 
 /** Id of the last heading that has scrolled past the top of the viewport, or the first one. */
 export function useActiveHeading(ids: readonly string[]): string | undefined {
@@ -34,13 +35,14 @@ export function useActiveHeading(ids: readonly string[]): string | undefined {
 }
 
 export function Toc({ entries }: { entries: readonly TocEntry[] }) {
+  const t = useMessages();
   const ids = entries.map((e) => e.id);
   const active = useActiveHeading(ids);
   if (entries.length === 0) return null;
   return (
     <nav aria-labelledby="dk-toc-title">
       <h2 id="dk-toc-title" className="dk-toc-title">
-        On this page
+        {t('onThisPage')}
       </h2>
       <ul className="m-0 list-none p-0">
         {entries.map((e) => (

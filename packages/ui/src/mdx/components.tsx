@@ -58,6 +58,9 @@ import { Tab, Tabs } from '../components/tabs.tsx';
 import { Tooltip } from '../components/tooltip.tsx';
 import { TypeTable } from '../components/type-table.tsx';
 import { Update } from '../components/update.tsx';
+import { Changelog } from '../components/changelog.tsx';
+import { Story } from '../components/story.tsx';
+import { Section } from '../components/section.tsx';
 import { Video } from '../components/video.tsx';
 import { ZoomableImage } from '../components/zoomable-image.tsx';
 import { ApiOperation } from '../components/api/context.tsx';
@@ -142,6 +145,9 @@ export const mdxComponents = {
   ApiResponses,
   ApiPlayground,
   Update,
+  Changelog,
+  Story,
+  Section,
   CopyText,
   Hero,
   LinkButton,
