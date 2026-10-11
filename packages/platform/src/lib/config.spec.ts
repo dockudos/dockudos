@@ -10,7 +10,7 @@ const base = {
 describe('loadConfig', () => {
   it('reads a minimal environment and applies defaults', () => {
     const c = loadConfig(base);
-    expect(c).toMatchObject({ port: 4000, logLevel: 'info', publicUrl: 'https://platform.example.com', workerConcurrency: 2, agentEnabled: false });
+    expect(c).toMatchObject({ dbPoolMax: 10, port: 4000, logLevel: 'info', publicUrl: 'https://platform.example.com', workerConcurrency: 2, agentEnabled: false });
     expect(c.services).toEqual(['web', 'hooks', 'analytics', 'auth', 'editor', 'worker', 'agent', 'site']);
     expect(c.analytics).toEqual({ logConversations: false, retentionDays: 90, conversationRetentionDays: 30 });
     expect(c.s3).toBeUndefined();

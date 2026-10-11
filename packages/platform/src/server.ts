@@ -20,6 +20,24 @@ async function main(): Promise<void> {
   const migrated = await platform.migrate();
   if (migrated.length) platform.log.info('migrations applied', { ids: migrated });
 
+  // Operator commands: `server.js migrate` (apply migrations, exit) and `server.js bootstrap <team name>` (print an admin API key).
+  const [command, ...rest] = process.argv.slice(2);
+  if (command === 'migrate') {
+    process.stdout.write(`${JSON.stringify({ applied: migrated })}\n`);
+    await platform.stop();
+    process.exit(0);
+  }
+  if (command === 'bootstrap') {
+    const { team, secret } = await platform.auth.bootstrap(rest.join(' ') || 'Default');
+    process.stdout.write(`${JSON.stringify({ team: team.slug, apiKey: secret })}\n`);
+    await platform.stop();
+    process.exit(0);
+  }
+  if (command) {
+    process.stderr.write(`Unknown command "${command}". Use: migrate | bootstrap <team name> | (none, to run the server)\n`);
+    process.exit(64);
+  }
+
   const server = createServer(async (incoming, outgoing) => {
     const host = incoming.headers.host ?? 'localhost';
     const url = new URL(incoming.url ?? '/', `${config.publicUrl.startsWith('https') ? 'https' : 'http'}://${host}`);

@@ -28,6 +28,8 @@ const envSchema = z.object({
   DOCKUDOS_SESSION_SECRET: z
     .string()
     .min(32, 'must be at least 32 characters (try `openssl rand -hex 32`)'),
+  /** Most database connections this process opens. Keep (processes x this) under Postgres `max_connections`. */
+  DOCKUDOS_DB_POOL_MAX: z.coerce.number().int().min(1).max(200).default(10),
   DOCKUDOS_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   DOCKUDOS_LOG_LEVEL: z
     .enum(['debug', 'info', 'warn', 'error', 'silent'])
@@ -92,6 +94,7 @@ export interface PlatformConfig {
   publicUrl: string;
   sessionSecret: string;
   port: number;
+  dbPoolMax: number;
   logLevel: 'debug' | 'info' | 'warn' | 'error' | 'silent';
   services: ServiceName[];
   workerConcurrency: number;
@@ -188,6 +191,7 @@ export function loadConfig(
     publicUrl: e.DOCKUDOS_PUBLIC_URL.replace(/\/+$/, ''),
     sessionSecret: e.DOCKUDOS_SESSION_SECRET,
     port: e.DOCKUDOS_PORT,
+    dbPoolMax: e.DOCKUDOS_DB_POOL_MAX,
     logLevel: e.DOCKUDOS_LOG_LEVEL,
     services,
     workerConcurrency: e.DOCKUDOS_WORKER_CONCURRENCY,

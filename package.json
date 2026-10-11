@@ -21,6 +21,7 @@
     "lint:commits": "commitlint --from origin/main --to HEAD",
     "verify:packages": "node tools/verify-packages.mjs",
     "verify:init": "node tools/verify-init.mjs",
+    "verify:platform": "node tools/verify-platform.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -29,6 +30,8 @@
     "@axe-core/playwright": "^4.13.0",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
     "@eslint/js": "^9.8.0",
     "@next/eslint-plugin-next": "^16.1.6",
     "@nx/eslint": "23.2.1",

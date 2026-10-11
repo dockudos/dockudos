@@ -44,7 +44,7 @@ export async function createPlatform(config: PlatformConfig, o: PlatformOverride
   const clock = o.clock ?? systemClock;
   const log = o.log ?? createLogger({ level: config.logLevel, secrets: config.secrets });
   const metrics = new MetricsRegistry();
-  const db = o.db ?? createPgDb(config.databaseUrl, { max: Math.max(5, config.workerConcurrency * 3) });
+  const db = o.db ?? createPgDb(config.databaseUrl, { max: config.dbPoolMax });
   const storage = o.storage ?? (config.s3
     ? createS3Storage({ ...config.s3, ...(o.fetch && { fetch: o.fetch }) })
     : createFsStorage(`${config.dataDir}/objects`));

@@ -197,6 +197,20 @@ describe('api keys', () => {
   });
 });
 
+describe('bootstrap', () => {
+  it('makes a team and an admin key that works, without any signed-in person', async () => {
+    const a = fresh();
+    const { team, secret } = await a.bootstrap('Ops Team');
+    expect(team.slug).toBe('ops-team');
+    const info = await a.authenticateApiKey(secret);
+    expect(info).toMatchObject({ teamId: team.id, role: 'admin' });
+    const again = await a.bootstrap('Ops Team', 'second');
+    expect(again.team.id).toBe(team.id);
+    expect(again.secret).not.toBe(secret);
+    expect(await status(a.bootstrap('  '))).toBe(400);
+  });
+});
+
 describe('docs bridge (P5.6)', () => {
   it('turns team membership into roles and groups that docs.json rules can match, in a cookie docs sites read', async () => {
     const a = fresh();

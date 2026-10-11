@@ -306,7 +306,28 @@ export function createAuth({ db, secret, clock = systemClock, adminEmail, sessio
     return signToken({ ...principal }, docsSecret, { purpose: 'session', ttlSeconds: hours * 3600, now: nowSec() });
   }
 
+  /**
+   * For operators with database access (the `bootstrap` command): make sure a team exists and mint an admin API key for
+   * it, with no signed-in person involved. This is how a headless install, or a smoke test, gets its first credentials.
+   */
+  async function bootstrap(teamName: string, keyName = 'bootstrap'): Promise<{ team: Team; secret: string }> {
+    const clean = teamName.trim();
+    if (!clean || clean.length > 80) throw badRequest('A team name is 1 to 80 characters.');
+    const base = slugify(clean) || 'team';
+    return db.transaction(async (tx) => {
+      const existing = await tx.query<Team>('SELECT id, name, slug FROM teams WHERE slug = $1', [base]);
+      const team = existing.rows[0] ?? (await tx.query<Team>('INSERT INTO teams (name, slug, created_at) VALUES ($1,$2,$3) RETURNING id, name, slug', [clean, base, clock()])).rows[0]!;
+      const prefix = randomBytes(4).toString('hex');
+      const secretPart = randomBytes(24).toString('base64url');
+      await tx.query(
+        `INSERT INTO api_keys (team_id, name, prefix, hash, role, created_at) VALUES ($1,$2,$3,$4,'admin',$5)`,
+        [team.id, keyName, prefix, sha256(secretPart), clock()]);
+      return { team, secret: `dkd_${prefix}_${secretPart}` };
+    });
+  }
+
   return {
+    bootstrap,
     upsertUser, getUser, sessionToken, userFromSession,
     createTeam, listTeams, listMembers, setMember, removeMember, roleIn, require,
     createApiKey, listApiKeys, revokeApiKey, authenticateApiKey,
