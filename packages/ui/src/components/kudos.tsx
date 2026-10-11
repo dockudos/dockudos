@@ -2,6 +2,7 @@
 
 import { Check, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { type FormEvent, useEffect, useId, useState } from 'react';
+import { emitAnalytics } from '../lib/analytics-events.ts';
 import { cn } from '../lib/utils.ts';
 import { useMessages } from '../messages-context.tsx';
 
@@ -98,6 +99,7 @@ export function Kudos({
     try {
       const { id } = await send(endpoint, { path, vote: value });
       remember(path, { id, vote: value });
+      emitAnalytics({ kind: 'feedback', path, value });
       setStage({ name: 'comment', vote: value, id });
     } catch {
       setStage({ name: 'ask' });

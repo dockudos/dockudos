@@ -46,6 +46,24 @@ const open = async (user: ReturnType<typeof userEvent.setup>) => {
   return screen.findByRole('combobox', { name: 'Search pages' });
 };
 
+describe('CommandPalette announces settled searches', () => {
+  it('reports the words typed and how many sections matched, once per query, with 0 for a failed search', async () => {
+    const heard: unknown[] = [];
+    const on = (e: Event) => heard.push((e as CustomEvent).detail);
+    window.addEventListener('dockudos:search', on);
+    const search = vi.fn(async (q: string) => (q === 'rotate' ? [hit(), hit({ id: 'c2' })] : []));
+    const { user } = setup({ id: 't', search });
+    const box = await open(user);
+    await user.type(box, 'rotate');
+    await waitFor(() => expect(heard).toEqual([{ query: 'rotate', results: 2 }]));
+    await user.clear(box);
+    await user.type(box, 'nothing here');
+    await waitFor(() => expect(heard.at(-1)).toEqual({ query: 'nothing here', results: 0 }));
+    expect(heard.filter((h) => (h as { query: string }).query === 'rotate')).toHaveLength(1);
+    window.removeEventListener('dockudos:search', on);
+  });
+});
+
 describe('CommandPalette full-text search', () => {
   it('shows the section, its heading path and the matched words', async () => {
     const search = vi.fn(async () => [hit()]);

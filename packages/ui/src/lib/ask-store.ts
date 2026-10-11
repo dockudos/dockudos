@@ -4,6 +4,7 @@ import {
   type AskSource,
   readSse,
 } from '@dockudos/core';
+import { emitAnalytics } from './analytics-events.ts';
 import { askScopeFields } from './scope.ts';
 
 export interface AskTurn {
@@ -136,7 +137,16 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
         return update(id, (t) => ({ ...t, sources: event.items }));
       case 'token':
         return update(id, (t) => ({ ...t, text: t.text + event.text }));
-      case 'done':
+      case 'done': {
+        const asked = state.turns.filter((t) => t.role === 'user').at(-1)?.text;
+        const turn = state.turns.find((t) => t.id === id);
+        if (asked)
+          emitAnalytics({
+            kind: 'assistant',
+            query: asked,
+            value: event.refused || event.citations.length === 0 ? 'unanswered' : 'answered',
+            cited: (turn?.sources ?? []).filter((s) => event.citations.includes(s.n)).map((s) => s.path),
+          });
         return update(id, (t) => ({
           ...t,
           status: 'done',
@@ -145,6 +155,7 @@ export function createAskStore(options: AskStoreOptions = {}): AskStore {
           ...(event.refused && { refused: event.refused }),
           ...(event.flagged && { flagged: event.flagged }),
         }));
+      }
       case 'error':
         return update(id, (t) => ({
           ...t,

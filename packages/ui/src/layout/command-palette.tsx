@@ -1,5 +1,6 @@
 'use client';
 
+import { emitAnalytics } from '../lib/analytics-events.ts';
 import {
   type NavigateResult,
   type NavigateTarget,
@@ -186,6 +187,14 @@ export function CommandPalette({
   const found = useSearch(client, open ? query : '', {
     limit: search?.limit,
   });
+
+  // Tell listeners (analytics) what a search found once it has settled, once per query.
+  const announced = useRef('');
+  useEffect(() => {
+    if (!open || found.status !== 'ready' || !found.query.trim() || announced.current === found.query) return;
+    announced.current = found.query;
+    emitAnalytics({ kind: 'search', query: found.query.trim(), results: found.hits.length });
+  }, [open, found.status, found.query, found.hits.length]);
 
   useHotkey('mod+k', () => setOpen((o) => !o), {
     description: 'Search pages (also /)',

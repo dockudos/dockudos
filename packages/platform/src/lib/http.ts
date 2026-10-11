@@ -2,6 +2,7 @@ import { createRateLimiter } from '@dockudos/core';
 import type { Actor, Auth } from './auth.ts';
 import type { Agent } from './agent.ts';
 import type { Analytics, IngestEvent } from './analytics.ts';
+import { ANALYTICS_SCRIPT } from './analytics-script.ts';
 import type { Builds } from './builds.ts';
 import type { PlatformConfig, ServiceName } from './config.ts';
 import type { Editor, PageOperation } from './editor.ts';
@@ -141,6 +142,9 @@ export function createHttp(d: HttpDeps) {
   });
 
   // --- analytics ------------------------------------------------------------------------------------------------------
+  route('GET', '/analytics.js', 'analytics', () => new Response(ANALYTICS_SCRIPT, {
+    headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff', 'cross-origin-resource-policy': 'cross-origin' },
+  }));
   route('OPTIONS', '/api/v1/ingest/:siteId', 'analytics', () => new Response(null, { status: 204, headers: CORS_OPEN }));
   route('POST', '/api/v1/ingest/:siteId', 'analytics', async (c) => {
     const slow = limited(c, limits.ingest, `${id(c, 'siteId')}:${c.ip}`);

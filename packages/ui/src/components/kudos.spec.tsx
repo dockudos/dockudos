@@ -39,6 +39,31 @@ describe('Kudos', () => {
     );
   });
 
+  it('announces the vote to listeners once it has been saved, and not before', async () => {
+    const user = userEvent.setup();
+    mockFetch(() => ({ ok: true }));
+    const heard: unknown[] = [];
+    const on = (e: Event) => heard.push((e as CustomEvent).detail);
+    window.addEventListener('dockudos:feedback', on);
+    render(<Kudos path="/guide" />);
+    await user.click(screen.getByRole('button', { name: 'No' }));
+    await waitFor(() => expect(heard).toEqual([{ path: '/guide', value: 'down' }]));
+    window.removeEventListener('dockudos:feedback', on);
+  });
+
+  it('does not announce a vote that could not be saved', async () => {
+    const user = userEvent.setup();
+    mockFetch(() => ({ ok: false }));
+    const heard: unknown[] = [];
+    const on = (e: Event) => heard.push((e as CustomEvent).detail);
+    window.addEventListener('dockudos:feedback', on);
+    render(<Kudos path="/guide" />);
+    await user.click(screen.getByRole('button', { name: 'Yes' }));
+    await screen.findByText(/Could not send your vote/);
+    expect(heard).toEqual([]);
+    window.removeEventListener('dockudos:feedback', on);
+  });
+
   it('sends the vote, then offers an optional comment', async () => {
     const user = userEvent.setup();
     const fetch = mockFetch(() => ({ ok: true }));

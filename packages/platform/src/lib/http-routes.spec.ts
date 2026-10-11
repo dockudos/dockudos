@@ -132,3 +132,13 @@ describe('sign-in routes', () => {
     expect(limited).toBe(true);
   });
 });
+
+describe('analytics.js route', () => {
+  it('is served to any site, as JavaScript, with a cache lifetime', async () => {
+    const res = await call('/analytics.js', 'GET', undefined, '');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('text/javascript');
+    expect(res.headers.get('cache-control')).toContain('max-age=3600');
+    expect(await res.text()).toContain('/api/v1/ingest/');
+  });
+});
