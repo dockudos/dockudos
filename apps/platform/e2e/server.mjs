@@ -165,10 +165,30 @@ const handler = async (req) => {
       },
     });
   }
+  if (url.pathname === '/auth/logout' && req.method === 'POST') {
+    // Stands in for the OIDC sign-out, which this server has no identity provider for: same answer, same cookie.
+    return new Response(null, {
+      status: 303,
+      headers: {
+        location: '/',
+        'set-cookie':
+          'dockudos_platform=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+      },
+    });
+  }
   if (url.pathname === '/__e2e/state') return Response.json(state());
   if (url.pathname === '/__e2e/reset') {
     git.pulls.length = 0;
     git.pushes.length = 0;
+    return Response.json({ ok: true });
+  }
+  if (url.pathname === '/__e2e/seed-repo') {
+    // A fresh repository, so a test can connect and change its own site without touching the seeded one.
+    const { repo } = await req.json();
+    git.seed(repo, {
+      'docs.json': JSON.stringify({ name: repo }),
+      'docs/index.mdx': '---\ntitle: Home\n---\n\n# Home\n\nHello.\n',
+    });
     return Response.json({ ok: true });
   }
   if (url.pathname === '/__e2e/push') {
