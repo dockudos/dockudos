@@ -56,7 +56,13 @@ export default function Builds({
           >
             Rebuild {site.data?.site.defaultBranch}
           </button>
-          {active && <button onClick={() => builds.reload()}>Refresh</button>}
+          {active && (
+            <button
+              onClick={() => void Promise.all([builds.reload(), site.reload()])}
+            >
+              Refresh
+            </button>
+          )}
           <span className="muted small">
             Pushing to <code>{site.data?.site.defaultBranch}</code> rebuilds
             automatically.
