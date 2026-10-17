@@ -76,3 +76,6 @@ apps/platform/playwright-report
 
 # built editor interface (apps/editor -> packages/cli/editor)
 packages/cli/editor
+
+.serena
+.claude/.headroom*
