@@ -1,0 +1,75 @@
+---
+icon: pencil
+title: Visual editor
+description: Edit the pages of a docs folder in your browser, like a document, and commit the changes with Git.
+---
+
+`dockudos edit` opens a docs folder in a browser editor. Pages look like the page, not like Markdown: headings, lists, links, images,
+tables and components are edited in place. Everything is saved to your files as MDX, and the changes are committed with Git.
+
+```bash
+dockudos edit              # the current folder
+dockudos edit ./my-docs    # another folder
+```
+
+The command prints an address and opens it. Keep the terminal open while you edit; press `Ctrl+C` to stop.
+
+## What you can do
+
+- **Edit pages** with the toolbar: bold, italic, strikethrough, inline code, links, headings, lists, quotes, code blocks, dividers, tables and images.
+- **Insert components** from the **Insert** menu: Callout, Tabs, Steps, Cards, Accordion, a code block or a table. Each shows as a labelled block
+  with its tag above it, and its contents are edited in place. Edit the tag text above a block to change its attributes (`type="info"`, `title="…"`); inline components such as a one-line Callout show a label you can click.
+- **Add images** with **Image**, by pasting or by dropping a file on the page. The file is copied to `public/media/`.
+- **Add, rename and delete pages** in the sidebar. A new page is listed in the sidebar of `docs.json`. A rename moves the file, updates the
+  sidebar and adds a permanent redirect from the old address. A delete removes the sidebar entry too.
+- **Change page settings** (title, description, icon) in the form above the page. **Site settings** opens `docs.json` as JSON, and a change that
+  does not match the schema is refused with the reason.
+- **Switch to Source** at any time to see and edit the MDX itself. If the MDX is not valid, the editor says so and keeps your text.
+
+Every change is written to disk a moment after you stop typing. The header of a page says **Saved to disk** when it is.
+
+## Commit with Git
+
+The panel on the right lists what changed since the last commit. Tick the files to include, read a **Diff**, write a message and press
+**Commit**. Your commits use your Git name and email. If Git does not have them yet, the panel tells you which two commands to run.
+
+- **Discard** throws away the uncommitted changes of the files you ticked. It cannot be undone, so it asks first.
+- The **History** list shows the latest commits of the branch you are on.
+- The editor commits to the branch you have checked out. It never pushes, creates branches or changes other files; use Git for that.
+- A folder that is not a Git repository can still be edited. The panel offers to start a repository there.
+
+## Your files stay yours
+
+The editor writes a page back **exactly as it was** wherever you did not edit it. Opening a page and closing it changes nothing, and
+editing a paragraph changes the lines of that paragraph, so your Git diffs stay small and reviewable. Things the editor cannot show as
+visual blocks, such as `import` lines, `{expressions}`, task lists and components with no text inside, appear as boxes of source
+text and are saved as written.
+
+If a file changes on disk while you have it open (a `git pull`, another editor), the editor notices when it next saves, writes nothing, and lets you load
+the version on disk or keep yours.
+
+## Safety
+
+The editor is a local tool for one person.
+
+- It listens on `127.0.0.1` only, on a random port, so other computers cannot reach it. Use `--port` to pick the port.
+- The address contains a one-time token. Without it, and without the cookie it sets, every request is refused. Requests from other websites and
+  requests with another `Host` are refused too, which protects against pages in your browser that try to reach it.
+- It can only read and write `docs.json`, `docs/**/*.md(x)` and `public/media/*`. Your code, scripts, workflows, `.git` and files outside the
+  folder are out of reach, including through symbolic links.
+- Uploads are checked by their bytes: only PNG, JPEG, GIF, WebP, SVG, PDF and MP4 are accepted, up to 10 MB, and scripts are removed from SVGs.
+
+## Options
+
+| Option          | Meaning                                                                         |
+| --------------- | ------------------------------------------------------------------------------- |
+| `--port <n>`    | Listen on this port instead of a random one.                                    |
+| `--no-open`     | Print the address without opening the browser.                                  |
+| `--ui <folder>` | Serve another build of the editor interface (for working on the editor itself). |
+
+## Limits
+
+- The editor shows the structure of a page, not the site's styling. To see the page as readers do, run `dockudos dev` next to it; changes
+  appear there as you save.
+- Components that hold their text in attributes (for example `<Card title="…" />` with no children) are edited through their tag, not visually.
+- It edits one page at a time and does not merge. If two people edit the same file, Git does that.

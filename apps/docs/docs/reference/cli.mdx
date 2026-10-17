@@ -78,6 +78,15 @@ dockudos mcp
 Serves this project's docs to AI coding tools over the [Model Context Protocol](../guides/mcp.mdx), on standard input and output.
 Nothing else is written to standard output.
 
+## edit
+
+```bash
+dockudos edit [folder] [--port <n>] [--no-open] [--ui <folder>]
+```
+
+Opens the docs folder in a [visual editor](../guides/visual-editor.mdx) in your browser, saves pages as MDX files and commits them with Git.
+It listens on `127.0.0.1` only. Stop it with `Ctrl+C`.
+
 ## broken-links
 
 ```bash

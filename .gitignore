@@ -73,3 +73,6 @@ apps/example/eval/results
 apps/platform/.next
 apps/platform/test-results
 apps/platform/playwright-report
+
+# built editor interface (apps/editor -> packages/cli/editor)
+packages/cli/editor

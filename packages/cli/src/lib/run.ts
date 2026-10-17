@@ -1,6 +1,7 @@
 import { brokenLinks } from './broken-links.ts';
 import { build } from './build.ts';
 import { dev } from './dev.ts';
+import { edit } from './edit.ts';
 import { generate } from './generate.ts';
 import { init } from './init.ts';
 import { indexCommand } from './index-command.ts';
@@ -18,6 +19,7 @@ Usage: dockudos <command> [options]
 Commands:
   init [folder]     Create a new docs site (--name, --package-manager, --yes)
   dev [next args]   Start the dev server; restarts when docs.json changes
+  edit [folder]     Edit pages visually in the browser and commit them with Git (--port, --no-open)
   build [next args] Sync sources, validate docs.json, check links, then build the site (--static for a plain-file site in out/, --base-path /name for a sub-path, --no-sync to skip the sources)
   generate          Write API reference pages from the specs in docs.json (--force)
   index             Build the search index (and embeddings, when configured) without building the site
@@ -37,6 +39,7 @@ const COMMANDS: Record<string, (env: Env, args: string[]) => Promise<number>> =
   {
     init,
     dev,
+    edit,
     build,
     generate,
     index: indexCommand,

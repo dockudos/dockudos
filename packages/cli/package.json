@@ -37,6 +37,7 @@
   "files": [
     "dist",
     "templates",
+    "editor",
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
@@ -47,7 +48,15 @@
   "nx": {
     "tags": [
       "scope:cli"
-    ]
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build",
+          "@dockudos/editor:build"
+        ]
+      }
+    }
   },
   "publishConfig": {
     "access": "public"

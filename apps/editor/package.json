@@ -1,0 +1,77 @@
+{
+  "name": "@dockudos/editor",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The browser interface of `dockudos edit`: a visual MDX editor with Git commits. Built into packages/cli/editor.",
+  "nx": {
+    "tags": [
+      "scope:app"
+    ],
+    "targets": {
+      "build": {
+        "command": "vite build",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "outputs": [
+          "{workspaceRoot}/packages/cli/editor"
+        ],
+        "cache": true
+      },
+      "dev": {
+        "command": "vite",
+        "options": {
+          "cwd": "{projectRoot}"
+        }
+      },
+      "typecheck": {
+        "command": "tsc -p tsconfig.json",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "cache": true
+      },
+      "test-ci": {
+        "command": "vitest run",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "cache": true
+      },
+      "e2e": {
+        "command": "playwright test",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "dependsOn": [
+          "@dockudos/cli:build"
+        ],
+        "cache": false
+      }
+    }
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-image": "^3.32.0",
+    "@tiptap/extension-link": "^3.32.0",
+    "@tiptap/extension-placeholder": "^3.32.0",
+    "@tiptap/extension-table": "^3.32.0",
+    "@tiptap/extension-table-cell": "^3.32.0",
+    "@tiptap/extension-table-header": "^3.32.0",
+    "@tiptap/extension-table-row": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/react": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "mdast-util-to-markdown": "^2.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.1"
+  }
+}

@@ -20,6 +20,6 @@ export default [
     },
   },
   {
-    ignores: ['**/out-tsc', 'templates/**'],
+    ignores: ['**/out-tsc', 'templates/**', 'editor/**'],
   },
 ];
