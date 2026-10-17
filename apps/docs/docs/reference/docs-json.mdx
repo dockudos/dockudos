@@ -473,6 +473,12 @@ API reference pages from OpenAPI, AsyncAPI and GraphQL. See [API reference](../g
       description:
         "Hosts the proxy may call besides the spec's servers, like `api.example.com` or `localhost:4000`. These skip the private-network check.",
     },
+    'samples.mode': {
+      type: '"replace" | "append" | "generated-only"',
+      default: '"replace"',
+      description:
+        'How `x-codeSamples` from the spec combine with the generated code samples. See [Samples written in the spec](../guides/api-reference.mdx#samples-written-in-the-spec).',
+    },
   }}
 />
 

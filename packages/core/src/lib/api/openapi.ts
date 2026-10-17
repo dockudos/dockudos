@@ -1,4 +1,5 @@
 import { readPointer } from './bundle.ts';
+import { readCodeSamples } from './code-samples.ts';
 import {
   type ApiExample,
   type ApiMediaType,
@@ -85,6 +86,7 @@ class Normalizer {
   private readonly queue: { name: string; node: unknown }[] = [];
   private readonly schemas: Record<string, ApiSchema> = {};
   private readonly ids = new Set<string>();
+  private readonly warnings: string[] = [];
 
   private readonly doc: Json;
   private readonly source: string;
@@ -148,6 +150,7 @@ class Normalizer {
       operations,
       schemas: this.schemas,
       securitySchemes,
+      ...(this.warnings.length && { warnings: this.warnings }),
     };
   }
 
@@ -352,6 +355,11 @@ class Normalizer {
     ];
     const requestBody = this.requestBody(op.requestBody);
     const servers = this.servers(op.servers ?? item.servers);
+    const found = readCodeSamples(
+      op,
+      `${webhook ? 'webhook' : method.toUpperCase()} ${path}`,
+    );
+    this.warnings.push(...found.warnings);
     const security = Array.isArray(op.security)
       ? this.security(op.security)
       : this.security(this.doc.security);
@@ -369,6 +377,7 @@ class Normalizer {
       responses: this.responses(op.responses),
       security,
       ...(servers.length && { servers }),
+      ...(found.samples.length && { codeSamples: found.samples }),
     };
   }
 

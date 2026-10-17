@@ -327,6 +327,15 @@ const playgroundSchema = z.strictObject({
   allowedHosts: z.array(z.string().min(1)).default([]),
 });
 
+const samplesSchema = z.strictObject({
+  /**
+   * How code samples written in the spec (`x-codeSamples`) combine with the generated ones.
+   * `replace`: a spec sample for cURL, JavaScript, Python or Go takes that tab's place and the others are added.
+   * `append`: all generated tabs, then the spec's. `generated-only`: ignore the spec's samples.
+   */
+  mode: z.enum(['replace', 'append', 'generated-only']).default('replace'),
+});
+
 const referenceSourceSchema = z.strictObject({
   name: sourceName,
   /** `typescript`: `.ts` or `.d.ts` files. `python`: the JSON written by `griffe dump`. */
@@ -694,11 +703,13 @@ export const docsConfigSchema = z
       .strictObject({
         sources: z.array(apiSourceSchema).default([]),
         playground: playgroundSchema.default(() => playgroundSchema.parse({})),
+        samples: samplesSchema.default(() => samplesSchema.parse({})),
       })
       .superRefine((v, ctx) => uniqueBy(v.sources, ctx, ['sources']))
       .default(() => ({
         sources: [],
         playground: playgroundSchema.parse({}),
+        samples: samplesSchema.parse({}),
       })),
     /** Reference pages generated from TypeScript definitions and Python packages. */
     reference: z

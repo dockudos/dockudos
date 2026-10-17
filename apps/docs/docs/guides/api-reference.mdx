@@ -75,7 +75,46 @@ Each endpoint shows cURL, JavaScript (`fetch`), Python (`requests`) and Go (`net
 authentication of the spec and follow what the reader types into the playground. The language a reader picks is remembered on
 every other endpoint page.
 
-To add or replace languages, wrap `ApiOperation` with your own list. Each language turns the request into text. The wrapper
+### Samples written in the spec
+
+An operation can carry its own samples with `x-codeSamples` (the older name `x-code-samples` works too). Use it for samples that
+generated code cannot know: an SDK call, a CLI command, a longer example.
+
+```yaml
+paths:
+  /pets/{id}:
+    get:
+      x-codeSamples:
+        - lang: Shell
+          label: cURL
+          source: |
+            curl --request GET --url https://api.example.com/pets/10
+        - lang: Ruby
+          source: |
+            Acme::Pet.find(10)
+```
+
+`lang` and `source` are required; `label` is the tab name and defaults to `lang`. Common names are matched to the generated
+languages, so `Shell`, `cURL` and `bash` all mean cURL, `Node.js` and `js` mean JavaScript, `py` means Python and `golang` means Go.
+A language the highlighter does not know is shown as plain text.
+
+A spec sample is shown as written. It does not follow what the reader types into the playground, as the generated ones do.
+
+`openapi.samples.mode` in `docs.json` chooses how they combine with the generated tabs:
+
+| Mode             | Result                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| `replace`        | Default. A spec sample takes the place of the generated tab for the same language; the rest are added after. |
+| `append`         | All generated tabs, then every spec sample in the order of the spec.                                         |
+| `generated-only` | Ignore `x-codeSamples`.                                                                                      |
+
+A malformed entry (no `lang` or `source`, not an object, over 100,000 characters) is skipped and reported as a warning by
+`dockudos generate`, naming the operation and the entry. At most 20 samples are used per operation. The samples are also part of
+the endpoint's [Markdown twin](./ai-outputs.mdx), so search and the assistant can find them.
+
+### Other languages for every endpoint
+
+To add or replace languages for every endpoint, wrap `ApiOperation` with your own list. Each language turns the request into text. The wrapper
 must be a client component, because the languages are functions:
 
 ```tsx title="src/api-operation.tsx"

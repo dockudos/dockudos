@@ -14,7 +14,7 @@ import { ApiSpecError, type ApiModel } from './types.ts';
 /** Written next to the generated pages; lists what was written so stale files can be removed and nothing else is. */
 export const MANIFEST = '.dockudos/api/manifest.json';
 /** Bump when the generated output changes, so cached results are not reused. */
-const GENERATOR_VERSION = 3;
+const GENERATOR_VERSION = 4;
 
 const isUrl = (s: string) => /^https?:\/\//i.test(s);
 
@@ -221,7 +221,12 @@ export type SourceGenerator = (
   spec: LoadedSpec,
   source: ApiSourceConfig,
   ctx: GenerateApiOptions & { location: string },
-) => Promise<{ files: GeneratedFile[]; operations: number; pages: number }>;
+) => Promise<{
+  files: GeneratedFile[];
+  operations: number;
+  pages: number;
+  warnings?: string[];
+}>;
 
 const generators: Record<SpecKind, SourceGenerator> = {
   openapi: async (spec, source, ctx) => {
@@ -231,6 +236,7 @@ const generators: Record<SpecKind, SourceGenerator> = {
       mount: source.path ?? source.name,
       groupBy: source.groupBy,
       playground: ctx.config.openapi.playground.enabled,
+      samplesMode: ctx.config.openapi.samples.mode,
       proxy: ctx.config.openapi.playground.proxy,
       docsDir: ctx.docsDir,
       urlPrefix: ctx.config.urlPrefix,
@@ -303,6 +309,7 @@ export async function generateApiDocs(
           ...source,
           docsDir,
           p: config.openapi.playground,
+          s: config.openapi.samples,
           u: config.urlPrefix,
         }),
       );
@@ -335,6 +342,7 @@ export async function generateApiDocs(
       docsDir,
       location,
     });
+    for (const w of out.warnings ?? []) log(`${source.name}: warning: ${w}`);
     const written = await writeAll(root, out.files);
     next.sources[source.name] = { hash, files: out.files.map((f) => f.file) };
     reports.push({

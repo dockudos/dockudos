@@ -1,4 +1,5 @@
 import { posix } from 'node:path';
+import { highlightFor } from './code-samples.ts';
 import { exampleFromSchema, hasContent, typeLabel } from './schema-view.ts';
 import {
   escapeMdx,
@@ -29,6 +30,8 @@ export interface GenerateResult {
   operations: number;
   /** Endpoint pages written. Always equals `operations`. */
   pages: number;
+  /** Problems in the spec that did not stop generation. */
+  warnings?: string[];
 }
 
 export interface GenerateOptions {
@@ -38,6 +41,8 @@ export interface GenerateOptions {
   mount: string;
   groupBy: 'tag' | 'path';
   playground: boolean;
+  /** How samples written in the spec (`x-codeSamples`) combine with the generated ones. Default `replace`. */
+  samplesMode?: 'replace' | 'append' | 'generated-only';
   /** Send playground requests through the site's proxy route. */
   proxy?: boolean;
   /** Folder with the MDX files, relative to the project root. Default `docs`. */
@@ -130,7 +135,13 @@ export function generateOpenApi(
       files.push({
         file: dataFile,
         content: JSON.stringify(
-          operationData(model, op, options.playground, lookup),
+          operationData(
+            model,
+            op,
+            options.playground,
+            lookup,
+            options.samplesMode,
+          ),
         ),
       });
       files.push({
@@ -176,6 +187,7 @@ export function generateOpenApi(
     files,
     operations,
     pages: ordered.reduce((n, g) => n + g.operations.length, 0),
+    ...(model.warnings?.length && { warnings: model.warnings }),
   };
 }
 
@@ -186,6 +198,7 @@ function operationData(
   op: ApiOperation,
   playground: boolean,
   lookup: (name: string) => ApiSchema | undefined,
+  samplesMode?: 'replace' | 'append' | 'generated-only',
 ): ApiOperationData {
   const expanded: ApiOperation = {
     ...op,
@@ -215,6 +228,7 @@ function operationData(
       Object.entries(model.securitySchemes).filter(([n]) => names.has(n)),
     ),
     ...(!playground || op.webhook ? { noPlayground: true } : {}),
+    ...(samplesMode && samplesMode !== 'replace' ? { samplesMode } : {}),
   };
 }
 
@@ -388,6 +402,15 @@ function agentMarkdown(op: ApiOperation): string {
           ...exampleBlocks(media),
         );
       }
+    }
+  }
+  if (op.codeSamples?.length) {
+    out.push('### Code samples');
+    for (const s of op.codeSamples) {
+      out.push(
+        `**${escapeMdx(s.label)}**`,
+        fence(s.source, highlightFor(s.lang)),
+      );
     }
   }
   return out.join('\n\n');

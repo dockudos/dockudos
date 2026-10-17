@@ -176,6 +176,17 @@ export interface ApiOperation {
   /** Alternatives; any one satisfies the operation. Empty means no authentication. */
   security: ApiSecurityRequirement[];
   servers?: ApiServer[];
+  /** Samples from `x-codeSamples`, in the order of the spec. */
+  codeSamples?: ApiCodeSample[];
+}
+
+/** A sample written in the spec (`x-codeSamples`). */
+export interface ApiCodeSample {
+  /** The language as the spec names it: `Shell`, `Node.js`, `Python`. */
+  lang: string;
+  /** Tab label. The language when the spec gives none. */
+  label: string;
+  source: string;
 }
 
 export interface ApiTag {
@@ -193,6 +204,8 @@ export interface ApiModel {
   /** Named schemas that are referenced from somewhere, by the name used in `ApiSchema.ref`. */
   schemas: Record<string, ApiSchema>;
   securitySchemes: Record<string, ApiSecurityScheme>;
+  /** Problems that did not stop the build: a malformed `x-codeSamples` entry, for example. */
+  warnings?: string[];
 }
 
 /** What a generated endpoint page embeds: the operation plus what is needed to try it. */
@@ -202,6 +215,8 @@ export interface ApiOperationData {
   securitySchemes: Record<string, ApiSecurityScheme>;
   /** Do not show the playground. */
   noPlayground?: boolean;
+  /** How samples from the spec combine with the generated ones. Default `replace`. */
+  samplesMode?: 'replace' | 'append' | 'generated-only';
 }
 
 /** An error in a spec or in reading it. The message names the source and says what is wrong. */

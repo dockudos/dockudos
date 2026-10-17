@@ -113,6 +113,47 @@ test.describe('API reference', () => {
     await expect(page.getByText('requests.request(')).toBeVisible();
   });
 
+  test('shows the samples written in the spec (x-codeSamples) next to the generated ones', async ({
+    page,
+  }) => {
+    await open(page, '/api-reference/pet/getpetbyid');
+    const tabs = page.locator('.dk-api-samples').getByRole('tab');
+    // The spec's Shell sample replaces the generated cURL tab; its Ruby sample is added after the others.
+    await expect(tabs).toHaveText([
+      'cURL (from the spec)',
+      'JavaScript',
+      'Python',
+      'Go',
+      'Ruby',
+    ]);
+    await expect(page.locator('.dk-api-samples')).toContainText(
+      "--url 'https://petstore3.swagger.io/api/v3/pet/10'",
+    );
+    await tabs.filter({ hasText: 'Ruby' }).click();
+    await expect(page.locator('.dk-api-samples')).toContainText(
+      "Net::HTTP.get(uri, 'api_key' => 'YOUR_API_KEY')",
+    );
+    // Endpoints without samples in the spec are unchanged.
+    await open(page, '/api-reference/pet/addpet');
+    await expect(page.locator('.dk-api-samples').getByRole('tab')).toHaveText([
+      'cURL',
+      'JavaScript',
+      'Python',
+      'Go',
+    ]);
+  });
+
+  test('the Markdown twin carries the samples from the spec', async ({
+    request,
+  }) => {
+    const text = await (
+      await request.get('/api-reference/pet/getpetbyid.md')
+    ).text();
+    expect(text).toContain('### Code samples');
+    expect(text).toContain('**Ruby**');
+    expect(text).toContain("Net::HTTP.get(uri, 'api_key' => 'YOUR_API_KEY')");
+  });
+
   test('the Markdown twin has the whole endpoint for AI tools', async ({
     request,
   }) => {

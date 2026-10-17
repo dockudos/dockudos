@@ -52,6 +52,7 @@ describe('parseConfig', () => {
       openapi: {
         sources: [],
         playground: { enabled: true, proxy: false, allowedHosts: [] },
+        samples: { mode: 'replace' },
       },
       reference: { sources: [] },
     });

@@ -38,6 +38,7 @@ export * from './lib/api/types.ts';
 export * from './lib/api/schema-view.ts';
 export * from './lib/api/request.ts';
 export * from './lib/api/samples.ts';
+export * from './lib/api/code-samples.ts';
 export { schemaFileName, slugify } from './lib/api/text.ts';
 export * from './lib/variants.ts';
 export * from './lib/principal.ts';

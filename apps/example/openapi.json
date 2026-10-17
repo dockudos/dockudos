@@ -331,6 +331,18 @@
           {
             "petstore_auth": ["write:pets", "read:pets"]
           }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL (from the spec)",
+            "source": "curl --request GET \\\n  --url 'https://petstore3.swagger.io/api/v3/pet/10' \\\n  --header 'api_key: YOUR_API_KEY'"
+          },
+          {
+            "lang": "Ruby",
+            "label": "Ruby",
+            "source": "require 'net/http'\n\nuri = URI('https://petstore3.swagger.io/api/v3/pet/10')\nputs Net::HTTP.get(uri, 'api_key' => 'YOUR_API_KEY')"
+          }
         ]
       },
       "post": {

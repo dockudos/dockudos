@@ -9,6 +9,7 @@ import {
   type RequestValues,
   buildHttpRequest,
   defaultValues,
+  mergeSamples,
   pickSecurity,
   serverUrl,
   validateInput,
@@ -168,6 +169,7 @@ export function ApiPlayground() {
   };
 
   const request = sample(true);
+  const sampleTabs = mergeSamples(languages, operation.codeSamples, data.samplesMode);
   const ignored = droppedHeaders(sample(false).headers);
   const path = request.url.startsWith(base.replace(/\/+$/, '')) ? request.url.slice(base.replace(/\/+$/, '').length) : operation.path;
   const vars = Object.entries(servers[server]?.variables ?? {});
@@ -176,10 +178,10 @@ export function ApiPlayground() {
 
   return (
     <div className="dk-api-playground">
-      <Tabs items={languages.map((l) => l.label)} groupId="api-sample-language" className="dk-api-samples">
-        {languages.map((l) => (
-          <Tab key={l.id} value={l.label}>
-            <CodeFigure code={l.generate(request)} language={l.highlight === 'bash' ? 'shell' : l.highlight} />
+      <Tabs items={sampleTabs.map((t) => t.label)} groupId="api-sample-language" className="dk-api-samples">
+        {sampleTabs.map((t) => (
+          <Tab key={t.id} value={t.label}>
+            <CodeFigure code={t.code(request)} language={t.highlight} />
           </Tab>
         ))}
       </Tabs>

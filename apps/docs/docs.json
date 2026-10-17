@@ -43,6 +43,10 @@
           "pages": ["guides/versions", "guides/languages", "guides/sources"]
         },
         {
+          "group": "Edit",
+          "pages": ["guides/visual-editor"]
+        },
+        {
           "group": "Customize",
           "pages": ["guides/theming", "guides/branding"]
         },
