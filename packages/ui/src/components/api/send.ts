@@ -18,6 +18,9 @@ export type SendOutcome =
   | { ok: true; response: PlaygroundResponse }
   | { ok: false; message: string; hint?: string };
 
+/** Where the playground's same-origin proxy lives, for requests a browser would block. */
+export const PROXY_ROUTE = '/api/playground';
+
 export const MAX_SHOWN = 200_000;
 /** Request headers a browser does not let a page set. They are dropped and the person is told. */
 const FORBIDDEN = new Set(['cookie', 'host', 'content-length', 'user-agent', 'origin', 'referer', 'connection']);

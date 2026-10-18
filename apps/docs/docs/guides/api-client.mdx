@@ -1,0 +1,133 @@
+---
+icon: send
+title: API client
+description: "Saved requests, environments and history, kept in the reader's own browser: no account, no server, no scripting."
+---
+
+The playground on an endpoint page tries one request. The **API client** keeps them: a reader saves a request, gives it
+a name, puts it in a collection, and sends it again next week with a different `{{baseUrl}}`.
+
+It is on **every endpoint page**, behind **Save request** and **Saved requests** under the address bar, so every
+generated page of an OpenAPI spec has it. There is no page to add.
+
+Nothing has to be turned on. The client is part of the theme, and its code is fetched when a reader opens it, not with
+every page.
+
+## Collections and saved requests
+
+**Save** keeps the request that is in the form: method, address, headers and body. A saved request can be renamed,
+moved up and down, moved between collections and deleted. Opening one fills the editor in again, so **Send** repeats
+it.
+
+A request saved from an endpoint page remembers where it came from (the operation and the base URL that was chosen),
+so the two stay connected.
+
+<Note>
+  A saved request **never holds a credential**. See [What is
+  stored](#what-is-stored-and-where) below.
+</Note>
+
+## Environments and variables
+
+A variable is written `{{name}}` and may appear in the address, in a header name or value, and in the body. The
+environment picker sits next to the heading, and on endpoint pages next to the address bar, so the same choice holds
+across the site.
+
+```http
+GET {{baseUrl}}/pet/{{petId}}
+api_key: {{apiKey}}
+```
+
+- A variable may use other variables (`{{baseUrl}}` = `{{scheme}}://{{host}}/v3`). A reference back to itself is
+  reported instead of followed.
+- A name with no value behind it stops the request and says so, rather than sending `https://{{baseUrl}}/pets`.
+- `\{{like this}}` sends the braces themselves.
+- A **secret** variable is masked in the list, kept out of exports and links, and held for the tab only. Tick
+  _Remember secret values_ to keep them in the browser after the tab closes.
+
+On an endpoint page the code samples show a secret variable as `{{apiKey}}`, never its value, while the request that
+is sent has the value in it. A sample you copy off a docs page therefore carries no credential.
+
+## History
+
+Every send is listed: method, address as it was written, status, time taken, and what went wrong when nothing came
+back. The list holds the last 100, can be cleared, and **leaves out any request that used a secret variable** unless
+the reader asks for those to be listed too.
+
+## Import and export
+
+| Format                                          | In  | Out |
+| ----------------------------------------------- | --- | --- |
+| dockudos JSON                                   | yes | yes |
+| Postman collection v2.1                         | yes | yes |
+| Bruno collection                                | yes | yes |
+| Bruno `.bru` file                               | yes | —   |
+| cURL command (pasted)                           | yes | —   |
+| cURL, JavaScript, Python, Go (copy one request) | —   | yes |
+
+An import **reads text and nothing else**:
+
+- Scripts, tests and pre-request hooks that a Postman or Bruno file carries are listed as warnings and never run.
+- Authentication saved in the file is not imported; the warning says to add it as a secret variable instead.
+- A body that points at a file on disk (`-d @payload.json`, a `formdata` or `multipartForm` body) is left out and
+  named.
+- A file may bring at most 100 collections of 500 requests; the rest is left out, and the reader is told.
+
+After an import the client names the variables the requests use and have no value yet, so it is clear what to fill in.
+
+An export carries **no secret value**: a secret variable keeps its name and its `secret` flag so the person importing
+knows what to supply.
+
+## Sharing a request
+
+**Share** gives a link to the current request. The request travels in the **fragment** of the URL (`#request=…`),
+which browsers do not send to a server, so a shared link does not turn up in anybody's access log. Credentials are
+removed before the link is made; a request too long to survive being pasted is refused with a note to export a file
+instead.
+
+Opening such a link on a page with the client on it fills the editor in and says where the request came from.
+
+## Response tools
+
+- **Keep this response** stores it next to the request (the last ten per request).
+- **Compare with** shows a line-by-line diff against one that was kept: what a field returned last week against what
+  it returns now.
+- **Copy as** writes the request as a cURL command or as JavaScript, Python or Go, from the same generators the
+  endpoint pages use.
+
+## What is stored, and where
+
+| What                                                         | Where                                                               | For how long           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- | ---------------------- |
+| Collections, saved requests, history, kept responses         | IndexedDB (`dockudos-api-client`), in the reader's browser          | Until they delete them |
+| Which environment is chosen, and the environments themselves | `localStorage`, as a copy an endpoint page can read while rendering | Until they delete them |
+| Values of **secret** variables                               | `sessionStorage` of the tab, unless _Remember secret values_ is on  | Until the tab closes   |
+| Credentials typed into an endpoint page's playground         | `sessionStorage` of the tab                                         | Until the tab closes   |
+
+What this means in practice:
+
+- **Nothing reaches your docs server.** The client has no API of its own. Requests go from the reader's browser to the
+  API, exactly as the [playground](/guides/playground) does, and the same CORS rules apply (with
+  `openapi.playground.proxy` on, requests pass through your site; the warnings in that guide apply here too).
+- **A credential is never written to the store.** An `Authorization`, `Proxy-Authorization` or `Cookie` header, and
+  any field named by a security scheme in the spec, keeps its value only when the value is a `{{variable}}`
+  reference. Anything else is dropped when the request is saved, and the client says what it left out.
+- **A secret variable's value is not in the store either**, and not in the copy that endpoint pages read, unless the
+  reader turns remembering on.
+- **There is no scripting.** The client runs no code from a file, a link or a collection. Pre-request scripts and
+  collection runners are deliberately absent.
+- **When the browser keeps nothing** — private browsing with storage off, or a locked-down browser — the client says
+  so and holds everything in memory for the page view instead of failing. If the browser runs out of room, the write
+  is refused and the reader is told to delete something or export a file.
+
+## Limits
+
+|                          |                                         |
+| ------------------------ | --------------------------------------- |
+| Collections              | 100                                     |
+| Requests in a collection | 500                                     |
+| Environments             | 50, of 200 variables each               |
+| History                  | 100 entries                             |
+| Kept responses           | 10 per request, 100,000 characters each |
+| Stored body              | 200,000 characters                      |
+| Shared link              | about 8,000 characters                  |

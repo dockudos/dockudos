@@ -64,6 +64,7 @@ import { Section } from '../components/section.tsx';
 import { Video } from '../components/video.tsx';
 import { ZoomableImage } from '../components/zoomable-image.tsx';
 import { ApiOperation } from '../components/api/context.tsx';
+import { LazyApiClient } from '../components/api/client-lazy.tsx';
 import { ApiPlayground } from '../components/api/playground.tsx';
 import {
   ApiParameters,
@@ -144,6 +145,7 @@ export const mdxComponents = {
   ApiRequestBody,
   ApiResponses,
   ApiPlayground,
+  ApiClient: LazyApiClient,
   Update,
   Changelog,
   Story,

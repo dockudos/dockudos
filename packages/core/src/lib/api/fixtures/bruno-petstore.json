@@ -1,0 +1,74 @@
+{
+  "name": "Petstore",
+  "version": "1",
+  "items": [
+    {
+      "type": "folder",
+      "name": "pet",
+      "items": [
+        {
+          "type": "http",
+          "name": "Find pet by ID",
+          "seq": 1,
+          "request": {
+            "url": "{{baseUrl}}/pet/10",
+            "method": "GET",
+            "headers": [
+              { "uid": "aXb1", "name": "Accept", "value": "application/json", "enabled": true },
+              { "uid": "aXb2", "name": "X-Debug", "value": "1", "enabled": false }
+            ],
+            "params": [],
+            "body": { "mode": "none" },
+            "auth": { "mode": "none" },
+            "script": { "req": "bru.setVar('t', Date.now())" },
+            "tests": "test('ok', () => expect(res.getStatus()).to.equal(200))"
+          }
+        },
+        {
+          "type": "http",
+          "name": "Add a pet",
+          "seq": 2,
+          "request": {
+            "url": "{{baseUrl}}/pet",
+            "method": "POST",
+            "headers": [
+              { "uid": "bXc1", "name": "Content-Type", "value": "application/json", "enabled": true }
+            ],
+            "params": [],
+            "body": { "mode": "json", "json": "{\n  \"name\": \"Rex\"\n}" },
+            "auth": { "mode": "none" }
+          }
+        }
+      ]
+    },
+    {
+      "type": "http",
+      "name": "Upload an image",
+      "seq": 3,
+      "request": {
+        "url": "{{baseUrl}}/pet/10/uploadImage",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": { "mode": "multipartForm", "multipartForm": [{ "name": "file", "type": "file" }] },
+        "auth": { "mode": "none" }
+      }
+    },
+    { "type": "http", "name": "Broken", "seq": 4, "request": { "method": "GET" } }
+  ],
+  "environments": [
+    {
+      "name": "Sandbox",
+      "variables": [
+        {
+          "name": "baseUrl",
+          "value": "https://petstore3.swagger.io/api/v3",
+          "enabled": true,
+          "secret": false
+        },
+        { "name": "token", "value": "", "enabled": true, "secret": true },
+        { "name": "unused", "value": "x", "enabled": false }
+      ]
+    }
+  ]
+}

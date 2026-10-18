@@ -3031,20 +3031,25 @@
     color: var(--muted-foreground);
   }
   .dk-api-method[data-method='get'],
+  .dk-api-method-select[data-method='get'],
   .dk-api-method-badge[data-method='get'] {
     --c: var(--dk-callout-info);
   }
   .dk-api-method[data-method='post'],
+  .dk-api-method-select[data-method='post'],
   .dk-api-method-badge[data-method='post'] {
     --c: var(--dk-callout-tip);
   }
   .dk-api-method[data-method='put'],
   .dk-api-method[data-method='patch'],
+  .dk-api-method-select[data-method='put'],
+  .dk-api-method-select[data-method='patch'],
   .dk-api-method-badge[data-method='put'],
   .dk-api-method-badge[data-method='patch'] {
     --c: var(--dk-callout-warning);
   }
   .dk-api-method[data-method='delete'],
+  .dk-api-method-select[data-method='delete'],
   .dk-api-method-badge[data-method='delete'] {
     --c: var(--dk-callout-danger);
   }
@@ -3056,5 +3061,275 @@
     font-weight: 700;
     letter-spacing: 0.02em;
     color: var(--c, var(--muted-foreground));
+  }
+
+  /* -- API client: saved requests, environments, history ------------------ */
+  .dk-api-client {
+    display: grid;
+    gap: 0.75rem;
+    margin-block: 1.5rem;
+    container-type: inline-size;
+  }
+  .dk-api-client[data-panel] {
+    margin-block: 1rem;
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .dk-api-client-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+  }
+  .dk-api-client-title {
+    margin: 0;
+    margin-inline-end: auto;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+  .dk-api-client-title:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .dk-api-client-env {
+    min-inline-size: 11rem;
+  }
+  .dk-api-client-body {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    align-items: start;
+  }
+  @container (max-width: 48rem) {
+    .dk-api-client-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .dk-api-client-side,
+  .dk-api-client-main {
+    min-inline-size: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .dk-api-client-tree,
+  .dk-api-client-tree ul,
+  .dk-api-client-history ol,
+  .dk-api-client-kept {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dk-api-client-tree ul {
+    margin-inline-start: 0.75rem;
+  }
+  .dk-api-client-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-inline-size: 0;
+  }
+  .dk-api-client-name {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.4rem;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    text-align: start;
+    cursor: pointer;
+  }
+  .dk-api-client-name:hover {
+    background: var(--accent);
+  }
+  .dk-api-client-name:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+  .dk-api-client-name[aria-selected='true'] {
+    background: var(--accent);
+    font-weight: 600;
+  }
+  .dk-api-client-name code {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+  }
+  .dk-api-client-name time,
+  .dk-api-client-kept span {
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  .dk-api-client-save {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 14rem);
+    align-items: end;
+  }
+  @container (max-width: 40rem) {
+    .dk-api-client-save {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .dk-api-client-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    grid-column: 1 / -1;
+  }
+  .dk-api-client-copyas {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .dk-api-client-copyas select {
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 0.8125rem;
+  }
+  .dk-api-client-copyas .dk-copy {
+    position: static;
+    opacity: 1;
+  }
+  .dk-api-client-env-card {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .dk-api-client-env-card legend {
+    padding-inline: 0.25rem;
+    font-size: 0.8125rem;
+  }
+  .dk-api-client-vars {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+  .dk-api-client-vars th {
+    padding-block-end: 0.25rem;
+    color: var(--muted-foreground);
+    font-weight: 500;
+    text-align: start;
+  }
+  .dk-api-client-vars td {
+    padding: 0.15rem 0.15rem 0.15rem 0;
+    vertical-align: middle;
+  }
+  .dk-api-client-vars input[type='text'],
+  .dk-api-client-vars input:not([type]),
+  .dk-api-client-vars input[type='password'] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .dk-api-client-check {
+    display: flex;
+    gap: 0.5rem;
+    align-items: start;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .dk-api-client-warnings {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding-inline-start: 1.1rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  .dk-api-client-transfer-body {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .dk-api-client-transfer-body textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .dk-api-client-restools {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .dk-api-client-kept li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .dk-api-client-diff {
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .dk-api-client-diff figcaption {
+    padding: 0.4rem 0.6rem;
+    border-block-end: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  .dk-api-client-diff pre {
+    margin: 0;
+    padding: 0.5rem 0.6rem;
+    max-height: 24rem;
+    overflow: auto;
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+  .dk-api-client-diff [data-mark='added'] {
+    background: color-mix(in oklab, var(--dk-callout-tip) 16%, transparent);
+  }
+  .dk-api-client-diff [data-mark='removed'] {
+    background: color-mix(in oklab, var(--dk-callout-danger) 16%, transparent);
+  }
+  .dk-api-client-empty {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+  }
+  .dk-api-saved-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.5rem;
+  }
+  .dk-api-method-select {
+    flex: none;
+    padding: 0.2rem 0.3rem;
+    border: 0;
+    background: transparent;
+    color: var(--c, var(--foreground));
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 }

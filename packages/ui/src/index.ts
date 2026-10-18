@@ -93,6 +93,14 @@ export * from './components/api/context.tsx';
 export * from './components/api/sections.tsx';
 export * from './components/api/schema.tsx';
 export * from './components/api/playground.tsx';
+export * from './components/api/parts.tsx';
+export * from './components/api/client-lazy.tsx';
+export * from './components/api/client-env.ts';
+export type {
+  ApiClientProps,
+  ClientPrefill,
+  ClientTab,
+} from './components/api/client.tsx';
 export * from './components/api/prose.tsx';
 export {
   sendRequest,

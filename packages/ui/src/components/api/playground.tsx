@@ -7,31 +7,29 @@ import {
   type AuthValues,
   type HttpRequest,
   type RequestValues,
+  applyVariables,
+  authFieldNames,
   buildHttpRequest,
   defaultValues,
   mergeSamples,
   pickSecurity,
   serverUrl,
+  substitute,
   validateInput,
 } from '@dockudos/core';
-import { Loader2, Send, Wand2, X } from 'lucide-react';
-import { type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { CopyButton } from '../copy-button.tsx';
+import { Bookmark, FolderOpen, Loader2, Send, Wand2, X } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Tab, Tabs } from '../tabs.tsx';
 import { CodeEditor, languageForMime } from './code-editor.tsx';
+import { LazyApiClientPanel, noteSentRequest } from './client-lazy.tsx';
+import { chooseEnvironment, useEnvironment } from './client-env.ts';
 import { useApiOperation } from './context.tsx';
-import {
-  type PlaygroundResponse,
-  type SendOutcome,
-  droppedHeaders,
-  formatBody,
-  sendRequest,
-} from './send.ts';
+import { FieldInput, Pane, PaneTabs, ResponseView } from './parts.tsx';
+import { PROXY_ROUTE, type SendOutcome, droppedHeaders, sendRequest } from './send.ts';
 import { CodeFigure } from './sections.tsx';
 import { useAuthValues } from './store.ts';
 import { type ToMarkdown } from '@dockudos/core';
 
-const PROXY_ROUTE = '/api/playground';
 
 /** The body to start with: the first example of the first JSON content type, else the first content type. */
 function initialBody(content: Record<string, ApiMediaType>): { contentType: string; text: string } | undefined {
@@ -96,10 +94,23 @@ export function ApiPlayground() {
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<SendOutcome>();
+  // The client (collections, environments, history) is fetched when one of these is pressed, not with the page.
+  const [client, setClient] = useState(false);
   const controller = useRef<AbortController>(null);
   const id = useId();
+  const environment = useEnvironment();
 
   useEffect(() => () => controller.current?.abort(), []);
+
+  // A shared link (`#request=…`) opens the client, which reads the request out of it.
+  useEffect(() => {
+    const open = () => {
+      if (window.location.hash.startsWith('#request=')) setClient(true);
+    };
+    open();
+    window.addEventListener('hashchange', open);
+    return () => window.removeEventListener('hashchange', open);
+  }, []);
 
   const chooseServer = (index: number, vars: Record<string, string>) => {
     setServer(index);
@@ -118,13 +129,30 @@ export function ApiPlayground() {
       const problem = bodyError(values.body.contentType, values.body.text);
       if (problem) found.body = problem;
     }
+    // A base that is a `{{variable}}` is judged by what it resolves to.
+    const address = substitute(base, environment.values).text;
     if (!base.trim()) found.base = 'Give the address of the API';
-    else if (!/^https?:\/\//i.test(base)) found.base = 'Must start with http:// or https://';
+    else if (!/^https?:\/\//i.test(address)) {
+      found.base = 'Must start with http:// or https://';
+    }
     return found;
-  }, [operation, values, base]);
+  }, [operation, values, base, environment.values]);
 
-  const sample = (placeholders: boolean): HttpRequest =>
+  const built = (placeholders: boolean): HttpRequest =>
     buildHttpRequest(operation, securitySchemes, base.replace(/\/+$/, ''), values, auth, { placeholders });
+
+  /**
+   * The request with the chosen environment's `{{variables}}` filled in. A code sample keeps the secret ones as they
+   * are written, so a sample on a docs page never shows a credential; what is sent has them filled in.
+   */
+  const sample = (placeholders: boolean): HttpRequest =>
+    applyVariables(
+      built(placeholders),
+      environment.values,
+      placeholders ? { keep: environment.secretNames } : {},
+    ).request;
+
+  const unresolved = applyVariables(built(false), environment.values);
 
   const schemeNames = [...new Set(operation.security.flatMap((alt) => Object.keys(alt)))].filter(
     (n) => securitySchemes[n],
@@ -149,7 +177,7 @@ export function ApiPlayground() {
     setSubmitted(true);
     const first = Object.keys(errors).map(paneOf).find(Boolean);
     if (first) setPane(first);
-    if (Object.keys(errors).length) return;
+    if (Object.keys(errors).length || unresolved.missing.length) return;
     controller.current?.abort();
     const abort = (controller.current = new AbortController());
     setBusy(true);
@@ -158,10 +186,16 @@ export function ApiPlayground() {
       signal: abort.signal,
       proxy: proxy ? PROXY_ROUTE : undefined,
     });
-    if (!abort.signal.aborted) {
-      setOutcome(result);
-      setBusy(false);
-    }
+    if (abort.signal.aborted) return;
+    setOutcome(result);
+    setBusy(false);
+    // The history keeps the request as it is written, with placeholders where a credential was: never a secret.
+    void noteSentRequest({
+      request: built(true),
+      ...(result.ok
+        ? { status: result.response.status, ms: result.response.ms }
+        : { error: result.message }),
+    });
   };
   const cancel = () => {
     controller.current?.abort();
@@ -246,6 +280,40 @@ export function ApiPlayground() {
           {submitted && errors.base && (
             <p id={`${id}-base-error`} className="dk-api-error" role="alert">
               {errors.base}
+            </p>
+          )}
+          <div className="dk-api-saved-bar">
+            {environment.environments.length > 0 && (
+              <label className="dk-api-label dk-api-client-env" htmlFor={`${id}-environment`}>
+                <span>Environment</span>
+                <select
+                  id={`${id}-environment`}
+                  value={environment.active?.id ?? ''}
+                  onChange={(e) => chooseEnvironment(e.target.value || undefined)}
+                >
+                  <option value="">None</option>
+                  {environment.environments.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <button type="button" className="dk-api-tool" onClick={() => setClient(true)}>
+              <Bookmark className="size-3.5" aria-hidden="true" />
+              Save request
+            </button>
+            <button type="button" className="dk-api-tool" onClick={() => setClient(true)}>
+              <FolderOpen className="size-3.5" aria-hidden="true" />
+              Saved requests
+            </button>
+          </div>
+          {unresolved.missing.length > 0 && (
+            <p className="dk-api-error" role="alert">
+              No value for {unresolved.missing.map((n) => `{{${n}}}`).join(', ')}. Add{' '}
+              {unresolved.missing.length > 1 ? 'them' : 'it'} to an environment in{' '}
+              <strong>Saved requests</strong>, or write the value in.
             </p>
           )}
           {vars.length > 0 && (
@@ -368,78 +436,28 @@ export function ApiPlayground() {
           </div>
         </form>
       )}
-    </div>
-  );
-}
 
-interface TabSpec {
-  id: string;
-  label: string;
-  count?: number;
-  /** Something has been entered. */
-  flag?: boolean;
-  /** Something here needs fixing. */
-  bad?: boolean;
-}
-
-/** A row of tabs (arrow keys move between them). The caller renders the panels with `Pane`. */
-function PaneTabs({
-  tabs,
-  value,
-  onChange,
-  label,
-  idBase,
-}: {
-  tabs: TabSpec[];
-  value: string;
-  onChange: (id: string) => void;
-  label: string;
-  idBase: string;
-}) {
-  const move = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const to =
-      e.key === 'ArrowRight' ? index + 1 : e.key === 'ArrowLeft' ? index - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : undefined;
-    if (to === undefined) return;
-    e.preventDefault();
-    const next = tabs[(to + tabs.length) % tabs.length] as TabSpec;
-    onChange(next.id);
-    document.getElementById(`${idBase}-tab-${next.id}`)?.focus();
-  };
-  return (
-    <div role="tablist" aria-label={label} className="dk-api-tabs">
-      {tabs.map((tab, i) => (
-        <button
-          key={tab.id}
-          type="button"
-          role="tab"
-          id={`${idBase}-tab-${tab.id}`}
-          aria-selected={tab.id === value}
-          aria-controls={`${idBase}-panel-${tab.id}`}
-          tabIndex={tab.id === value ? 0 : -1}
-          data-bad={tab.bad ? '' : undefined}
-          onClick={() => onChange(tab.id)}
-          onKeyDown={(e) => move(e, i)}
-        >
-          {tab.label}
-          {tab.count !== undefined && <span className="dk-api-tab-count">{tab.count}</span>}
-          {tab.flag && <span className="dk-api-tab-dot" role="img" aria-label="has content" />}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/** The panel of a tab. Every panel stays mounted, so what was typed is kept. */
-function Pane({ id, active, idBase, children }: { id: string; active: string; idBase: string; children: ReactNode }) {
-  return (
-    <div
-      role="tabpanel"
-      id={`${idBase}-panel-${id}`}
-      aria-labelledby={`${idBase}-tab-${id}`}
-      hidden={id !== active}
-      className="dk-api-pane"
-    >
-      {children}
+      {client && (
+        <LazyApiClientPanel
+          proxy={proxy}
+          prefill={{
+            name: operation.summary ?? `${operation.method.toUpperCase()} ${operation.path}`,
+            request: built(false),
+            origin: {
+              operationId: operation.id,
+              ...(typeof window === 'undefined' ? {} : { href: window.location.pathname }),
+              base: base.replace(/\/+$/, ''),
+              values,
+            },
+            // What the Authorization tab holds is taken out before anything is stored.
+            secrets: Object.values(auth).flatMap((a) =>
+              [a?.value, a?.username, a?.password].filter((v): v is string => !!v),
+            ),
+            authFields: authFieldNames(securitySchemes),
+          }}
+          onClose={() => setClient(false)}
+        />
+      )}
     </div>
   );
 }
@@ -518,56 +536,6 @@ function BodyEditor({
         </p>
       )}
     </>
-  );
-}
-
-function FieldInput({
-  label,
-  value,
-  onChange,
-  error,
-  id,
-  placeholder,
-  type = 'text',
-  description,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string;
-  id: string;
-  placeholder?: string;
-  type?: string;
-  description?: string;
-  required?: boolean;
-}) {
-  return (
-    <div className="dk-api-label">
-      <label htmlFor={id}>
-        <span>
-          {label}
-          {required && <span className="dk-param-required"> required</span>}
-        </span>
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        spellCheck={false}
-        autoComplete="off"
-        aria-invalid={!!error}
-        aria-describedby={error ? `${id}-error` : undefined}
-        title={description}
-        onChange={(e) => onChange(e.target.value)}
-      />
-      {error && (
-        <p id={`${id}-error`} className="dk-api-error" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }
 
@@ -669,68 +637,5 @@ function AuthFields({
     />
   );
 }
-
-function ResponseView({ response, id }: { response: PlaygroundResponse; id: string }) {
-  const type = response.headers.find(([k]) => k.toLowerCase() === 'content-type')?.[1];
-  const body = useMemo(() => formatBody(response.body, type), [response.body, type]);
-  const [tab, setTab] = useState('body');
-  const tone = response.status < 300 ? 'ok' : response.status < 400 ? 'redirect' : 'error';
-  return (
-    <section className="dk-api-response" aria-label="Response">
-      <div className="dk-api-response-head">
-        <PaneTabs
-          label="Response"
-          idBase={id}
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { id: 'body', label: 'Body' },
-            { id: 'headers', label: `Headers (${response.headers.length})` },
-          ]}
-        />
-        <span className="dk-api-status-code" data-tone={tone}>
-          {response.status} {response.statusText}
-        </span>
-        <span>{Math.round(response.ms)} ms</span>
-        <span>{formatSize(response.size)}</span>
-      </div>
-      <Pane idBase={id} id="body" active={tab}>
-        {response.binary ? (
-          <p className="dk-api-status">The body is binary ({formatSize(response.size)}) and is not shown.</p>
-        ) : (
-          <figure className="dk-code">
-            <div className="dk-code-body">
-              <CodeEditor
-                readOnly
-                value={body}
-                language={languageForMime(type, body)}
-                label="Response body"
-                testId="api-response-body"
-                lineNumbers
-                foldable
-                wrap
-              />
-              <CopyButton text={body} />
-            </div>
-          </figure>
-        )}
-        {response.truncated && <p className="dk-api-status">The body is longer than what is shown here.</p>}
-      </Pane>
-      <Pane idBase={id} id="headers" active={tab}>
-        <dl className="dk-api-headers">
-          {response.headers.map(([k, v], i) => (
-            <div key={i}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </Pane>
-    </section>
-  );
-}
-
-const formatSize = (bytes: number) =>
-  bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} kB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 ApiPlayground.toMarkdown = (() => '') satisfies ToMarkdown;

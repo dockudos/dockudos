@@ -73,7 +73,8 @@ Details of how these work are in [ai.md](./ai.md).
 | AsyncAPI | Generate pages for event-driven APIs | 3 |
 | GraphQL | Generate pages from a schema | 3 |
 | Playground | Send real requests from the docs | 3 |
-| Code samples | Auto-generated in multiple languages | 3 |
+| Code samples | Auto-generated in multiple languages, plus a spec's own `x-codeSamples` | 3, 6 |
+| API client | Saved requests, collections, environments with `{{variables}}`, history, kept responses, import and export (Postman, Bruno, cURL), all in the reader's browser | 6 |
 | Spec sources | Local files or hosted URLs, with clear build errors when a spec cannot be fetched | 3 |
 | Generated from code | Docs from TypeScript definitions and Python packages | 3 |
 

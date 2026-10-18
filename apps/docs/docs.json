@@ -69,6 +69,7 @@
           "pages": [
             "guides/api-reference",
             "guides/playground",
+            "guides/api-client",
             "guides/asyncapi-and-graphql",
             "guides/reference-from-code"
           ]

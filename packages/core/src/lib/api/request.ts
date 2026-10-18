@@ -46,7 +46,7 @@ export function serverUrl(
     .replace(/\/+$/, '');
 }
 
-const utf8ToBase64 = (text: string): string => {
+export const utf8ToBase64 = (text: string): string => {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);

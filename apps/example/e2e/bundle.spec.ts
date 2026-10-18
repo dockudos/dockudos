@@ -8,6 +8,7 @@ import { gzipSync } from 'node:zlib';
 const KB = 1024;
 const PALETTE_CHUNK = 30 * KB; // gzipped; the chunk with the command palette (about 19 KB today)
 const FIRST_LOAD = 300 * KB; // gzipped; all scripts a docs page loads (about 265 KB today)
+const CLIENT_CHUNK = 40 * KB; // gzipped; the API client, fetched when a reader opens it
 
 async function chunks(): Promise<{ file: string; text: string; gz: number }[]> {
   const dir = join(process.cwd(), '.next', 'static', 'chunks');
@@ -37,6 +38,39 @@ test.describe('what the browser downloads', () => {
       c.text.includes('Looking through the docs'),
     );
     expect(assistant.length).toBeGreaterThan(0);
+  });
+
+  test('the API client is a chunk of its own, and no page loads it to begin with', async ({
+    request,
+  }) => {
+    const all = await chunks();
+    // A string only the client has in it: its empty state.
+    const client = all.filter((c) => c.text.includes('Nothing saved yet'));
+    expect(client.length).toBeGreaterThan(0);
+    for (const c of client) {
+      expect(
+        c.gz,
+        `${c.file} is ${(c.gz / KB).toFixed(1)} KB gzipped`,
+      ).toBeLessThan(CLIENT_CHUNK);
+      // The storage layer and the import converters belong to the client, not to an endpoint page.
+      expect(c.text, c.file).toContain('dockudos-api-client');
+    }
+    // No page asks for it up front: not a guide, and not an endpoint page with the playground on it.
+    for (const path of [
+      '/guides/hello',
+      '/api-reference/pet/getpetbyid',
+    ]) {
+      const html = await (await request.get(path)).text();
+      const scripts = new Set(
+        [...html.matchAll(/\/_next\/static\/[^"']+\.js/g)].map((m) => m[0]),
+      );
+      for (const c of client) {
+        expect(
+          [...scripts].some((s) => s.endsWith(c.file)),
+          `${path} loads ${c.file}`,
+        ).toBe(false);
+      }
+    }
   });
 
   test('the config schema and the answer pipeline stay on the server', async () => {

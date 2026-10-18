@@ -1,0 +1,96 @@
+{
+  "info": {
+    "_postman_id": "0f1d4a7e-5b1c-4f1e-9c22-7b8f9d0a1234",
+    "name": "Petstore",
+    "description": "Exported from Postman 11, collection format v2.1.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "item": [
+    {
+      "name": "pet",
+      "item": [
+        {
+          "name": "Find pet by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test(\"ok\", () => pm.response.to.have.status(200));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "apikey", "apikey": [{ "key": "value", "value": "{{apiKey}}" }] },
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Debug", "value": "1", "disabled": true }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pet/10?verbose=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["pet", "10"],
+              "query": [{ "key": "verbose", "value": "true" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add a pet",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rex\",\n  \"status\": \"available\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/pet" }
+          }
+        },
+        {
+          "name": "Upload an image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": "/home/me/rex.png" }]
+            },
+            "url": { "raw": "{{baseUrl}}/pet/10/uploadImage" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Log in",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "me" },
+            { "key": "password", "value": "{{password}}" },
+            { "key": "remember", "value": "1", "disabled": true }
+          ]
+        },
+        "url": {
+          "protocol": "https",
+          "host": ["petstore3", "swagger", "io"],
+          "path": ["api", "v3", "user", "login"]
+        }
+      }
+    },
+    {
+      "name": "Server status",
+      "request": "https://petstore3.swagger.io/api/v3/status"
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://petstore3.swagger.io/api/v3" },
+    { "key": "apiKey", "value": "" }
+  ]
+}

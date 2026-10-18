@@ -1,0 +1,32 @@
+meta {
+  name: Find pet by ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/pet/10?verbose=true
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  ~X-Debug: 1
+}
+
+body:json {
+  {
+    "note": "a body on a GET is unusual but legal"
+  }
+}
+
+script:pre-request {
+  bru.setVar("t", Date.now());
+}
+
+tests {
+  test("ok", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

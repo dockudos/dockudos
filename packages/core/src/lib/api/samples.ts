@@ -31,7 +31,7 @@ function parseJson(text: string): { ok: true; value: unknown } | { ok: false } {
 
 // -- curl ---------------------------------------------------------------
 
-const shellQuote = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
+export const shellQuote = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
 
 export const curl: SampleLanguage = {
   id: 'curl',
