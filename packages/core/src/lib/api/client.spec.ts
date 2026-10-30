@@ -30,19 +30,25 @@ describe('ids and names', () => {
     expect(newId()).not.toEqual(newId());
     const real = globalThis.crypto;
     // A browser old enough to miss randomUUID still has IndexedDB, so this path has to work.
-    Object.defineProperty(globalThis, 'crypto', { value: {}, configurable: true });
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {},
+      configurable: true,
+    });
     try {
       expect(newId()).toMatch(/^[a-z0-9]+-[a-z0-9]+$/);
     } finally {
-      Object.defineProperty(globalThis, 'crypto', { value: real, configurable: true });
+      Object.defineProperty(globalThis, 'crypto', {
+        value: real,
+        configurable: true,
+      });
     }
   });
 
   it('names a request after its method and path, and copes with a half-typed URL', () => {
     expect(suggestedName(request())).toBe('GET /pets');
-    expect(suggestedName(request({ method: 'post', url: 'api.test/pets' }))).toBe(
-      'POST api.test/pets',
-    );
+    expect(
+      suggestedName(request({ method: 'post', url: 'api.test/pets' })),
+    ).toBe('POST api.test/pets');
     expect(suggestedName(request({ url: '' }))).toBe('GET');
   });
 
@@ -128,9 +134,12 @@ describe('taking credentials out', () => {
   it('keeps a query key that is a variable reference and leaves a URL without a query alone', () => {
     const fields = ['key'];
     expect(
-      redactRequest(request({ url: 'https://api.test/pets?key={{apiKey}}&a=1' }), {
-        authFields: fields,
-      }).request.url,
+      redactRequest(
+        request({ url: 'https://api.test/pets?key={{apiKey}}&a=1' }),
+        {
+          authFields: fields,
+        },
+      ).request.url,
     ).toBe('https://api.test/pets?key=%7B%7BapiKey%7D%7D&a=1');
     expect(
       redactRequest(request({ url: 'https://api.test/pets?flag' }), {
@@ -195,7 +204,9 @@ describe('reading records back', () => {
   });
 
   it('leaves a record written by a newer version alone', () => {
-    expect(migrateSavedRequest({ v: 99, request: { url: 'x' } })).toBeUndefined();
+    expect(
+      migrateSavedRequest({ v: 99, request: { url: 'x' } }),
+    ).toBeUndefined();
     expect(migrateCollection({ v: 99 })).toBeUndefined();
     expect(migrateEnvironment({ v: 99 })).toBeUndefined();
   });
@@ -219,7 +230,10 @@ describe('reading records back', () => {
       values: { path: { petId: '1' }, query: {}, header: {}, cookie: {} },
     };
     expect(
-      migrateSavedRequest({ request: { url: 'https://api.test/pet/1' }, origin })?.origin,
+      migrateSavedRequest({
+        request: { url: 'https://api.test/pet/1' },
+        origin,
+      })?.origin,
     ).toEqual(origin);
     expect(
       migrateSavedRequest({
@@ -232,8 +246,10 @@ describe('reading records back', () => {
       values: { path: {}, query: {}, header: {}, cookie: {} },
     });
     expect(
-      migrateSavedRequest({ request: { url: 'https://api.test/pet/1' }, origin: { base: 'x' } })
-        ?.origin,
+      migrateSavedRequest({
+        request: { url: 'https://api.test/pet/1' },
+        origin: { base: 'x' },
+      })?.origin,
     ).toBeUndefined();
   });
 
@@ -278,7 +294,8 @@ describe('reading records back', () => {
       text: '{}',
     });
     expect(
-      readRequest({ url: 'x', body: { contentType: 'text/plain', text: 'hi' } })?.body,
+      readRequest({ url: 'x', body: { contentType: 'text/plain', text: 'hi' } })
+        ?.body,
     ).toEqual({ contentType: 'text/plain', text: 'hi' });
   });
 
@@ -312,11 +329,16 @@ describe('reading records back', () => {
       { name: 'token', value: 't', secret: true },
     ]);
     expect(readVariables('nope')).toEqual([]);
-    const many = Array.from({ length: CLIENT_LIMITS.variablesPerEnvironment + 5 }, (_, i) => ({
-      name: `v${i}`,
-      value: '1',
-    }));
-    expect(readVariables(many)).toHaveLength(CLIENT_LIMITS.variablesPerEnvironment);
+    const many = Array.from(
+      { length: CLIENT_LIMITS.variablesPerEnvironment + 5 },
+      (_, i) => ({
+        name: `v${i}`,
+        value: '1',
+      }),
+    );
+    expect(readVariables(many)).toHaveLength(
+      CLIENT_LIMITS.variablesPerEnvironment,
+    );
   });
 
   it('reads a history entry and keeps only the fields it knows', () => {
@@ -342,7 +364,10 @@ describe('reading records back', () => {
       error: 'none',
       requestId: 'r1',
     });
-    expect(migrateHistoryEntry({ url: 'x' })).toMatchObject({ method: 'GET', url: 'x' });
+    expect(migrateHistoryEntry({ url: 'x' })).toMatchObject({
+      method: 'GET',
+      url: 'x',
+    });
     expect(migrateHistoryEntry({ at: 1 })).toBeUndefined();
   });
 });

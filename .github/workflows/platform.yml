@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx build @dockudos/platform
       # pnpm deploy, a real Postgres wire protocol, the server binary, migrations, bootstrap, webhooks, analytics, backup and restore.
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
       - uses: azure/setup-helm@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx build @dockudos/platform
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
       - name: Configure
         working-directory: deploy/compose
         run: |

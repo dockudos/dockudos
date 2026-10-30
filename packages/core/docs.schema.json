@@ -35,10 +35,7 @@
               "minLength": 1
             }
           },
-          "required": [
-            "light",
-            "dark"
-          ],
+          "required": ["light", "dark"],
           "additionalProperties": false
         }
       ]
@@ -61,11 +58,7 @@
         "mode": {
           "default": "system",
           "type": "string",
-          "enum": [
-            "light",
-            "dark",
-            "system"
-          ]
+          "enum": ["light", "dark", "system"]
         },
         "layout": {
           "default": "docs",
@@ -127,10 +120,7 @@
                 }
               }
             },
-            "required": [
-              "tab",
-              "groups"
-            ],
+            "required": ["tab", "groups"],
             "additionalProperties": false
           },
           {
@@ -145,10 +135,7 @@
                 "minLength": 1
               }
             },
-            "required": [
-              "tab",
-              "href"
-            ],
+            "required": ["tab", "href"],
             "additionalProperties": false
           }
         ]
@@ -173,10 +160,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "source",
-          "destination"
-        ],
+        "required": ["source", "destination"],
         "additionalProperties": false
       }
     },
@@ -248,10 +232,7 @@
                           }
                         }
                       },
-                      "required": [
-                        "tab",
-                        "groups"
-                      ],
+                      "required": ["tab", "groups"],
                       "additionalProperties": false
                     },
                     {
@@ -266,10 +247,7 @@
                           "minLength": 1
                         }
                       },
-                      "required": [
-                        "tab",
-                        "href"
-                      ],
+                      "required": ["tab", "href"],
                       "additionalProperties": false
                     }
                   ]
@@ -278,24 +256,15 @@
               "status": {
                 "default": "stable",
                 "type": "string",
-                "enum": [
-                  "stable",
-                  "deprecated",
-                  "unreleased"
-                ]
+                "enum": ["stable", "deprecated", "unreleased"]
               }
             },
-            "required": [
-              "name"
-            ],
+            "required": ["name"],
             "additionalProperties": false
           }
         }
       },
-      "required": [
-        "default",
-        "list"
-      ],
+      "required": ["default", "list"],
       "additionalProperties": false
     },
     "i18n": {
@@ -329,9 +298,7 @@
                     "type": "boolean"
                   }
                 },
-                "required": [
-                  "code"
-                ],
+                "required": ["code"],
                 "additionalProperties": false
               }
             ]
@@ -359,10 +326,7 @@
           }
         }
       },
-      "required": [
-        "default",
-        "locales"
-      ],
+      "required": ["default", "locales"],
       "additionalProperties": false
     },
     "auth": {
@@ -386,11 +350,7 @@
           "pattern": "^[A-Z_][A-Z0-9_]*$"
         },
         "scopes": {
-          "default": [
-            "openid",
-            "profile",
-            "email"
-          ],
+          "default": ["openid", "profile", "email"],
           "type": "array",
           "items": {
             "type": "string",
@@ -414,10 +374,7 @@
           "maximum": 2160
         }
       },
-      "required": [
-        "issuer",
-        "clientId"
-      ],
+      "required": ["issuer", "clientId"],
       "additionalProperties": false
     },
     "changelog": {
@@ -493,12 +450,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "type",
-              "name",
-              "url",
-              "into"
-            ],
+            "required": ["type", "name", "url", "into"],
             "additionalProperties": false
           },
           {
@@ -521,12 +473,7 @@
                 "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
               }
             },
-            "required": [
-              "type",
-              "name",
-              "dir",
-              "into"
-            ],
+            "required": ["type", "name", "dir", "into"],
             "additionalProperties": false
           },
           {
@@ -549,12 +496,7 @@
                 "pattern": "^[A-Za-z0-9][\\w-]*(?:\\/[A-Za-z0-9][\\w-]*)*$"
               }
             },
-            "required": [
-              "type",
-              "name",
-              "dir",
-              "into"
-            ],
+            "required": ["type", "name", "dir", "into"],
             "additionalProperties": false
           },
           {
@@ -582,12 +524,7 @@
                 "pattern": "^[A-Z_][A-Z0-9_]*$"
               }
             },
-            "required": [
-              "type",
-              "name",
-              "rootId",
-              "into"
-            ],
+            "required": ["type", "name", "rootId", "into"],
             "additionalProperties": false
           },
           {
@@ -623,13 +560,7 @@
                 "pattern": "^[A-Z_][A-Z0-9_]*$"
               }
             },
-            "required": [
-              "type",
-              "name",
-              "projectId",
-              "query",
-              "into"
-            ],
+            "required": ["type", "name", "projectId", "query", "into"],
             "additionalProperties": false
           }
         ]
@@ -668,9 +599,7 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "url"
-          ],
+          "required": ["url"],
           "additionalProperties": false
         }
       },
@@ -715,11 +644,7 @@
         "backend": {
           "default": "builtin",
           "type": "string",
-          "enum": [
-            "builtin",
-            "server",
-            "custom"
-          ]
+          "enum": ["builtin", "server", "custom"]
         },
         "endpoint": {
           "type": "string",
@@ -757,11 +682,7 @@
         },
         "provider": {
           "type": "string",
-          "enum": [
-            "openai",
-            "anthropic",
-            "custom"
-          ]
+          "enum": ["openai", "anthropic", "custom"]
         },
         "model": {
           "type": "string",
@@ -801,9 +722,7 @@
             "provider": {
               "default": "openai",
               "type": "string",
-              "enum": [
-                "openai"
-              ]
+              "enum": ["openai"]
             },
             "model": {
               "type": "string",
@@ -819,9 +738,7 @@
               "maximum": 8192
             }
           },
-          "required": [
-            "model"
-          ],
+          "required": ["model"],
           "additionalProperties": false
         },
         "limits": {
@@ -905,9 +822,7 @@
                     "type": "boolean"
                   }
                 },
-                "required": [
-                  "dir"
-                ],
+                "required": ["dir"],
                 "additionalProperties": false
               }
             ]
@@ -938,13 +853,7 @@
               },
               "require": {
                 "type": "string",
-                "enum": [
-                  "login",
-                  "basic",
-                  "token",
-                  "custom",
-                  "deny"
-                ]
+                "enum": ["login", "basic", "token", "custom", "deny"]
               },
               "roles": {
                 "minItems": 1,
@@ -972,10 +881,7 @@
                 "maxLength": 100
               }
             },
-            "required": [
-              "paths",
-              "require"
-            ],
+            "required": ["paths", "require"],
             "additionalProperties": false
           }
         }
@@ -1016,29 +922,19 @@
               },
               "type": {
                 "type": "string",
-                "enum": [
-                  "openapi",
-                  "asyncapi",
-                  "graphql"
-                ]
+                "enum": ["openapi", "asyncapi", "graphql"]
               },
               "groupBy": {
                 "default": "tag",
                 "type": "string",
-                "enum": [
-                  "tag",
-                  "path"
-                ]
+                "enum": ["tag", "path"]
               },
               "title": {
                 "type": "string",
                 "minLength": 1
               }
             },
-            "required": [
-              "name",
-              "spec"
-            ],
+            "required": ["name", "spec"],
             "additionalProperties": false
           }
         },
@@ -1078,11 +974,7 @@
             "mode": {
               "default": "replace",
               "type": "string",
-              "enum": [
-                "replace",
-                "append",
-                "generated-only"
-              ]
+              "enum": ["replace", "append", "generated-only"]
             }
           },
           "additionalProperties": false
@@ -1108,10 +1000,7 @@
               },
               "type": {
                 "type": "string",
-                "enum": [
-                  "typescript",
-                  "python"
-                ]
+                "enum": ["typescript", "python"]
               },
               "input": {
                 "anyOf": [
@@ -1138,11 +1027,7 @@
                 "minLength": 1
               }
             },
-            "required": [
-              "name",
-              "type",
-              "input"
-            ],
+            "required": ["name", "type", "input"],
             "additionalProperties": false
           }
         }
@@ -1150,9 +1035,7 @@
       "additionalProperties": false
     }
   },
-  "required": [
-    "name"
-  ],
+  "required": ["name"],
   "additionalProperties": false,
   "$defs": {
     "__schema0": {
@@ -1185,10 +1068,7 @@
                     "minLength": 1
                   }
                 },
-                "required": [
-                  "title",
-                  "href"
-                ],
+                "required": ["title", "href"],
                 "additionalProperties": false
               },
               {
@@ -1199,9 +1079,7 @@
                     "pattern": "^[a-z][a-z0-9-]*$"
                   }
                 },
-                "required": [
-                  "openapi"
-                ],
+                "required": ["openapi"],
                 "additionalProperties": false
               },
               {
@@ -1212,9 +1090,7 @@
                     "pattern": "^[a-z][a-z0-9-]*$"
                   }
                 },
-                "required": [
-                  "reference"
-                ],
+                "required": ["reference"],
                 "additionalProperties": false
               },
               {
@@ -1224,10 +1100,7 @@
           }
         }
       },
-      "required": [
-        "group",
-        "pages"
-      ],
+      "required": ["group", "pages"],
       "additionalProperties": false
     }
   }

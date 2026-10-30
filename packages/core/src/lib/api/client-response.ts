@@ -74,7 +74,8 @@ export function migrateResponseExample(
   raw: unknown,
 ): ResponseExample | undefined {
   if (!isObject(raw)) return undefined;
-  if (typeof raw.v === 'number' && raw.v > CLIENT_SCHEMA_VERSION) return undefined;
+  if (typeof raw.v === 'number' && raw.v > CLIENT_SCHEMA_VERSION)
+    return undefined;
   if (typeof raw.status !== 'number') return undefined;
   return {
     id: typeof raw.id === 'string' ? raw.id : newId(),
@@ -85,14 +86,18 @@ export function migrateResponseExample(
         : `${raw.status}`,
     at: typeof raw.at === 'number' ? raw.at : Date.now(),
     status: raw.status,
-    ...(typeof raw.statusText === 'string' ? { statusText: raw.statusText } : {}),
+    ...(typeof raw.statusText === 'string'
+      ? { statusText: raw.statusText }
+      : {}),
     headers: Array.isArray(raw.headers)
       ? raw.headers
           .filter(
             (h): h is [string, string] =>
               Array.isArray(h) && typeof h[0] === 'string',
           )
-          .map(([k, v]) => [k, typeof v === 'string' ? v : ''] as [string, string])
+          .map(
+            ([k, v]) => [k, typeof v === 'string' ? v : ''] as [string, string],
+          )
           .slice(0, CLIENT_LIMITS.headers)
       : [],
     body:
@@ -161,7 +166,12 @@ export function diffLines(before: string, after: string): Diff {
   let j = 0;
   while (i < left.length && j < right.length) {
     if (left[i] === right[j]) {
-      lines.push({ mark: 'same', text: left[i] as string, left: i + 1, right: j + 1 });
+      lines.push({
+        mark: 'same',
+        text: left[i] as string,
+        left: i + 1,
+        right: j + 1,
+      });
       i += 1;
       j += 1;
     } else if (

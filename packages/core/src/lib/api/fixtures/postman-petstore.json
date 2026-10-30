@@ -16,13 +16,18 @@
             {
               "listen": "test",
               "script": {
-                "exec": ["pm.test(\"ok\", () => pm.response.to.have.status(200));"],
+                "exec": [
+                  "pm.test(\"ok\", () => pm.response.to.have.status(200));"
+                ],
                 "type": "text/javascript"
               }
             }
           ],
           "request": {
-            "auth": { "type": "apikey", "apikey": [{ "key": "value", "value": "{{apiKey}}" }] },
+            "auth": {
+              "type": "apikey",
+              "apikey": [{ "key": "value", "value": "{{apiKey}}" }]
+            },
             "method": "GET",
             "header": [
               { "key": "Accept", "value": "application/json" },
@@ -57,7 +62,9 @@
             "header": [],
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "/home/me/rex.png" }]
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/home/me/rex.png" }
+              ]
             },
             "url": { "raw": "{{baseUrl}}/pet/10/uploadImage" }
           }

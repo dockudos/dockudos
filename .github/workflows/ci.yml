@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['20', '22']
+        node: ['24']
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,15 +37,15 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - name: Commit messages follow Conventional Commits
-        if: github.event_name == 'pull_request' && matrix.node == '22'
+        if: github.event_name == 'pull_request' && matrix.node == '24'
         run: pnpm exec commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
 
       - name: Formatting
-        if: matrix.node == '22'
+        if: matrix.node == '24'
         run: pnpm format:check
 
       - name: Module boundaries are enforced
-        if: matrix.node == '22'
+        if: matrix.node == '24'
         run: pnpm check:boundaries
 
       - name: Install Playwright browsers
@@ -57,7 +57,7 @@ jobs:
       # The assistant is measured on every change (apps/example/specs/eval.spec.ts). The numbers go in the run
       # summary, so one commit can be compared with the next.
       - name: Evaluation summary
-        if: always() && matrix.node == '22'
+        if: always() && matrix.node == '24'
         run: |
           if [ -f apps/example/eval/results/latest.json ]; then
             node -e "
@@ -71,7 +71,7 @@ jobs:
           fi
 
       - name: Upload evaluation results
-        if: always() && matrix.node == '22'
+        if: always() && matrix.node == '24'
         uses: actions/upload-artifact@v4
         with:
           name: eval-results
@@ -99,7 +99,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile

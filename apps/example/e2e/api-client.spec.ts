@@ -90,7 +90,9 @@ test.describe('the API client page', () => {
     await client(page)
       .getByRole('textbox', { name: 'Name', exact: true })
       .fill('Find Rex');
-    await client(page).getByRole('button', { name: /^Save$/ }).click();
+    await client(page)
+      .getByRole('button', { name: /^Save$/ })
+      .click();
     await expect(client(page).getByTestId('api-client-note')).toContainText(
       'Saved “Find Rex”',
     );
@@ -119,19 +121,23 @@ test.describe('the API client page', () => {
   }) => {
     await openClient(page);
     await makeEnvironment(page);
-    await client(page).getByRole('tab', { name: /Collections/ }).click();
+    await client(page)
+      .getByRole('tab', { name: /Collections/ })
+      .click();
     await address(client(page)).fill('{{baseUrl}}/pet/1');
     await client(page).getByRole('button', { name: 'Add a header' }).click();
     await client(page).getByLabel('Header 1 name').fill('api_key');
-    await client(page).getByLabel(/Value of api_key/).fill('{{key}}');
+    await client(page)
+      .getByLabel(/Value of api_key/)
+      .fill('{{key}}');
     await expect(client(page).getByText(/Sends to/)).toContainText(
       `${MOCK}/api/v3/pet/1`,
     );
 
     await client(page).getByRole('button', { name: 'Send' }).click();
-    await expect(client(page).getByRole('region', { name: 'Response' })).toContainText(
-      '200',
-    );
+    await expect(
+      client(page).getByRole('region', { name: 'Response' }),
+    ).toContainText('200');
     const calls = (await (await request.get(`${MOCK}/__calls`)).json()) as {
       headers: Record<string, string>;
     }[];
@@ -141,8 +147,12 @@ test.describe('the API client page', () => {
     await client(page)
       .getByRole('textbox', { name: 'Name', exact: true })
       .fill('With a key');
-    await client(page).getByRole('button', { name: /^Save$/ }).click();
-    await expect(client(page).getByTestId('api-client-note')).toContainText('Saved');
+    await client(page)
+      .getByRole('button', { name: /^Save$/ })
+      .click();
+    await expect(client(page).getByTestId('api-client-note')).toContainText(
+      'Saved',
+    );
     const stored = JSON.parse(await storedText(page)) as {
       local: Record<string, string>;
       session: Record<string, string>;
@@ -170,29 +180,39 @@ test.describe('the API client page', () => {
   }) => {
     await openClient(page);
     await makeEnvironment(page);
-    await client(page).getByRole('tab', { name: /Collections/ }).click();
+    await client(page)
+      .getByRole('tab', { name: /Collections/ })
+      .click();
     await address(client(page)).fill('{{baseUrl}}/pet/1');
     await client(page).getByRole('button', { name: 'Add a header' }).click();
     await client(page).getByLabel('Header 1 name').fill('api_key');
-    await client(page).getByLabel(/Value of api_key/).fill('{{key}}');
+    await client(page)
+      .getByLabel(/Value of api_key/)
+      .fill('{{key}}');
     await client(page).getByRole('button', { name: 'Send' }).click();
-    await expect(client(page).getByRole('region', { name: 'Response' })).toContainText(
-      '200',
-    );
+    await expect(
+      client(page).getByRole('region', { name: 'Response' }),
+    ).toContainText('200');
 
-    await client(page).getByRole('tab', { name: /History/ }).click();
+    await client(page)
+      .getByRole('tab', { name: /History/ })
+      .click();
     await expect(
       client(page).getByText('Nothing sent yet from this browser.'),
     ).toBeVisible();
     await client(page)
       .getByRole('checkbox', { name: /used a secret variable/ })
       .check();
-    await client(page).getByRole('tab', { name: /Collections/ }).click();
+    await client(page)
+      .getByRole('tab', { name: /Collections/ })
+      .click();
     await client(page).getByRole('button', { name: 'Send' }).click();
-    await expect(client(page).getByRole('region', { name: 'Response' })).toContainText(
-      '200',
-    );
-    await client(page).getByRole('tab', { name: /History/ }).click();
+    await expect(
+      client(page).getByRole('region', { name: 'Response' }),
+    ).toContainText('200');
+    await client(page)
+      .getByRole('tab', { name: /History/ })
+      .click();
     // What is listed is the address as it was written, never the value behind the variable.
     await expect(
       client(page).getByRole('button', { name: /\{\{baseUrl\}\}\/pet\/1/ }),
@@ -204,28 +224,32 @@ test.describe('the API client page', () => {
     page,
   }) => {
     await openClient(page);
-    await client(page).getByRole('button', { name: 'Import or export' }).click();
-    await client(page).getByLabel(/From a file/).setInputFiles({
-      name: 'petstore.postman_collection.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(
-        JSON.stringify({
-          info: { name: 'Imported petstore', schema: 'v2.1' },
-          item: [
-            {
-              name: 'Find pet',
-              event: [
-                {
-                  listen: 'test',
-                  script: { exec: ['pm.test("x", () => {})'] },
-                },
-              ],
-              request: { method: 'GET', url: { raw: '{{petsUrl}}/pet/1' } },
-            },
-          ],
-        }),
-      ),
-    });
+    await client(page)
+      .getByRole('button', { name: 'Import or export' })
+      .click();
+    await client(page)
+      .getByLabel(/From a file/)
+      .setInputFiles({
+        name: 'petstore.postman_collection.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from(
+          JSON.stringify({
+            info: { name: 'Imported petstore', schema: 'v2.1' },
+            item: [
+              {
+                name: 'Find pet',
+                event: [
+                  {
+                    listen: 'test',
+                    script: { exec: ['pm.test("x", () => {})'] },
+                  },
+                ],
+                request: { method: 'GET', url: { raw: '{{petsUrl}}/pet/1' } },
+              },
+            ],
+          }),
+        ),
+      });
     const tree = client(page).getByRole('tree', { name: 'Collections' });
     await expect(
       tree.getByRole('treeitem', { name: /Find pet/ }),
@@ -243,9 +267,13 @@ test.describe('the API client page', () => {
     await address(client(page)).fill(`${MOCK}/api/v3/pet/1`);
     await client(page).getByRole('button', { name: 'Add a header' }).click();
     await client(page).getByLabel('Header 1 name').fill('Authorization');
-    await client(page).getByLabel(/Value of Authorization/).fill(`Bearer ${SECRET}`);
+    await client(page)
+      .getByLabel(/Value of Authorization/)
+      .fill(`Bearer ${SECRET}`);
     await client(page).getByRole('button', { name: 'Share' }).click();
-    const link = await client(page).getByLabel(/Link to this request/).inputValue();
+    const link = await client(page)
+      .getByLabel(/Link to this request/)
+      .inputValue();
     expect(link).not.toContain(SECRET);
 
     await page.goto(link);
@@ -254,7 +282,9 @@ test.describe('the API client page', () => {
     await expect(client(page).getByTestId('api-client-note')).toContainText(
       'came from a link',
     );
-    await expect(client(page).getByLabel(/Value of Authorization/)).toHaveValue('');
+    await expect(client(page).getByLabel(/Value of Authorization/)).toHaveValue(
+      '',
+    );
   });
 
   test('can be worked with from the keyboard alone', async ({ page }) => {
@@ -263,13 +293,17 @@ test.describe('the API client page', () => {
     await client(page)
       .getByRole('textbox', { name: 'Name', exact: true })
       .fill('First');
-    await client(page).getByRole('button', { name: /^Save$/ }).click();
+    await client(page)
+      .getByRole('button', { name: /^Save$/ })
+      .click();
     await client(page).getByRole('button', { name: 'New request' }).click();
     await address(client(page)).fill(`${MOCK}/api/v3/pet/1`);
     await client(page)
       .getByRole('textbox', { name: 'Name', exact: true })
       .fill('Second');
-    await client(page).getByRole('button', { name: /^Save$/ }).click();
+    await client(page)
+      .getByRole('button', { name: /^Save$/ })
+      .click();
 
     const tree = client(page).getByRole('tree', { name: 'Collections' });
     await tree.getByRole('treeitem').first().focus();
@@ -287,13 +321,13 @@ test.describe('the API client page', () => {
   });
 
   for (const scheme of ['light', 'dark'] as const) {
-    test(`no axe violations in the client (${scheme})`, async ({
-      page,
-    }) => {
+    test(`no axe violations in the client (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
       await openClient(page);
       await address(client(page)).fill(`${MOCK}/api/v3/pet/1`);
-      await client(page).getByRole('button', { name: /^Save$/ }).click();
+      await client(page)
+        .getByRole('button', { name: /^Save$/ })
+        .click();
       await client(page).getByRole('button', { name: 'Add a header' }).click();
       const results = await new AxeBuilder({ page })
         .include('[role="dialog"]')

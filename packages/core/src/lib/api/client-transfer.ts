@@ -73,8 +73,7 @@ function makeRequest(
   return {
     id: newId(),
     collectionId,
-    name:
-      trimName(name, suggestedName(request)),
+    name: trimName(name, suggestedName(request)),
     order,
     createdAt: now,
     updatedAt: now,
@@ -259,9 +258,7 @@ function postmanUrl(raw: unknown): string {
   if (typeof raw === 'string') return raw;
   if (!isObject(raw)) return '';
   if (typeof raw.raw === 'string') return raw.raw;
-  const host = Array.isArray(raw.host)
-    ? raw.host.join('.')
-    : str(raw.host);
+  const host = Array.isArray(raw.host) ? raw.host.join('.') : str(raw.host);
   const path = Array.isArray(raw.path)
     ? raw.path.map((p) => str(p)).join('/')
     : str(raw.path);
@@ -469,10 +466,7 @@ function brunoRequest(
 
 function fromBrunoJson(file: Record<string, unknown>): Imported {
   const result = empty();
-  const collection = makeCollection(
-    str(file.name) || 'Bruno collection',
-    1,
-  );
+  const collection = makeCollection(str(file.name) || 'Bruno collection', 1);
   result.collections.push(collection);
   let order = 0;
   let scripts = false;
@@ -796,7 +790,8 @@ export function toCurl(request: StoredRequest): string {
   for (const [name, value] of request.headers) {
     lines.push(`  --header ${shellQuote(`${name}: ${value}`)}`);
   }
-  if (request.body?.text) lines.push(`  --data ${shellQuote(request.body.text)}`);
+  if (request.body?.text)
+    lines.push(`  --data ${shellQuote(request.body.text)}`);
   return lines.join(' \\\n');
 }
 
@@ -881,7 +876,10 @@ export function importText(text: string, format?: TransferFormat): Imported {
 const MAX_LINK = 8_000;
 
 const toBase64Url = (text: string): string =>
-  utf8ToBase64(text).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+  utf8ToBase64(text)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/, '');
 
 const fromBase64Url = (text: string): string => {
   const padded = text.replaceAll('-', '+').replaceAll('_', '/');

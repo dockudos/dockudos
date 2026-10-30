@@ -27,11 +27,16 @@ describe('substitute', () => {
       base: '{{scheme}}://{{host}}',
       url: '{{base}}/v1',
     };
-    expect(substitute('{{url}}/pets', nested).text).toBe('https://api.test/v1/pets');
+    expect(substitute('{{url}}/pets', nested).text).toBe(
+      'https://api.test/v1/pets',
+    );
   });
 
   it('leaves a name with no value as it is written and reports it once', () => {
-    const result = substitute('{{baseUrl}}/pet/{{missing}}?a={{missing}}', vars);
+    const result = substitute(
+      '{{baseUrl}}/pet/{{missing}}?a={{missing}}',
+      vars,
+    );
     expect(result.text).toBe('https://api.test/pet/{{missing}}?a={{missing}}');
     expect(result.missing).toEqual(['missing']);
   });
@@ -70,7 +75,9 @@ describe('substitute', () => {
   });
 
   it('ignores braces that are not a reference', () => {
-    expect(substitute('{ "a": 1 } {{}} {{ }}', vars).text).toBe('{ "a": 1 } {{}} {{ }}');
+    expect(substitute('{ "a": 1 } {{}} {{ }}', vars).text).toBe(
+      '{ "a": 1 } {{}} {{ }}',
+    );
   });
 
   it('lists the names a text uses, each one once', () => {
@@ -80,7 +87,11 @@ describe('substitute', () => {
 });
 
 describe('applyVariables', () => {
-  const vars = { baseUrl: 'https://api.test', token: 'sk-live-1', header: 'X-Key' };
+  const vars = {
+    baseUrl: 'https://api.test',
+    token: 'sk-live-1',
+    header: 'X-Key',
+  };
 
   it('resolves the URL, both halves of a header, and the body', () => {
     const result = applyVariables(
@@ -88,7 +99,10 @@ describe('applyVariables', () => {
         method: 'POST',
         url: '{{baseUrl}}/pets',
         headers: [['{{header}}', 'Bearer {{token}}']],
-        body: { contentType: 'application/json', text: '{"owner":"{{owner}}"}' },
+        body: {
+          contentType: 'application/json',
+          text: '{"owner":"{{owner}}"}',
+        },
       },
       vars,
     );
@@ -117,7 +131,8 @@ describe('applyVariables', () => {
 
   it('leaves a request without a body without one', () => {
     expect(
-      applyVariables({ method: 'GET', url: '{{baseUrl}}', headers: [] }, vars).request.body,
+      applyVariables({ method: 'GET', url: '{{baseUrl}}', headers: [] }, vars)
+        .request.body,
     ).toBeUndefined();
   });
 

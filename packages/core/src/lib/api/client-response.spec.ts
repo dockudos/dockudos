@@ -43,7 +43,10 @@ describe('keeping a response', () => {
     const example = makeExample({
       name: 'n'.repeat(500),
       status: 200,
-      headers: Array.from({ length: CLIENT_LIMITS.headers + 5 }, (_, i) => [`h${i}`, 'v']),
+      headers: Array.from({ length: CLIENT_LIMITS.headers + 5 }, (_, i) => [
+        `h${i}`,
+        'v',
+      ]),
       body: '',
     });
     expect(example.name).toHaveLength(CLIENT_LIMITS.nameLength);
@@ -52,7 +55,11 @@ describe('keeping a response', () => {
 
   it('reads one back, filling in what is missing', () => {
     expect(
-      migrateResponseExample({ status: 404, headers: [['a', 'b'], ['c'], 7], body: 'x' }),
+      migrateResponseExample({
+        status: 404,
+        headers: [['a', 'b'], ['c'], 7],
+        body: 'x',
+      }),
     ).toMatchObject({
       name: '404',
       status: 404,
@@ -117,8 +124,16 @@ describe('comparing two responses', () => {
   });
 
   it('refuses a comparison that would take too long, instead of freezing the page', () => {
-    const long = Array.from({ length: EXAMPLE_LIMITS.diffLines + 1 }, (_, i) => `${i}`).join('\n');
-    expect(diffLines(long, 'a')).toEqual({ lines: [], added: 0, removed: 0, tooLong: true });
+    const long = Array.from(
+      { length: EXAMPLE_LIMITS.diffLines + 1 },
+      (_, i) => `${i}`,
+    ).join('\n');
+    expect(diffLines(long, 'a')).toEqual({
+      lines: [],
+      added: 0,
+      removed: 0,
+      tooLong: true,
+    });
     expect(diffLines('a', long).tooLong).toBe(true);
   });
 });

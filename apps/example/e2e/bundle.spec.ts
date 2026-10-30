@@ -56,10 +56,7 @@ test.describe('what the browser downloads', () => {
       expect(c.text, c.file).toContain('dockudos-api-client');
     }
     // No page asks for it up front: not a guide, and not an endpoint page with the playground on it.
-    for (const path of [
-      '/guides/hello',
-      '/api-reference/pet/getpetbyid',
-    ]) {
+    for (const path of ['/guides/hello', '/api-reference/pet/getpetbyid']) {
       const html = await (await request.get(path)).text();
       const scripts = new Set(
         [...html.matchAll(/\/_next\/static\/[^"']+\.js/g)].map((m) => m[0]),

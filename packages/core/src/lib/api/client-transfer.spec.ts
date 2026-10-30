@@ -63,7 +63,9 @@ describe('what a file is', () => {
   it('recognises each format by what is in it', async () => {
     expect(detectFormat('curl https://api.test')).toBe('curl');
     expect(detectFormat('  CURL.exe -X POST https://api.test ')).toBe('curl');
-    expect(detectFormat(await fixture('postman-petstore.json'))).toBe('postman');
+    expect(detectFormat(await fixture('postman-petstore.json'))).toBe(
+      'postman',
+    );
     expect(detectFormat(await fixture('bruno-petstore.json'))).toBe('bruno');
     expect(detectFormat(await fixture('find-pet.bru'))).toBe('bru');
     expect(
@@ -78,8 +80,12 @@ describe('what a file is', () => {
     expect(detectFormat('[1,2]')).toBeUndefined();
     expect(detectFormat(JSON.stringify({ a: 1 }))).toBeUndefined();
     expect(importText('hello').warnings[0]).toMatch(/not recognised/);
-    expect(importText('{ not json', 'postman').warnings[0]).toMatch(/not valid JSON/);
-    expect(importText('[1,2]', 'postman').warnings[0]).toMatch(/does not hold a collection/);
+    expect(importText('{ not json', 'postman').warnings[0]).toMatch(
+      /not valid JSON/,
+    );
+    expect(importText('[1,2]', 'postman').warnings[0]).toMatch(
+      /does not hold a collection/,
+    );
   });
 });
 
@@ -130,7 +136,9 @@ describe('Postman v2.1', () => {
       'pet / Upload an image: a formdata body cannot be imported and was left out',
       'Scripts in the file were ignored and never run (Find pet by ID).',
     ]);
-    expect(byName(result, 'pet / Upload an image')?.request.body).toBeUndefined();
+    expect(
+      byName(result, 'pet / Upload an image')?.request.body,
+    ).toBeUndefined();
   });
 
   it("turns the collection's variables into an environment", async () => {
@@ -168,7 +176,11 @@ describe('Postman v2.1', () => {
         request: {
           method: string;
           header: { key: string; value: string }[];
-          body?: { mode: string; raw: string; options: { raw: { language: string } } };
+          body?: {
+            mode: string;
+            raw: string;
+            options: { raw: { language: string } };
+          };
           url: { raw: string };
         };
       }[];
@@ -188,7 +200,11 @@ describe('Postman v2.1', () => {
     const language = (contentType: string) => {
       const file = toPostman(collection(), [
         saved({ request: request({ body: { contentType, text: 'x' } }) }),
-      ]) as { item: { request: { body: { options: { raw: { language: string } } } } }[] };
+      ]) as {
+        item: {
+          request: { body: { options: { raw: { language: string } } } };
+        }[];
+      };
       return file.item[0]!.request.body.options.raw.language;
     };
     expect(language('application/json')).toBe('json');
@@ -202,7 +218,9 @@ describe('Postman v2.1', () => {
       saved({ request: request({ url: 'https://api.test/pets?status=sold' }) }),
     ]);
     const back = importText(JSON.stringify(exported));
-    expect(back.requests[0]?.request.url).toBe('https://api.test/pets?status=sold');
+    expect(back.requests[0]?.request.url).toBe(
+      'https://api.test/pets?status=sold',
+    );
     expect(back.collections[0]?.name).toBe('Petstore');
   });
 });
@@ -259,7 +277,9 @@ describe('Bruno', () => {
     expect(fromBruFile('get {\n  body: none\n}').warnings).toEqual([
       'The .bru file has no URL.',
     ]);
-    expect(importText('post {\n  url: https://api.test/pets\n}').requests).toHaveLength(1);
+    expect(
+      importText('post {\n  url: https://api.test/pets\n}').requests,
+    ).toHaveLength(1);
   });
 
   it('writes a collection Bruno can read and takes it back', () => {
@@ -272,7 +292,11 @@ describe('Bruno', () => {
           body: { contentType: 'application/json', text: '{"name":"Rex"}' },
         }),
       }),
-      saved({ order: 2, name: 'Plain text', request: request({ body: { contentType: 'text/csv', text: 'a,b' } }) }),
+      saved({
+        order: 2,
+        name: 'Plain text',
+        request: request({ body: { contentType: 'text/csv', text: 'a,b' } }),
+      }),
     ]);
     expect(JSON.stringify(file)).not.toContain('sk-live-1');
     const back = importText(JSON.stringify(file));
@@ -299,7 +323,10 @@ describe('Bruno', () => {
 describe("this project's own file", () => {
   it('carries the collections and the environments, with no secret value in them', () => {
     const file = toDockudosFile({
-      collections: [collection(), collection({ id: 'c2', name: 'Other', order: 2 })],
+      collections: [
+        collection(),
+        collection({ id: 'c2', name: 'Other', order: 2 }),
+      ],
       requests: [
         saved({ order: 2, name: 'Second' }),
         saved({ order: 1, name: 'First' }),
@@ -319,7 +346,10 @@ describe("this project's own file", () => {
       ],
     });
     expect(file.collections.map((c) => c.name)).toEqual(['Petstore', 'Other']);
-    expect(file.collections[0]?.requests.map((r) => r.name)).toEqual(['First', 'Second']);
+    expect(file.collections[0]?.requests.map((r) => r.name)).toEqual([
+      'First',
+      'Second',
+    ]);
     expect(file.environments[0]?.variables).toEqual([
       { name: 'baseUrl', value: 'https://api.test' },
       { name: 'token', value: '', secret: true },
@@ -344,9 +374,19 @@ describe("this project's own file", () => {
         version: 99,
         collections: [
           'nope',
-          { name: 'Kept', requests: ['nope', { name: 'No URL', request: {} }, { name: 'Fine', request: { url: 'https://api.test' } }] },
+          {
+            name: 'Kept',
+            requests: [
+              'nope',
+              { name: 'No URL', request: {} },
+              { name: 'Fine', request: { url: 'https://api.test' } },
+            ],
+          },
         ],
-        environments: ['nope', { name: 'Env', variables: [{ name: 'a', value: '1' }] }],
+        environments: [
+          'nope',
+          { name: 'Env', variables: [{ name: 'a', value: '1' }] },
+        ],
       }),
     );
     expect(result.warnings[0]).toMatch(/newer version \(99\)/);
@@ -355,7 +395,9 @@ describe("this project's own file", () => {
   });
 
   it('writes a file without environments when there are none', () => {
-    expect(toDockudosFile({ collections: [], requests: [] }).environments).toEqual([]);
+    expect(
+      toDockudosFile({ collections: [], requests: [] }).environments,
+    ).toEqual([]);
   });
 });
 
@@ -364,10 +406,13 @@ describe('limits', () => {
     const many = {
       dockudos: 'api-client',
       version: 1,
-      collections: Array.from({ length: CLIENT_LIMITS.collections + 2 }, (_, i) => ({
-        name: `C${i}`,
-        requests: [{ name: 'r', request: { url: 'https://api.test' } }],
-      })),
+      collections: Array.from(
+        { length: CLIENT_LIMITS.collections + 2 },
+        (_, i) => ({
+          name: `C${i}`,
+          requests: [{ name: 'r', request: { url: 'https://api.test' } }],
+        }),
+      ),
     };
     const result = importText(JSON.stringify(many));
     expect(result.collections).toHaveLength(CLIENT_LIMITS.collections);
@@ -387,7 +432,10 @@ describe('limits', () => {
             name: 'Big',
             requests: Array.from(
               { length: CLIENT_LIMITS.requestsPerCollection + 3 },
-              (_, i) => ({ name: `r${i}`, request: { url: 'https://api.test' } }),
+              (_, i) => ({
+                name: `r${i}`,
+                request: { url: 'https://api.test' },
+              }),
             ),
           },
         ],
@@ -400,7 +448,9 @@ describe('limits', () => {
 
 describe('a curl command', () => {
   it('splits a command the way a shell would, without running anything', () => {
-    expect(splitCommand(`curl -X POST 'https://api.test/a b' --data "{\\"a\\":1}"`)).toEqual([
+    expect(
+      splitCommand(`curl -X POST 'https://api.test/a b' --data "{\\"a\\":1}"`),
+    ).toEqual([
       'curl',
       '-X',
       'POST',
@@ -413,7 +463,10 @@ describe('a curl command', () => {
       '--url',
       'https://api.test',
     ]);
-    expect(splitCommand('curl ^\n https://api.test')).toEqual(['curl', 'https://api.test']);
+    expect(splitCommand('curl ^\n https://api.test')).toEqual([
+      'curl',
+      'https://api.test',
+    ]);
     expect(splitCommand("curl -d ''")).toEqual(['curl', '-d', '']);
     expect(splitCommand('curl a\\ b')).toEqual(['curl', 'a b']);
   });
@@ -441,14 +494,26 @@ describe('a curl command', () => {
   });
 
   it('guesses the method and the content type from the data', () => {
-    expect(parseCurl('curl -d name=Rex https://api.test/pets').request).toMatchObject({
+    expect(
+      parseCurl('curl -d name=Rex https://api.test/pets').request,
+    ).toMatchObject({
       method: 'POST',
-      body: { contentType: 'application/x-www-form-urlencoded', text: 'name=Rex' },
+      body: {
+        contentType: 'application/x-www-form-urlencoded',
+        text: 'name=Rex',
+      },
     });
     expect(
-      parseCurl('curl --data-urlencode a=1 --data-urlencode b=2 https://api.test').request?.body,
-    ).toEqual({ contentType: 'application/x-www-form-urlencoded', text: 'a=1&b=2' });
-    expect(parseCurl(`curl --json '{"a":1}' https://api.test`).request).toMatchObject({
+      parseCurl(
+        'curl --data-urlencode a=1 --data-urlencode b=2 https://api.test',
+      ).request?.body,
+    ).toEqual({
+      contentType: 'application/x-www-form-urlencoded',
+      text: 'a=1&b=2',
+    });
+    expect(
+      parseCurl(`curl --json '{"a":1}' https://api.test`).request,
+    ).toMatchObject({
       headers: [['Content-Type', 'application/json']],
       body: { contentType: 'application/json', text: '{"a":1}' },
     });
@@ -456,7 +521,10 @@ describe('a curl command', () => {
   });
 
   it('turns -u into a Basic header and keeps a cookie and a user agent', () => {
-    expect(parseCurl('curl -u me:pass -b s=1 -A Mine https://api.test').request?.headers).toEqual([
+    expect(
+      parseCurl('curl -u me:pass -b s=1 -A Mine https://api.test').request
+        ?.headers,
+    ).toEqual([
       ['Authorization', `Basic ${Buffer.from('me:pass').toString('base64')}`],
       ['Cookie', 's=1'],
       ['User-Agent', 'Mine'],
@@ -476,7 +544,10 @@ describe('a curl command', () => {
     const result = parseCurl(
       'curl -sSL --compressed -k --max-time 30 -o out.json https://api.test/pets',
     );
-    expect(result.request).toMatchObject({ method: 'GET', url: 'https://api.test/pets' });
+    expect(result.request).toMatchObject({
+      method: 'GET',
+      url: 'https://api.test/pets',
+    });
     expect(result.warnings).toEqual([
       '--max-time is about how curl runs and was ignored.',
       '-o is about how curl runs and was ignored.',
@@ -484,14 +555,18 @@ describe('a curl command', () => {
   });
 
   it('says what is wrong instead of guessing', () => {
-    expect(parseCurl('wget https://api.test').warnings[0]).toMatch(/starts with `curl`/);
+    expect(parseCurl('wget https://api.test').warnings[0]).toMatch(
+      /starts with `curl`/,
+    );
     expect(parseCurl('').warnings[0]).toMatch(/starts with `curl`/);
     expect(parseCurl('curl -X').warnings).toEqual([
       '-X needs a value; it was ignored.',
       'The command has no URL.',
     ]);
     expect(parseCurl('curl --header').request).toBeUndefined();
-    expect(parseCurl('curl -%% https://api.test').warnings).toEqual(['-%% was ignored.']);
+    expect(parseCurl('curl -%% https://api.test').warnings).toEqual([
+      '-%% was ignored.',
+    ]);
     expect(importText('curl -X POST').requests).toEqual([]);
   });
 
@@ -557,7 +632,9 @@ describe('a request as a link', () => {
       request({ headers: [['Authorization', 'Bearer sk-live-1']] }),
     );
     expect(redacted).toEqual(['Authorization']);
-    expect(decodeSharedRequest(text)?.request.headers).toEqual([['Authorization', '']]);
+    expect(decodeSharedRequest(text)?.request.headers).toEqual([
+      ['Authorization', ''],
+    ]);
     expect(decodeSharedRequest(text)?.name).toBeUndefined();
   });
 
@@ -584,16 +661,19 @@ describe('the variables an import still needs', () => {
         request: request({
           url: '{{baseUrl}}/pet/{{petId}}',
           headers: [['X-Key', '{{token}}']],
-          body: { contentType: 'application/json', text: '{"owner":"{{owner}}"}' },
+          body: {
+            contentType: 'application/json',
+            text: '{"owner":"{{owner}}"}',
+          },
         }),
       }),
       saved({ request: request({ url: '\\{{literal}}/x' }) }),
     ];
-    expect(neededVariables(requests, [{ name: 'baseUrl', value: 'https://api.test' }])).toEqual([
-      'petId',
-      'token',
-      'owner',
-    ]);
+    expect(
+      neededVariables(requests, [
+        { name: 'baseUrl', value: 'https://api.test' },
+      ]),
+    ).toEqual(['petId', 'token', 'owner']);
     expect(neededVariables([])).toEqual([]);
   });
 });

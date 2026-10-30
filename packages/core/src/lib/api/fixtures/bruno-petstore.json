@@ -14,8 +14,18 @@
             "url": "{{baseUrl}}/pet/10",
             "method": "GET",
             "headers": [
-              { "uid": "aXb1", "name": "Accept", "value": "application/json", "enabled": true },
-              { "uid": "aXb2", "name": "X-Debug", "value": "1", "enabled": false }
+              {
+                "uid": "aXb1",
+                "name": "Accept",
+                "value": "application/json",
+                "enabled": true
+              },
+              {
+                "uid": "aXb2",
+                "name": "X-Debug",
+                "value": "1",
+                "enabled": false
+              }
             ],
             "params": [],
             "body": { "mode": "none" },
@@ -32,7 +42,12 @@
             "url": "{{baseUrl}}/pet",
             "method": "POST",
             "headers": [
-              { "uid": "bXc1", "name": "Content-Type", "value": "application/json", "enabled": true }
+              {
+                "uid": "bXc1",
+                "name": "Content-Type",
+                "value": "application/json",
+                "enabled": true
+              }
             ],
             "params": [],
             "body": { "mode": "json", "json": "{\n  \"name\": \"Rex\"\n}" },
@@ -50,11 +65,19 @@
         "method": "POST",
         "headers": [],
         "params": [],
-        "body": { "mode": "multipartForm", "multipartForm": [{ "name": "file", "type": "file" }] },
+        "body": {
+          "mode": "multipartForm",
+          "multipartForm": [{ "name": "file", "type": "file" }]
+        },
         "auth": { "mode": "none" }
       }
     },
-    { "type": "http", "name": "Broken", "seq": 4, "request": { "method": "GET" } }
+    {
+      "type": "http",
+      "name": "Broken",
+      "seq": 4,
+      "request": { "method": "GET" }
+    }
   ],
   "environments": [
     {
