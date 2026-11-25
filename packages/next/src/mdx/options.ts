@@ -10,6 +10,8 @@ export interface MdxPipelineOptions {
   publicDir: string;
   /** Where the docs are mounted in the site (`urlPrefix`). */
   prefix?: string;
+  /** Base path of a static export on a sub-path. */
+  basePath?: string;
 }
 
 const require = createRequire(import.meta.url);
@@ -28,6 +30,7 @@ export function mdxPipeline({
   docsDir,
   publicDir,
   prefix,
+  basePath,
 }: MdxPipelineOptions): {
   remarkPlugins: Plugin[];
   rehypePlugins: Plugin[];
@@ -43,7 +46,14 @@ export function mdxPipeline({
       own('remark-admonitions'),
       own('remark-code'),
       // Turbopack needs JSON-serializable options, so absent values are left out, not `undefined`.
-      [own('remark-links'), { docsDir, ...(prefix && { prefix }) }],
+      [
+        own('remark-links'),
+        {
+          docsDir,
+          ...(prefix && { prefix }),
+          ...(basePath && { basePath }),
+        },
+      ],
       [own('remark-images'), { publicDir }],
       [own('remark-math-styles'), { css: '@dockudos/next/katex.css' }],
     ],

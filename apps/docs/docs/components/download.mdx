@@ -4,9 +4,12 @@ title: Download
 description: A link that saves a file, showing its type and size.
 ---
 
-Get <Download href="/example.png" size="12 KB">the example image</Download> or
+import example from '../../public/example.png';
+import favicon from '../../public/favicon.ico';
 
-<Download href="/favicon.ico" filename="dockudos.ico">
+Get <Download href={example.src} size="12 KB">the example image</Download> or
+
+<Download href={favicon.src} filename="dockudos.ico">
   the icon
 </Download>
 .

@@ -4,12 +4,15 @@ title: ThemedImage
 description: One picture in a light and a dark version, so screenshots match the reader's theme.
 ---
 
+import logoDark from '../../public/logo-dark.svg';
+import logoLight from '../../public/logo-light.svg';
+
 A screenshot of a light interface looks wrong in dark mode. `ThemedImage` takes both versions and shows the one that
 matches the theme the reader is using. Switch the theme (press <Kbd>t</Kbd>) to see this one change:
 
 <ThemedImage
-  light="/logo-light.svg"
-  dark="/logo-dark.svg"
+  light={logoLight.src}
+  dark={logoDark.src}
   alt="The dockudos logo"
   width={160}
 />

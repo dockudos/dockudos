@@ -9,11 +9,13 @@ export interface RemarkLinksOptions {
   docsDir: string;
   /** Where the docs are mounted in the site (`urlPrefix`). */
   prefix?: string;
+  /** Base path of a static export on a sub-path (`/docs`), put in front of every page link. */
+  basePath?: string;
 }
 
 /** Rewrite links between pages (`./other.mdx#x`) to site paths (`/guides/other#x`). */
 const remarkLinks: Plugin<[RemarkLinksOptions], Root> =
-  ({ docsDir, prefix }) =>
+  ({ docsDir, prefix, basePath = '' }) =>
   (tree, file) => {
     if (!file.path) return;
     const from = relative(docsDir, file.path).replaceAll('\\', '/');
@@ -22,7 +24,8 @@ const remarkLinks: Plugin<[RemarkLinksOptions], Root> =
     visit(tree, 'link', (node) => {
       const link = resolveDocLink(from, node.url, { prefix });
       if (link.kind === 'internal') {
-        node.url = link.hash ? `${link.path}#${link.hash}` : link.path;
+        const path = link.hash ? `${link.path}#${link.hash}` : link.path;
+        node.url = `${basePath}${path}`;
       }
     });
   };
