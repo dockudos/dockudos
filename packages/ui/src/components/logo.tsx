@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react';
+import { withBase } from '../lib/base-path.ts';
 import { cn } from '../lib/utils.ts';
 
 /** The dockudos logo as an SVG: the wordmark in the text color, the "do" in the brand green. */
@@ -55,11 +56,11 @@ export function Logo({
       </>
     );
   }
-  if (typeof src === 'string') return <img src={src} alt={alt} className={cls} />;
+  if (typeof src === 'string') return <img src={withBase(src)} alt={alt} className={cls} />;
   return (
     <>
-      <img src={src.light} alt={alt} className={cn(cls, 'dark:hidden')} />
-      <img src={src.dark} alt="" className={cn(cls, 'hidden dark:block')} />
+      <img src={withBase(src.light)} alt={alt} className={cn(cls, 'dark:hidden')} />
+      <img src={withBase(src.dark)} alt="" className={cn(cls, 'hidden dark:block')} />
     </>
   );
 }

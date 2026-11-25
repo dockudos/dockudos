@@ -10,6 +10,7 @@ import { PaletteButton } from './command-palette.tsx';
 import { ThemeToggle } from '../theme/theme-toggle.tsx';
 import type { TabLink } from './tab-links.ts';
 import { useMessages } from '../messages-context.tsx';
+import { withBase } from '../lib/base-path.ts';
 
 function Brand({
   name,
@@ -26,11 +27,15 @@ function Brand({
     <Link href={href} className="dk-navbar-brand">
       {brand ?? (
         <>
-          {typeof logo === 'string' && <img src={logo} alt="" />}
+          {typeof logo === 'string' && <img src={withBase(logo)} alt="" />}
           {typeof logo === 'object' && (
             <>
-              <img src={logo.light} alt="" className="dark:hidden" />
-              <img src={logo.dark} alt="" className="hidden dark:block" />
+              <img src={withBase(logo.light)} alt="" className="dark:hidden" />
+              <img
+                src={withBase(logo.dark)}
+                alt=""
+                className="hidden dark:block"
+              />
             </>
           )}
           {/* With a logo the name is still read out, just not shown twice. */}

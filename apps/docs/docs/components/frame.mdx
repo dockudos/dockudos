@@ -4,10 +4,12 @@ title: Frame
 description: A border and caption around an image, video or diagram.
 ---
 
+import example from '../../public/example.png';
+
 `Frame` puts a border and an optional caption around an image, a video or a diagram.
 
 <Frame caption="A blue box, framed with a caption">
-  <img src="/example.png" alt="A blue rectangle" width={120} height={60} />
+  <img src={example.src} alt="A blue rectangle" width={120} height={60} />
 </Frame>
 
 ```mdx

@@ -4,6 +4,8 @@ title: Cards
 description: A grid of linked cards with icons, images and arrows.
 ---
 
+import example from '../../public/example.png';
+
 `Cards` is a grid; each `Card` has a title, optional text and an optional link.
 
 <Cards>
@@ -67,7 +69,7 @@ shows a small arrow on a linked card; it is on by default for links to other sit
   >
     Icon on the side, with an arrow.
   </Card>
-  <Card title="With a picture" img="/example.png">
+  <Card title="With a picture" img={example.src}>
     The picture spans the top.
   </Card>
 </Cards>
@@ -76,7 +78,7 @@ shows a small arrow on a linked card; it is on by default for links to other sit
 <Card title="Horizontal" icon="rocket" horizontal href="/quickstart" arrow>
   Icon on the side, with an arrow.
 </Card>
-<Card title="With a picture" img="/example.png">
+<Card title="With a picture" img={example.src}>
   The picture spans the top.
 </Card>
 ```

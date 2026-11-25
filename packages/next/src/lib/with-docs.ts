@@ -89,6 +89,7 @@ export function withDocs(
       docsDir: absoluteDocsDir,
       publicDir: resolve(root, 'public'),
       prefix: config.urlPrefix,
+      ...(isStatic() && { basePath: basePath() }),
     }),
   });
 

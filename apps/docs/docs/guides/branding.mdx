@@ -4,6 +4,8 @@ title: Logo and brand
 description: Use the dockudos logo, or your own, in the navbar.
 ---
 
+import logoLight from '../../public/logo-light.svg';
+
 ## Your own logo
 
 ```json title="docs.json"
@@ -30,7 +32,7 @@ import { DocsLayout, Logo } from '@dockudos/ui';
 
 <Frame caption="Logo, mark and wordmark, in your brand color">
   <img
-    src="/logo-light.svg"
+    src={logoLight.src}
     alt="dockudos logo: a page with a folded corner and a check badge, then 'doc' in black and 'kudos' in indigo"
     width="210"
     height="48"

@@ -505,8 +505,15 @@ export function siteMetadata({ config }: Site): Metadata {
     ...(siteUrl && { metadataBase: new URL(siteUrl) }),
     title: { default: config.name, template: `%s | ${config.name}` },
     ...(description && { description }),
-    ...(config.favicon && { icons: { icon: config.favicon } }),
+    ...(config.favicon && { icons: { icon: withBasePath(config.favicon) } }),
   };
+}
+
+/** Prefix a root-relative path with the base path of a static export on a sub-path (GitHub Pages project sites). */
+function withBasePath(url: string): string {
+  return url.startsWith('/') && !url.startsWith('//')
+    ? `${process.env.NEXT_PUBLIC_DOCKUDOS_BASE_PATH ?? ''}${url}`
+    : url;
 }
 
 /** Per-page metadata: title, description, canonical URL and robots. */

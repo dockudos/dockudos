@@ -4,6 +4,8 @@ title: Tile
 description: A card with a preview image, for galleries, templates and showcases.
 ---
 
+import example from '../../public/example.png';
+
 A `Tile` is a card with a preview on top. Use it for templates, examples, themes and showcases. Put several in `Cards`
 to make a gallery.
 
@@ -14,14 +16,14 @@ to make a gallery.
     href="/getting-started/quickstart"
   >
     <img
-      src="/example.png"
+      src={example.src}
       alt="A blue rectangle standing in for a screenshot"
       width={120}
       height={60}
     />
   </Tile>
   <Tile title="Docs" description="With tabs" href="/guides/navigation">
-    <img src="/example.png" alt="" width={120} height={60} />
+    <img src={example.src} alt="" width={120} height={60} />
   </Tile>
   <Tile title="Plain" description="No link" />
 </Cards>
