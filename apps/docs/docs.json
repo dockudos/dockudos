@@ -275,6 +275,9 @@
     "dark": "/logo-dark.svg"
   },
   "favicon": "/icon.svg",
+  "seo": {
+    "siteUrl": "https://dockudos.github.io/dockudos"
+  },
   "kudos": {
     "enabled": true
   },
